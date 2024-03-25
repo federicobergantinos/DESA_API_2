@@ -1,0 +1,41 @@
+{
+  "expo": {
+    "name": "Wallet",
+    "slug": "wallet-uade-project",
+    "privacy": "public",
+    "platforms": [
+      "ios",
+      "android"
+    ],
+    "version": "1.6.1",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "cover",
+      "backgroundColor": "#5a46b4"
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.uade.wallet"
+    },
+    "description": "Wallet",
+    "android": {
+      "package": "com.uade.wallet",
+      "permissions": [
+        "INTERNET"
+      ]
+    },
+    "extra": {
+      "eas": {
+        "projectId": "46a14906-b6b6-4d26-8b7f-14dafda9040e"
+      }
+    }
+  }
+}
