@@ -13,7 +13,9 @@ class IconExtra extends React.Component {
   };
 
   async componentDidMount() {
-    await Font.loadAsync({ WalletExtra: WalletExtra });
+    await Font.loadAsync({
+      WalletExtra: require("../assets/font/wallet.ttf"),
+    });
     this.setState({ fontLoaded: true });
   }
 

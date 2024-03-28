@@ -1,7 +1,6 @@
-export interface RecipesSearchDTO {
+export interface TransactionsDTO {
   id: number;
   title: string;
   media: string;
-  description: string;
   tags: string[];
 }

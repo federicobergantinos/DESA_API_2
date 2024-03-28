@@ -1,13 +1,13 @@
 const {
-  Recipe,
+  Transaction,
   Media,
   Tag,
-  RecipeTags,
+  TransactionTags,
   User,
 } = require("../../../entities/associateModels");
 const { recipesData } = require("./recipesData");
 
-const populateRecipes = async () => {
+const populateTransactions = async () => {
   try {
     for (const recipeData of recipesData) {
       const {
@@ -34,7 +34,7 @@ const populateRecipes = async () => {
       }
 
       // Crear la receta (sin incluir la imagen directamente aquí)
-      const recipe = await Recipe.create({
+      const recipe = await Transaction.create({
         title,
         description,
         preparationTime,
@@ -80,17 +80,17 @@ const populateRecipes = async () => {
 
       // Asociar la receta con sus etiquetas existentes
       for (const tagInstance of existingTagInstances) {
-        await RecipeTags.create({
+        await TransactionTags.create({
           recipeId: recipe.id,
           tagId: tagInstance.id,
         });
       }
     }
 
-    console.log("Recipes table has been populated with initial data.");
+    console.log("Transactions table has been populated with initial data.");
   } catch (error) {
-    console.error("Error populating Recipes table:", error);
+    console.error("Error populating Transactions table:", error);
   }
 };
 
-module.exports = populateRecipes;
+module.exports = populateTransactions;

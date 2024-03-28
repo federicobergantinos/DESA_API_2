@@ -9,13 +9,13 @@ dbConnection();
 paths = {
   status: "/ping",
   loginV1: "/v1/auth",
-  recipes: "/v1/recipes",
+  transactions: "/v1/transactions",
   users: "/v1/users",
 };
 
 app.use(paths.status, require("./routes/healthCheck"));
 app.use(paths.loginV1, require("./routes/auth"));
-app.use(paths.recipes, require("./routes/recipes"));
+app.use(paths.transactions, require("./routes/transactions"));
 app.use(paths.users, require("./routes/users"));
 
 const PORT = 8080;

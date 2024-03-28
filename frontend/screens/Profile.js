@@ -225,67 +225,8 @@ export default function Profile() {
                   space="evenly"
                   style={{ marginTop: 5, paddingBottom: 24 }}
                 ></Block>
-                <Block row space="evenly">
-                  <Block middle>
-                    <Text
-                      size={18}
-                      color="#525F7F"
-                      style={{
-                        marginBottom: 4,
-                        fontFamily: "open-sans-bold",
-                      }}
-                    >
-                      {recipesCount}
-                    </Text>
-                    <Text
-                      style={{ fontFamily: "open-sans-regular" }}
-                      size={12}
-                      color={walletTheme.COLORS.TEXT}
-                    >
-                      Recetas
-                    </Text>
-                  </Block>
-                  <Block middle>
-                    <Text
-                      color="#525F7F"
-                      size={18}
-                      style={{
-                        marginBottom: 4,
-                        fontFamily: "open-sans-bold",
-                      }}
-                    >
-                      {favoritesCount}
-                    </Text>
-                    <Text
-                      style={{ fontFamily: "open-sans-regular" }}
-                      size={12}
-                      color={walletTheme.COLORS.TEXT}
-                    >
-                      Favoritos
-                    </Text>
-                  </Block>
-                </Block>
               </Block>
               <Block flex>
-                <Block middle style={{ marginTop: 30, marginBottom: 16 }}>
-                  <Block style={styles.divider} />
-                </Block>
-                <Block row style={{ paddingVertical: 14 }} space="between">
-                  <Text bold size={16} color="#525F7F" style={{ marginTop: 3 }}>
-                    Mis Recetas
-                  </Text>
-                  {recipesCount > 6 && (
-                    <Button
-                      small
-                      color="transparent"
-                      textStyle={{ color: "#5E72E4", fontSize: 14 }}
-                      onPress={() => handleOpenModal("recipes")}
-                    >
-                      Ver más
-                    </Button>
-                  )}
-                </Block>
-
                 <Modal
                   isVisible={isModalVisible}
                   onBackdropPress={handleCloseModal}
@@ -296,79 +237,6 @@ export default function Profile() {
                     </ScrollView>
                   </View>
                 </Modal>
-
-                {recipesCount > 0 ? (
-                  <Block style={{ paddingBottom: -HeaderHeight * 2 }}>
-                    <Block
-                      row
-                      space="between"
-                      style={styles.favoritesContainer}
-                    >
-                      {recipes.slice(0, 6).map((recipe) => (
-                        <TouchableOpacity
-                          key={recipe.id}
-                          onPress={() => navigateToRecipe(recipe.id)}
-                        >
-                          <Image
-                            source={{ uri: recipe.media }}
-                            style={styles.thumb}
-                          />
-                        </TouchableOpacity>
-                      ))}
-                    </Block>
-                  </Block>
-                ) : (
-                  <Text style={{ alignSelf: "center", marginTop: 20 }}>
-                    Sin recetas
-                  </Text>
-                )}
-              </Block>
-
-              <Block flex>
-                <Block middle style={{ marginTop: 30, marginBottom: 16 }}>
-                  <Block style={styles.divider} />
-                </Block>
-                <Block row style={{ paddingVertical: 14 }} space="between">
-                  <Text bold size={16} color="#525F7F" style={{ marginTop: 3 }}>
-                    Mis Favoritos
-                  </Text>
-                  {favoritesCount > 6 && (
-                    <Button
-                      small
-                      color="transparent"
-                      textStyle={{ color: "#5E72E4", fontSize: 14 }}
-                      onPress={() => handleOpenModal("favorites")}
-                    >
-                      Ver más
-                    </Button>
-                  )}
-                </Block>
-
-                {favoritesCount > 0 ? (
-                  <Block style={{ paddingBottom: -HeaderHeight * 2 }}>
-                    <Block
-                      row
-                      space="between"
-                      style={styles.favoritesContainer}
-                    >
-                      {favorites.slice(0, 6).map((favorite) => (
-                        <TouchableOpacity
-                          key={favorite.id}
-                          onPress={() => navigateToRecipe(favorite.id)}
-                        >
-                          <Image
-                            source={{ uri: favorite.media[0].data }}
-                            style={styles.thumb}
-                          />
-                        </TouchableOpacity>
-                      ))}
-                    </Block>
-                  </Block>
-                ) : (
-                  <Text style={{ alignSelf: "center", marginTop: 20 }}>
-                    Sin favoritos
-                  </Text>
-                )}
               </Block>
             </Block>
             <Block style={{ marginBottom: 25 }} />

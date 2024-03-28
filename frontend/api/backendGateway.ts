@@ -1,12 +1,12 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createAuthDTO, Credentials } from "./authDTO";
-import { RecipeDTO } from "./RecipeDTO";
-import { RecipesDTO } from "./RecipesDTO";
-import { RecipesSearchDTO } from "./RecipesSearchDTO";
+import { TransactionDTO } from "./TransactionDTO";
+import { TransactionsDTO } from "./TransactionsDTO";
+import { TransactionsSearchDTO } from "./TransactionsSearchDTO";
 
 // const api = axios.create({ baseURL: "https://wallet-elb.federicobergantinos.com:443" });
-const api = axios.create({ baseURL: "http://192.168.1.114:8080" });
+const api = axios.create({ baseURL: "http://192.168.1.116:8080" });
 const recipeBaseUrl = "/v1/recipes";
 const usersBaseUrl = "/v1/users";
 
@@ -71,8 +71,8 @@ const rating = {
 
 // Objeto para funciones relacionadas con recetas
 const recipesGateway = {
-  deleteRecipe: async (recipeId: number) => requests.delete(recipeBaseUrl + "/" + recipeId),
-  createRecipe: async (recipeData) => {
+  deleteTransaction: async (recipeId: number) => requests.delete(recipeBaseUrl + "/" + recipeId),
+  createTransaction: async (recipeData) => {
     try {
       const url = `${recipeBaseUrl}` + "/create"
       const response = await requests.post(url, recipeData);
@@ -83,8 +83,8 @@ const recipesGateway = {
     }
   },
 
-  getRecipeById: ( id: number, userId: number): Promise<{ response: RecipeDTO; statusCode: number }> => requests.get(recipeBaseUrl + "/" + id + "?userId=" + userId),
-  getAll: (page = 0, tag, userId): Promise<{ response: RecipesDTO; statusCode: number }> => {
+  getTransactionById: ( id: number, userId: number): Promise<{ response: TransactionDTO; statusCode: number }> => requests.get(recipeBaseUrl + "/" + id + "?userId=" + userId),
+  getAll: (page = 0, tag, userId): Promise<{ response: TransactionsDTO; statusCode: number }> => {
 
     let url = `${recipeBaseUrl}/?page=${page}&limit=10`;
     if (tag) {
@@ -96,11 +96,11 @@ const recipesGateway = {
     return requests.get(url);
   },
 
-  searchRecipes: (searchTerm = "", page = 0, limit = 10): Promise<{ response: RecipesSearchDTO; statusCode: number }> => {
+  searchTransactions: (searchTerm = "", page = 0, limit = 10): Promise<{ response: TransactionsSearchDTO; statusCode: number }> => {
     const url = `${recipeBaseUrl}/search?page=${page}&limit=${limit}&searchTerm=${searchTerm}`;
     return requests.get(url);
   },
-  updateRecipe: async (id: number, recipeData: any): Promise<{ response: any; statusCode: number }> => {
+  updateTransaction: async (id: number, recipeData: any): Promise<{ response: any; statusCode: number }> => {
     try {
       const url = `${recipeBaseUrl}/${id}`;
       const response = await requests.put(url, recipeData);

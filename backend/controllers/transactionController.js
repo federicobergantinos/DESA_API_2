@@ -1,14 +1,15 @@
 const {
-  createRecipe,
-  getRecipes,
-  getRecipe,
-  updateRecipe,
-  searchRecipes, deleteRecipeById,
-} = require("../services/recipeService");
+  createTransaction,
+  getTransactions,
+  getTransaction,
+  updateTransaction,
+  searchTransactions,
+  deleteTransactionById,
+} = require("../services/transactionService");
 const { findUserById } = require("../services/userService");
 const { isFavorite } = require("../services/favoriteService");
 const { v4: uuidv4 } = require("uuid");
-const { getRecipeRating } = require("../services/ratingService");
+const { getTransactionRating } = require("../services/ratingService");
 
 const AWS = require("aws-sdk");
 AWS.config.update({
@@ -51,13 +52,13 @@ const uploadBase64ImageToS3 = async (base64Image, filename) => {
 
 const create = async (req, res) => {
   try {
-    const recipeData = {
+    const transactionData = {
       ...req.body,
     };
-    const recipeId = await createRecipe(recipeData);
+    const transactionId = await createTransaction(transactionData);
 
     res.status(201).json({
-      id: recipeId,
+      id: transactionId,
       message: "Receta creada con éxito",
     });
   } catch (error) {
@@ -76,9 +77,9 @@ const getAll = async (req, res) => {
   const userId = req.query.userId;
 
   try {
-    const recipes = await getRecipes({ limit, offset, tag, userId });
-    const response = recipes.map((recipe) => {
-      const { id, title, media, tags, rating } = recipe;
+    const transactions = await getTransactions({ limit, offset, tag, userId });
+    const response = transactions.map((transaction) => {
+      const { id, title, media, tags, rating } = transaction;
       const filteredMedia = media.filter((m) => m.type === "image");
       const firstImage = filteredMedia.length > 0 ? filteredMedia[0].data : "";
 
@@ -108,10 +109,14 @@ const searchAll = async (req, res) => {
   const offset = page * limit;
 
   try {
-    const recipes = await searchRecipes({ searchTerm, limit, offset });
-    res.status(200).json(recipes);
+    const transactions = await searchTransactions({
+      searchTerm,
+      limit,
+      offset,
+    });
+    res.status(200).json(transactions);
   } catch (error) {
-    console.error(`searchRecipes: ${error}`);
+    console.error(`searchTransactions: ${error}`);
     res.status(500).json({
       msg: "An exception has occurred",
     });
@@ -120,24 +125,24 @@ const searchAll = async (req, res) => {
 
 const getById = async (req, res) => {
   try {
-    const { recipeId } = req.params;
+    const { transactionId } = req.params;
     const userId = req.query.userId;
-    const recipe = await getRecipe(recipeId);
-    const user = await findUserById(recipe.userId);
-    const isValidFavorite = await isFavorite(userId, recipeId);
+    const transaction = await getTransaction(transactionId);
+    const user = await findUserById(transaction.userId);
+    const isValidFavorite = await isFavorite(userId, transactionId);
 
     // Se filtran los elementos de media según su tipo y se agregan a los atributos correspondientes.
-    const images = recipe.media
+    const images = transaction.media
       .filter((m) => m.type === "image")
       .map((m) => m.data);
-    const videos = recipe.media
+    const videos = transaction.media
       .filter((m) => m.type === "video")
       .map((m) => m.data)[0];
 
-    const rating = await getRecipeRating(recipeId);
+    const rating = await getTransactionRating(transactionId);
 
     res.status(200).json({
-      ...recipe,
+      ...transaction,
       username: user.name + " " + user.surname,
       userImage: user.photoUrl,
       media: images,
@@ -155,11 +160,11 @@ const getById = async (req, res) => {
 
 const update = async (req, res) => {
   try {
-    const { recipeId } = req.params;
+    const { transactionId } = req.params;
     const updateData = {
       ...req.body,
     };
-    await updateRecipe(recipeId, updateData);
+    await updateTransaction(transactionId, updateData);
 
     res.status(200).json({
       message: "Receta actualizada con éxito",
@@ -191,12 +196,11 @@ const uploadImage = async (req, res) => {
   }
 };
 
-const deleteRecipe = async (req, res) => {
+const deleteTransaction = async (req, res) => {
   try {
+    deleteTransactionById(req.params.transactionId);
 
-    deleteRecipeById(req.params.recipeId)
-
-    res.status(204).send()
+    res.status(204).send();
   } catch (error) {
     console.error(`Hubo un problema al subir la imagen: ${error}`);
     res.status(error.code || 500).json({
@@ -212,5 +216,5 @@ module.exports = {
   searchAll,
   update,
   uploadImage,
-  deleteRecipe
+  deleteTransaction,
 };

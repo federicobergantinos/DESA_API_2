@@ -1,8 +1,8 @@
 const {
   Media,
   Tag,
-  Recipe,
-  RecipeTags,
+  Transaction,
+  TransactionTags,
   User,
 } = require("../entities/associateModels");
 const BadRequest = require("../Errors/BadRequest");
@@ -10,11 +10,14 @@ const { isValidUser } = require("./userService");
 const NotFound = require("../Errors/NotFound");
 const { Op } = require("sequelize");
 const sequelize = require("../configurations/database/sequelizeConnection");
-const {getRecipeRating, deleteRatingByRecipeId} = require("./ratingService");
-const {deleteFavoritesByRecipeId} = require("./favoriteService");
+const {
+  getTransactionRating,
+  deleteRatingByTransactionId,
+} = require("./ratingService");
+const { deleteFavoritesByTransactionId } = require("./favoriteService");
 
 // Función para crear una receta y asociarla con tags y medios
-const createRecipe = async (recipeData) => {
+const createTransaction = async (recipeData) => {
   const {
     userId,
     title,
@@ -44,7 +47,7 @@ const createRecipe = async (recipeData) => {
 
   try {
     // Crear la receta
-    const recipe = await Recipe.create(
+    const transaction = await Transaction.create(
       {
         userId,
         title,
@@ -65,7 +68,7 @@ const createRecipe = async (recipeData) => {
       const mediaPromises = images.map((url) =>
         Media.create(
           {
-            recipeId: recipe.id,
+            recipeId: transaction.id,
             data: url,
             type: "image",
           },
@@ -79,7 +82,7 @@ const createRecipe = async (recipeData) => {
     if (video) {
       await Media.create(
         {
-          recipeId: recipe.id,
+          recipeId: transaction.id,
           data: video,
           type: "video",
         },
@@ -94,9 +97,9 @@ const createRecipe = async (recipeData) => {
           where: { key: tagName },
         });
         if (tag) {
-          await RecipeTags.create(
+          await TransactionTags.create(
             {
-              recipeId: recipe.id,
+              recipeId: transaction.id,
               tagId: tag.id,
             },
             { transaction }
@@ -110,7 +113,7 @@ const createRecipe = async (recipeData) => {
     // Si todo ha ido bien, hacer commit de la transacción
     await transaction.commit();
 
-    return recipe.id;
+    return transaction.id;
   } catch (error) {
     // Si hay un error, revertir la transacción
     await transaction.rollback();
@@ -118,7 +121,7 @@ const createRecipe = async (recipeData) => {
   }
 };
 
-const getRecipes = async (queryData) => {
+const getTransactions = async (queryData) => {
   let includeOptions = [
     {
       model: Media,
@@ -133,15 +136,6 @@ const getRecipes = async (queryData) => {
     },
   ];
 
-  if (queryData.tag) {
-    includeOptions.push({
-      model: Tag,
-      as: "tags",
-      where: { key: queryData.tag },
-      required: true,
-    });
-  }
-
   // Agrega un filtro por userId si se proporciona
   if (queryData.userId) {
     includeOptions.push({
@@ -152,22 +146,25 @@ const getRecipes = async (queryData) => {
     });
   }
 
-  const recipes = await Recipe.findAll({
+  const transactions = await Transaction.findAll({
     include: includeOptions,
   });
 
-  const ratingPromise = recipes.map(async it => {
-    const rating = await getRecipeRating(it.id);
+  const ratingPromise = transactions.map(async (it) => {
+    const rating = await getTransactionRating(it.id);
     return { ...it.toJSON(), rating };
   });
 
-  const updatedRecipes = await Promise.all(ratingPromise);
+  const updatedTransactions = await Promise.all(ratingPromise);
 
-  updatedRecipes.sort((a, b) => b.rating - a.rating);
-  return updatedRecipes.slice(queryData.offset, queryData.offset + queryData.limit);
+  updatedTransactions.sort((a, b) => b.rating - a.rating);
+  return updatedTransactions.slice(
+    queryData.offset,
+    queryData.offset + queryData.limit
+  );
 };
 
-const updateRecipe = async (recipeId, updateData) => {
+const updateTransaction = async (recipeId, updateData) => {
   const {
     title,
     description,
@@ -192,7 +189,7 @@ const updateRecipe = async (recipeId, updateData) => {
 
   try {
     // Actualizar la receta básica
-    await Recipe.update(
+    await Transaction.update(
       {
         title,
         description,
@@ -209,7 +206,7 @@ const updateRecipe = async (recipeId, updateData) => {
     );
 
     // Eliminar las asociaciones de tags y medios existentes
-    await RecipeTags.destroy({ where: { recipeId }, transaction });
+    await TransactionTags.destroy({ where: { recipeId }, transaction });
     await Media.destroy({ where: { recipeId }, transaction });
 
     // Insertar nuevos tags y crear asociaciones
@@ -218,7 +215,10 @@ const updateRecipe = async (recipeId, updateData) => {
         where: { key: tagName },
         transaction,
       });
-      await RecipeTags.create({ recipeId, tagId: tag.id }, { transaction });
+      await TransactionTags.create(
+        { recipeId, tagId: tag.id },
+        { transaction }
+      );
     }
 
     // Insertar nuevas imágenes
@@ -246,8 +246,8 @@ const updateRecipe = async (recipeId, updateData) => {
   }
 };
 
-const searchRecipes = async ({ searchTerm, limit, offset }) => {
-  const recipes = await Recipe.findAll({
+const searchTransactions = async ({ searchTerm, limit, offset }) => {
+  const transactions = await Transaction.findAll({
     where: {
       [Op.or]: [
         { title: { [Op.iLike]: `%${searchTerm}%` } },
@@ -267,21 +267,22 @@ const searchRecipes = async ({ searchTerm, limit, offset }) => {
     ],
   });
 
-  return recipes.map((recipe) => {
+  return transactions.map((transaction) => {
     // Asumiendo que `media` es un array, incluso si limitas los resultados en la consulta
-    const firstImage = recipe.media.length > 0 ? recipe.media[0].data : null;
+    const firstImage =
+      transaction.media.length > 0 ? transaction.media[0].data : null;
 
     return {
-      id: recipe.id,
-      title: recipe.title,
+      id: transaction.id,
+      title: transaction.title,
       media: firstImage,
-      description: recipe.description,
+      description: transaction.description,
     };
   });
 };
 
-const getRecipe = async (recipeId) => {
-  const recipe = await Recipe.findByPk(recipeId, {
+const getTransaction = async (recipeId) => {
+  const transaction = await Transaction.findByPk(recipeId, {
     include: [
       {
         model: Media,
@@ -290,11 +291,11 @@ const getRecipe = async (recipeId) => {
       },
     ],
   });
-  if (recipe === null) {
-    throw new NotFound("Recipe not found");
+  if (transaction === null) {
+    throw new NotFound("Transaction not found");
   }
 
-  const recipeTags = await RecipeTags.findAll({
+  const recipeTags = await TransactionTags.findAll({
     where: { recipeId },
     attributes: ["tagId"],
   });
@@ -304,10 +305,10 @@ const getRecipe = async (recipeId) => {
     attributes: ["key"],
   });
 
-  recipe.steps = recipe.steps.split("|");
-  recipe.ingredients = recipe.ingredients.split("|");
-  recipe.dataValues.tags = tags.map((t) => t.key);
-  recipe.dataValues.media.sort((a, b) => {
+  transaction.steps = transaction.steps.split("|");
+  transaction.ingredients = transaction.ingredients.split("|");
+  transaction.dataValues.tags = tags.map((t) => t.key);
+  transaction.dataValues.media.sort((a, b) => {
     if (a.type === "image" && b.type === "video") {
       return -1;
     } else if (a.type === "video" && b.type === "image") {
@@ -316,27 +317,26 @@ const getRecipe = async (recipeId) => {
     return 0;
   });
 
-  return recipe.dataValues;
+  return transaction.dataValues;
 };
 
-const deleteRecipeById = async (recipeId) => {
-  await Media.destroy({ where:{recipeId: recipeId}})
+const deleteTransactionById = async (recipeId) => {
+  await Media.destroy({ where: { recipeId: recipeId } });
 
-  await deleteFavoritesByRecipeId(recipeId)
-  await deleteRatingByRecipeId(recipeId)
-  await Recipe.destroy({
-    where:
-        {
-          id: recipeId
-        }
-  })
+  await deleteFavoritesByTransactionId(recipeId);
+  await deleteRatingByTransactionId(recipeId);
+  await Transaction.destroy({
+    where: {
+      id: recipeId,
+    },
+  });
 };
 
 module.exports = {
-  createRecipe,
-  getRecipes,
-  getRecipe,
-  searchRecipes,
-  updateRecipe,
-  deleteRecipeById
+  createTransaction,
+  getTransactions,
+  getTransaction,
+  searchTransactions,
+  updateTransaction,
+  deleteTransactionById,
 };
