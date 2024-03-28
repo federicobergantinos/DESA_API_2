@@ -1,4 +1,4 @@
-const recipesData = [
+const transactionsData = [
   {
     name: "Walmart",
     description: "Cafe Latte Grande",
@@ -181,4 +181,4 @@ const recipesData = [
   },
 ];
 
-module.exports = { recipesData };
+module.exports = { transactionsData };
