@@ -2,12 +2,9 @@ import { Animated, Dimensions, Easing } from "react-native";
 // header for screens
 import { Header, Icon } from "../components";
 import { walletTheme, tabs } from "../constants";
-// drawer
-import Gallery from "../screens/Gallery";
 // screens
 import Home from "../screens/Home";
-// Notifications
-import Recipe from "../screens/Recipe";
+import Transactions from "../screens/Transactions";
 import Profile from "../screens/Profile";
 import React from "react";
 import Login from "../screens/Login";
@@ -28,6 +25,17 @@ function HomeStack(props) {
       }}
     >
       <Stack.Screen
+        name="Transactions"
+        component={Transactions}
+        transparent
+        options={{
+          header: ({ navigation, scene }) => (
+            <Header title="Home" search navigation={navigation} scene={scene} />
+          ),
+          cardStyle: { backgroundColor: "#F8F9FE" },
+        }}
+      />
+      <Stack.Screen
         name="Login"
         component={Login}
         options={{
@@ -42,40 +50,6 @@ function HomeStack(props) {
             <Header title="Home" search navigation={navigation} scene={scene} />
           ),
           cardStyle: { backgroundColor: "#F8F9FE" },
-        }}
-      />
-      <Stack.Screen
-        name="Recipe"
-        component={Recipe}
-        options={({ route }) => ({
-          header: ({ navigation }) => (
-            <Header
-              title="Recipe"
-              white
-              back
-              recipeId={route.params.recipeId}
-              transparent
-              navigation={navigation}
-            />
-          ),
-          headerTransparent: true,
-        })}
-      />
-      <Stack.Screen
-        name="Gallery"
-        component={Gallery}
-        options={{
-          header: ({ navigation, scene }) => (
-            <Header
-              back
-              transparent
-              white
-              title=""
-              navigation={navigation}
-              scene={scene}
-            />
-          ),
-          headerTransparent: true,
         }}
       />
       <Stack.Screen

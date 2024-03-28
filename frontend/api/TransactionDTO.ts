@@ -1,4 +1,4 @@
-export interface RecipeDTO {
+export interface TransactionDTO {
   id: number;
   title: string;
   description: string;

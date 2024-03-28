@@ -9,24 +9,12 @@ import {
 import { Block, Text, theme } from "galio-framework";
 import { useNavigation } from "@react-navigation/native"; // Importa useNavigation
 import { walletTheme } from "../constants";
-import {AirbnbRating} from "react-native-ratings";
+import { AirbnbRating } from "react-native-ratings";
 const { height, width } = Dimensions.get("window");
 
-const Card = ({
-  item,
-  horizontal,
-  full,
-  style,
-  ctaColor,
-  imageStyle,
-  ctaRight,
-}) => {
+const Card = ({ item, horizontal, style }) => {
   const navigation = useNavigation(); // Usa el hook useNavigation
 
-  const imageStyles = [
-    full ? styles.fullImage : styles.horizontalImage,
-    imageStyle,
-  ];
   const cardContainer = [
     styles.card,
     styles.shadow,
@@ -40,51 +28,39 @@ const Card = ({
   ];
 
   return (
-      <Block row={horizontal} card flex style={cardContainer}>
-        <TouchableWithoutFeedback
-            onPress={() => navigation.navigate("Recipe", {recipeId: item.id})}
-        >
-          <Block flex>
-            <Block style={imgContainer}>
-              <Image source={{uri: item.media}} style={imageStyles}/>
+    <Block row={horizontal} card flex style={cardContainer}>
+      <TouchableWithoutFeedback>
+        <Block flex>
+          <Block flex style={styles.cardDescription}>
+            <Block flex>
+              <Text
+                size={14}
+                style={styles.cardTitle}
+                color={walletTheme.COLORS.TEXT}
+              >
+                {item.title}
+              </Text>
             </Block>
-            <Block flex style={styles.cardDescription}>
-              <Block flex>
+            <Block flex>
+              <Block flexDirection="row-reverse" alignItems="flex-end">
                 <Text
-                    size={14}
-                    style={styles.cardTitle}
-                    color={walletTheme.COLORS.TEXT}
+                  style={{
+                    textAlign: "right",
+                    alignSelf: "flex-end",
+                    fontFamily: "open-sans-bold",
+                  }}
+                  size={12}
+                  color={walletTheme.COLORS.ACTIVE}
+                  bold
                 >
-                  {item.title}
+                  Ver receta
                 </Text>
-              </Block>
-              <Block flex>
-                <Block flex top right flexDirection="row-reverse">
-                  <AirbnbRating
-                      count={5}
-                      defaultRating={item.rating? item.rating : 0}
-                      selectedColor={walletTheme.COLORS.GRADIENT_START}
-                      size={10}
-                      showRating={false}
-
-                      style={{paddingVertical: 10, width: 100}}
-                  />
-                </Block>
-                <Block flexDirection="row-reverse" alignItems="flex-end">
-                  <Text
-                      style={{textAlign: 'right', alignSelf:'flex-end', fontFamily: "open-sans-bold"}}
-                      size={12}
-                      color={walletTheme.COLORS.ACTIVE}
-                      bold
-                  >
-                    Ver receta
-                  </Text>
-                </Block>
               </Block>
             </Block>
           </Block>
-        </TouchableWithoutFeedback>
-      </Block>
+        </Block>
+      </TouchableWithoutFeedback>
+    </Block>
   );
 };
 
@@ -102,7 +78,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.COLORS.WHITE,
     marginVertical: theme.SIZES.BASE,
     borderWidth: 0,
-    minHeight: 114,
+    minHeight: 50,
     marginBottom: 4,
   },
   cardVertical: {
@@ -113,18 +89,9 @@ const styles = StyleSheet.create({
     fontFamily: "open-sans-regular",
   },
   cardDescription: {
-    justifyContent: 'space-betweenm',
+    justifyContent: "space-betweenm",
     padding: theme.SIZES.BASE / 2,
-    borderWidth:0
-  },
-  imageContainer: {
-    borderRadius: 3,
-    elevation: 1,
-    overflow: "hidden",
-  },
-  horizontalImage: {
-    height: 122,
-    width: "auto",
+    borderWidth: 0,
   },
   horizontalStyles: {
     borderTopRightRadius: 0,
@@ -133,9 +100,6 @@ const styles = StyleSheet.create({
   verticalStyles: {
     borderBottomRightRadius: 0,
     borderBottomLeftRadius: 0,
-  },
-  fullImage: {
-    height: 215,
   },
   shadow: {
     shadowColor: "#8898AA",

@@ -28,6 +28,7 @@ export default {
     BORDER: "#CAD1D7",
     WHITE: "#FFFFFF",
     BLACK: "#000000",
+    VIOLET: "#7658BF",
     TWITTER: "#1DA1F2",
     FACEBOOK: "#3B5999",
     DRIBBBLE: "#EA4C89",

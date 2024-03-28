@@ -1,13 +1,13 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../configurations/database/sequelizeConnection");
 
-const Recipe = sequelize.define("recipes", {
+const Transaction = sequelize.define("transactions", {
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
     autoIncrement: true,
   },
-  title: {
+  name: {
     type: DataTypes.STRING,
     allowNull: false,
   },
@@ -15,34 +15,22 @@ const Recipe = sequelize.define("recipes", {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  preparationTime: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  servingCount: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-  },
-  ingredients: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  steps: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  calories: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-  },
-  proteins: {
+  amount: {
     type: DataTypes.FLOAT,
     allowNull: false,
   },
-  totalFats: {
-    type: DataTypes.FLOAT,
+  currency: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  status: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  date: {
+    type: DataTypes.DATE,
     allowNull: false,
   },
 });
 
-module.exports = Recipe;
+module.exports = Transaction;

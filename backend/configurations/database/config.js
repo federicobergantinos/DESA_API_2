@@ -18,11 +18,11 @@ const dbConnection = async () => {
   try {
     await sequelize.authenticate();
 
-    await sequelize.sync({});
+    await sequelize.sync({ force: true });
 
     // Sincronizar modelos con la base de datos
     await User.sync();
-    await Recipe.sync();
+    await Transaction.sync();
     await Media.sync();
     await Tag.sync();
     await Rating.sync();

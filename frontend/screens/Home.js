@@ -86,17 +86,9 @@ const Home = () => {
     );
   };
 
-  const renderRecipe = ({ item, index }) => {
+  const renderTransaction = ({ item, index }) => {
     const marginRight = index % 2 === 0 ? theme.SIZES.BASE : 0;
-    return (
-      <Card
-        item={item}
-        style={{
-          marginRight: marginRight,
-          width: (width - theme.SIZES.BASE * 3) / 2,
-        }}
-      />
-    );
+    return <Card item={item} horizontal />;
   };
 
   return (
@@ -117,14 +109,14 @@ const Home = () => {
         <Block center style={{ height: "80%" }}>
           <FlatList
             data={data}
-            renderItem={renderRecipe}
+            renderItem={renderTransaction}
             keyExtractor={(item, index) => index.toString()}
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.recipes}
+            contentContainerStyle={styles.transactions}
             onEndReached={loadMoreItems}
             onEndReachedThreshold={0.3}
             ListFooterComponent={renderFooter}
-            numColumns={2}
+            numColumns={1}
           />
         </Block>
       </Block>
@@ -137,30 +129,9 @@ const styles = StyleSheet.create({
     height: height,
     width: "100%",
   },
-  recipes: {
+  transactions: {
     width: width - theme.SIZES.BASE,
     paddingVertical: 5,
-  },
-  fab: {
-    position: "absolute",
-    margin: 16,
-    right: 20,
-    bottom: 20,
-    backgroundColor: "white",
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    justifyContent: "center",
-    alignItems: "center",
-    elevation: 8,
-    shadowColor: "#000",
-    shadowOpacity: 0.3,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 2,
-  },
-  fabIcon: {
-    fontSize: 24,
-    color: "#333",
   },
   header: {
     paddingHorizontal: 10,
