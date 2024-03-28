@@ -7,9 +7,7 @@ const {
   deleteTransactionById,
 } = require("../services/transactionService");
 const { findUserById } = require("../services/userService");
-const { isFavorite } = require("../services/favoriteService");
 const { v4: uuidv4 } = require("uuid");
-const { getTransactionRating } = require("../services/ratingService");
 
 const AWS = require("aws-sdk");
 AWS.config.update({
@@ -129,7 +127,6 @@ const getById = async (req, res) => {
     const userId = req.query.userId;
     const transaction = await getTransaction(transactionId);
     const user = await findUserById(transaction.userId);
-    const isValidFavorite = await isFavorite(userId, transactionId);
 
     // Se filtran los elementos de media según su tipo y se agregan a los atributos correspondientes.
     const images = transaction.media
@@ -147,7 +144,6 @@ const getById = async (req, res) => {
       userImage: user.photoUrl,
       media: images,
       video: videos,
-      isFavorite: isValidFavorite,
       rating: rating,
     });
   } catch (error) {

@@ -1,122 +1,40 @@
-const {
-  Media,
-  Tag,
-  Transaction,
-  TransactionTags,
-  User,
-} = require("../entities/associateModels");
+const { Media, Transaction, User } = require("../entities/associateModels");
 const BadRequest = require("../Errors/BadRequest");
 const { isValidUser } = require("./userService");
 const NotFound = require("../Errors/NotFound");
 const { Op } = require("sequelize");
 const sequelize = require("../configurations/database/sequelizeConnection");
-const {
-  getTransactionRating,
-  deleteRatingByTransactionId,
-} = require("./ratingService");
-const { deleteFavoritesByTransactionId } = require("./favoriteService");
 
-// Función para crear una receta y asociarla con tags y medios
-const createTransaction = async (recipeData) => {
-  const {
-    userId,
-    title,
-    description,
-    preparationTime,
-    servingCount,
-    ingredients,
-    steps,
-    calories,
-    proteins,
-    totalFats,
-    tags,
-    images,
-    video,
-  } = recipeData;
-  // Verificar si el usuario es válido
+const createTransaction = async (transactionData) => {
+  const { userId, name, description, amount, currency, status, date } =
+    transactionData;
+
   if (!(await isValidUser(userId))) {
     throw new BadRequest("Invalid User");
   }
 
-  // Convertir arrays a strings para almacenamiento
-  const ingredientsString = ingredients.join("|");
-  const stepsString = steps.join("|");
-
-  // Iniciar una transacción
-  const transaction = await sequelize.transaction();
-
   try {
-    // Crear la receta
-    const transaction = await Transaction.create(
-      {
-        userId,
-        title,
-        description,
-        preparationTime,
-        servingCount,
-        ingredients: ingredientsString,
-        steps: stepsString,
-        calories,
-        proteins,
-        totalFats,
-      },
-      { transaction }
-    );
-
-    // Insertar cada URL de imagen en la base de datos
-    if (images && images.length > 0) {
-      const mediaPromises = images.map((url) =>
-        Media.create(
-          {
-            recipeId: transaction.id,
-            data: url,
-            type: "image",
-          },
-          { transaction }
-        )
-      );
-      await Promise.all(mediaPromises);
-    }
-
-    // Guardar el video en Media si existe
-    if (video) {
-      await Media.create(
+    // Iniciar una transacción con sequelize para garantizar atomicidad
+    const result = await sequelize.transaction(async (t) => {
+      // Crear la transacción
+      const newTransaction = await Transaction.create(
         {
-          recipeId: transaction.id,
-          data: video,
-          type: "video",
+          userId,
+          name,
+          description,
+          amount,
+          currency,
+          status,
+          date,
         },
-        { transaction }
+        { transaction: t }
       );
-    }
 
-    // Asociar tags si existen
-    if (tags && tags.length > 0) {
-      const tagsPromises = tags.map(async (tagName) => {
-        const tag = await Tag.findOne({
-          where: { key: tagName },
-        });
-        if (tag) {
-          await TransactionTags.create(
-            {
-              recipeId: transaction.id,
-              tagId: tag.id,
-            },
-            { transaction }
-          );
-        }
-      });
+      return newTransaction;
+    });
 
-      await Promise.all(tagsPromises);
-    }
-
-    // Si todo ha ido bien, hacer commit de la transacción
-    await transaction.commit();
-
-    return transaction.id;
+    return result;
   } catch (error) {
-    // Si hay un error, revertir la transacción
-    await transaction.rollback();
     throw error;
   }
 };
@@ -323,7 +241,6 @@ const getTransaction = async (recipeId) => {
 const deleteTransactionById = async (recipeId) => {
   await Media.destroy({ where: { recipeId: recipeId } });
 
-  await deleteFavoritesByTransactionId(recipeId);
   await deleteRatingByTransactionId(recipeId);
   await Transaction.destroy({
     where: {
