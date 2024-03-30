@@ -7,7 +7,7 @@ import { TransactionsSearchDTO } from "./TransactionsSearchDTO";
 
 // const api = axios.create({ baseURL: "https://wallet-elb.federicobergantinos.com:443" });
 const api = axios.create({ baseURL: "http://192.168.1.116:8080" });
-const recipeBaseUrl = "/v1/recipes";
+const transactionBaseUrl = "/v1/transactions";
 const usersBaseUrl = "/v1/users";
 
 // Interceptores de solicitud y respuesta
@@ -65,17 +65,16 @@ const authUser = {
 };
 
 const rating = {
-  rate: (userId: number, recipeId: number, value: number): Promise<{ response: any; statusCode: number }>  => requests.put('/v1/recipes/'+recipeId+'/ratings', { userId: userId, value: value}),
-  getUserRate: (recipeId: number, userId: number): Promise<{ response:any; statusCode: number }> => requests.get('/v1/recipes/'+recipeId+'/users/'+userId+'/ratings')
+  rate: (userId: number, transactionId: number, value: number): Promise<{ response: any; statusCode: number }>  => requests.put('/v1/transactions/'+transactionId+'/ratings', { userId: userId, value: value}),
 };
 
 // Objeto para funciones relacionadas con recetas
-const recipesGateway = {
-  deleteTransaction: async (recipeId: number) => requests.delete(recipeBaseUrl + "/" + recipeId),
-  createTransaction: async (recipeData) => {
+const transactionsGateway = {
+  deleteTransaction: async (transactionId: number) => requests.delete(transactionBaseUrl + "/" + transactionId),
+  createTransaction: async (transactionData) => {
     try {
-      const url = `${recipeBaseUrl}` + "/create"
-      const response = await requests.post(url, recipeData);
+      const url = `${transactionBaseUrl}` + "/create"
+      const response = await requests.post(url, transactionData);
       return response;
     } catch (error) {
       console.error('Error al crear la receta:', error);
@@ -83,27 +82,25 @@ const recipesGateway = {
     }
   },
 
-  getTransactionById: ( id: number, userId: number): Promise<{ response: TransactionDTO; statusCode: number }> => requests.get(recipeBaseUrl + "/" + id + "?userId=" + userId),
-  getAll: (page = 0, tag, userId): Promise<{ response: TransactionsDTO; statusCode: number }> => {
+  getTransactionById: ( id: number, userId: number): Promise<{ response: TransactionDTO; statusCode: number }> => requests.get(transactionBaseUrl + "/" + id + "?userId=" + userId),
+  getAll: (page = 0, userId): Promise<{ response: TransactionsDTO; statusCode: number }> => {
 
-    let url = `${recipeBaseUrl}/?page=${page}&limit=10`;
-    if (tag) {
-      url += `&tag=${tag}`;
-    }
+    let url = `${transactionBaseUrl}/?page=${page}&limit=10`;
     if (userId) {
       url += `&userId=${userId}`;
     }
+    
     return requests.get(url);
   },
 
   searchTransactions: (searchTerm = "", page = 0, limit = 10): Promise<{ response: TransactionsSearchDTO; statusCode: number }> => {
-    const url = `${recipeBaseUrl}/search?page=${page}&limit=${limit}&searchTerm=${searchTerm}`;
+    const url = `${transactionBaseUrl}/search?page=${page}&limit=${limit}&searchTerm=${searchTerm}`;
     return requests.get(url);
   },
-  updateTransaction: async (id: number, recipeData: any): Promise<{ response: any; statusCode: number }> => {
+  updateTransaction: async (id: number, transactionData: any): Promise<{ response: any; statusCode: number }> => {
     try {
-      const url = `${recipeBaseUrl}/${id}`;
-      const response = await requests.put(url, recipeData);
+      const url = `${transactionBaseUrl}/${id}`;
+      const response = await requests.put(url, transactionData);
 
       return response;
     } catch (error) {
@@ -113,7 +110,7 @@ const recipesGateway = {
   },
   uploadImage: async (image) => {
     try {
-      const url = `${recipeBaseUrl}` + "/uploadImage"
+      const url = `${transactionBaseUrl}` + "/uploadImage"
       const response = await requests.post(url, image);
 
       return response;
@@ -126,12 +123,12 @@ const recipesGateway = {
 
 // Objeto para funciones relacionadas con usuarios
 const users = {
-  like: ( userId: number, recipeId: number,): Promise<{ response: any; statusCode: number }> =>
+  like: ( userId: number, transactionId: number,): Promise<{ response: any; statusCode: number }> =>
     requests.post(usersBaseUrl + "/" + userId + "/favorites",
-        {recipeId: recipeId,}
+        {transactionId: transactionId,}
     ),
-  dislike: ( userId: number, recipeId: number,): Promise<{ response: any; statusCode: number }> =>
-    requests.delete(usersBaseUrl + "/" + userId + "/favorites/" + recipeId),
+  dislike: ( userId: number, transactionId: number,): Promise<{ response: any; statusCode: number }> =>
+    requests.delete(usersBaseUrl + "/" + userId + "/favorites/" + transactionId),
   favorites: (userId: number): Promise<{ response: any; statusCode: number  }> =>
     requests.get(usersBaseUrl + "/" + userId + "/favorites"),
   getUser: (
@@ -165,4 +162,4 @@ const getToken = async (): Promise<string> => {
     return "";
   }
 };
-export default { authUser, recipesGateway, users, rating };
+export default { authUser, transactionsGateway, users, rating };

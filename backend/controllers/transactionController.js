@@ -71,26 +71,11 @@ const getAll = async (req, res) => {
   const page = parseInt(req.query.page) || 0; // Asegúrate de proporcionar un valor por defecto
   const limit = parseInt(req.query.limit) || 20; // Límite de ítems por página
   const offset = page * limit;
-  const tag = req.query.tag;
   const userId = req.query.userId;
 
   try {
-    const transactions = await getTransactions({ limit, offset, tag, userId });
-    const response = transactions.map((transaction) => {
-      const { id, title, media, tags, rating } = transaction;
-      const filteredMedia = media.filter((m) => m.type === "image");
-      const firstImage = filteredMedia.length > 0 ? filteredMedia[0].data : "";
+    const response = await getTransactions({ limit, offset, userId });
 
-      const tagsArray = tags.map((tag) => tag.key);
-
-      return {
-        id,
-        title,
-        media: firstImage,
-        tags: tagsArray,
-        rating: rating,
-      };
-    });
     res.status(200).json(response);
   } catch (error) {
     console.error(` ${error}`);

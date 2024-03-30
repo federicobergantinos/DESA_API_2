@@ -50,7 +50,7 @@ const Home = () => {
       const page = currentPage;
 
       const tag = selectedTag !== "ALL" ? selectedTag : undefined;
-      const { response: recipes } = await backendApi.recipesGateway.getAll(
+      const { response: recipes } = await backendApi.transactionsGateway.getAll(
         page,
         tag
       );

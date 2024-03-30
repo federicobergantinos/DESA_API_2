@@ -17,8 +17,8 @@ router.post("/create", create);
 router.post("/uploadImage", upload.single("image"), uploadImage);
 router.get("/", getAll);
 router.get("/search", searchAll);
-router.get("/:recipeId", getById);
-router.put("/:recipeId", update);
-router.delete("/:recipeId", deleteTransaction);
+router.get("/:transactionId", getById);
+router.put("/:transactionId", update);
+router.delete("/:transactionId", deleteTransaction);
 
 module.exports = router;

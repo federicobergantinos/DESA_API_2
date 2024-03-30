@@ -139,4 +139,41 @@ export default StyleSheet.create({
   itemTitle: {
     // fontWeight: "bold",
   },
+  centeredView: {
+    flex: 1,
+    justifyContent: "center",
+    marginTop: 22,
+  },
+  modalView: {
+    margin: 30,
+    backgroundColor: "white", // Fondo blanco para el modal
+    borderRadius: 5,
+    padding: 5,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalButton: {
+    backgroundColor: walletTheme.COLORS.VIOLET,
+    borderRadius: 3,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    alignSelf: "center",
+    marginTop: 10,
+  },
+  buttonText: {
+    color: "#fff",
+    textAlign: "center",
+  },
+  buttonContainer: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    marginTop: 10,
+    marginRight: 10,
+  },
 });

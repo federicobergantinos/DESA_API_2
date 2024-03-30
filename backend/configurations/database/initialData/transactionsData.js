@@ -15,7 +15,7 @@ const transactionsData = [
     currency: "USD",
     status: "Pagada",
     date: "03/27/2024",
-    userId: 1,
+    userId: 2,
   },
   {
     name: "Amazon",
@@ -33,7 +33,7 @@ const transactionsData = [
     currency: "USD",
     status: "Pagada",
     date: "03/25/2024",
-    userId: 1,
+    userId: 2,
   },
   {
     name: "Amazon",
@@ -51,7 +51,7 @@ const transactionsData = [
     currency: "USD",
     status: "Pagada",
     date: "03/23/2024",
-    userId: 1,
+    userId: 2,
   },
   {
     name: "Amazon",
@@ -69,7 +69,7 @@ const transactionsData = [
     currency: "USD",
     status: "Pagada",
     date: "03/21/2024",
-    userId: 1,
+    userId: 2,
   },
   {
     name: "Starbucks",
@@ -78,7 +78,7 @@ const transactionsData = [
     currency: "USD",
     status: "Pagada",
     date: "03/20/2024",
-    userId: 1,
+    userId: 3,
   },
   {
     name: "Walmart",
@@ -87,7 +87,7 @@ const transactionsData = [
     currency: "USD",
     status: "Pagada",
     date: "03/19/2024",
-    userId: 1,
+    userId: 4,
   },
   {
     name: "Netflix",
@@ -96,7 +96,7 @@ const transactionsData = [
     currency: "USD",
     status: "Pagada",
     date: "03/18/2024",
-    userId: 1,
+    userId: 3,
   },
   {
     name: "Amazon",
