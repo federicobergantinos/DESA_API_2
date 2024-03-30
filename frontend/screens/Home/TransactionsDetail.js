@@ -8,14 +8,13 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { Block, Icon } from "galio-framework";
-import { Card } from "../../components";
 import styles from "./HomeStyles";
 import backendApi from "../../api/backendGateway";
 import { walletTheme } from "../../constants";
 
 const MAX_ITEMS = 5;
 
-const RenderTransactionsDetail = () => {
+const RenderTransactionsDetail = ({ showBalance, navigation }) => {
   const [currentPage, setCurrentPage] = useState(0);
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -58,22 +57,40 @@ const RenderTransactionsDetail = () => {
   }, [currentPage, attempts]);
 
   const renderTransaction = ({ item }) => {
+    const isPositive = item.amount > 0;
+    const containerStyle = isPositive
+      ? styles.iconContainerNegative
+      : styles.iconContainer;
+    const iconColor = isPositive ? "#00C853" : "#C70039";
+    const amountDisplay = showBalance
+      ? `${item.amount} ${item.currency}`
+      : "***";
+
     return (
-      <View style={styles.itemContainer}>
-        <View style={styles.iconContainer}>
-          <Icon name="credit-card" family="Entypo" size={24} color="#C70039" />
+      <TouchableOpacity
+        onPress={() =>
+          navigation.navigate("Transaction", { transactionId: item.id })
+        }
+      >
+        <View style={styles.itemContainer}>
+          <View style={containerStyle}>
+            <Icon
+              name="credit-card"
+              family="Entypo"
+              size={24}
+              color={iconColor}
+            />
+          </View>
+          <View style={styles.textDetailsContainer}>
+            <Text style={styles.itemTitle}>{item.name}</Text>
+            <Text style={styles.itemSubtitle}>{item.description}</Text>
+          </View>
+          <View style={styles.priceContainer}>
+            <Text style={styles.itemPrice}>{amountDisplay}</Text>
+            <Text style={styles.itemPaid}>{item.status}</Text>
+          </View>
         </View>
-        <View style={styles.textDetailsContainer}>
-          <Text style={styles.itemTitle}>{item.name}</Text>
-          <Text style={styles.itemSubtitle}>{item.description}</Text>
-        </View>
-        <View style={styles.priceContainer}>
-          <Text style={styles.itemPrice}>
-            {item.amount} {item.currency}
-          </Text>
-          <Text style={styles.itemPaid}>{item.status}</Text>
-        </View>
-      </View>
+      </TouchableOpacity>
     );
   };
 
@@ -98,7 +115,15 @@ const RenderTransactionsDetail = () => {
   };
 
   return (
-    <Block flex style={styles.HomeCard}>
+    <Block
+      flex
+      style={[
+        styles.HomeCard,
+        {
+          marginTop: 20,
+        },
+      ]}
+    >
       <View>
         <Text style={[styles.balanceText, { color: walletTheme.COLORS.BLACK }]}>
           Transacciones
@@ -125,7 +150,7 @@ const RenderTransactionsDetail = () => {
         <View style={styles.centeredView}>
           <View style={styles.modalView}>
             <FlatList
-              data={data} // Mostrar todas las transacciones en el modal
+              data={data}
               renderItem={renderTransaction}
               keyExtractor={(item, index) => index.toString()}
             />

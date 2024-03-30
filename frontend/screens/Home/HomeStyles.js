@@ -11,11 +11,12 @@ export default StyleSheet.create({
   Background: {
     width: width,
     height: height * 1.1,
+    marginTop: -100,
   },
   HomeCard: {
     padding: theme.SIZES.BASE,
     marginHorizontal: theme.SIZES.BASE,
-    marginTop: 20,
+    marginTop: 0,
     borderRadius: 6,
     backgroundColor: theme.COLORS.WHITE,
     shadowColor: "black",
@@ -88,18 +89,30 @@ export default StyleSheet.create({
   },
   balanceContainer: {
     padding: theme.SIZES.BASE,
-    margin: -10,
-    backgroundColor: walletTheme.COLORS.VIOLET,
+    marginHorizontal: theme.SIZES.BASE,
+    marginTop: 0,
+    borderRadius: 6,
+    backgroundColor: walletTheme.COLORS.VIOLET, // O el color de fondo que desees
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.22,
+    shadowRadius: 2.22,
+    elevation: 3,
+    position: "relative",
   },
   balanceText: {
-    color: "white",
+    color: "#fff",
     fontSize: 16,
-    marginBottom: 10,
   },
   amountText: {
-    color: "white",
+    color: "#fff",
     fontSize: 20,
     fontWeight: "bold",
+  },
+  visibilityIcon: {
+    position: "absolute",
+    top: 15,
+    right: 15,
   },
   itemContainer: {
     flexDirection: "row",
@@ -108,10 +121,18 @@ export default StyleSheet.create({
     justifyContent: "space-between",
   },
   iconContainer: {
-    width: 40, // Size of the icon container
-    height: 40, // Size of the icon container
-    borderRadius: 3, // Half the size to make it circular
-    backgroundColor: "#FFCDD2", // Light red background for the icon container
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#FFCDD2",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  iconContainerNegative: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#C8E6C9", // Un verde claro para el fondo cuando es negativo
     justifyContent: "center",
     alignItems: "center",
   },

@@ -1,147 +1,134 @@
 import React, { useState, useEffect } from "react";
 import {
-  StyleSheet,
-  Dimensions,
   FlatList,
   View,
-  ActivityIndicator,
-  Text,
+  ImageBackground,
   TouchableOpacity,
 } from "react-native";
-import { Block, theme } from "galio-framework";
-import { useNavigation, useRoute } from "@react-navigation/native";
-import { Card } from "../components";
-import backendApi from "../api/backendGateway";
-import { SearchBar } from "../components/SearchBar";
-import Tabs from "../components/Tabs";
-import tabs from "../constants/tabs";
-import walletTheme from "../constants/Theme";
+import { Block, Text } from "galio-framework";
+import { Images, walletTheme } from "../constants";
+import {
+  RenderMainInformation,
+  RenderTransactionsDetail,
+  styles,
+} from "./Home/index.js";
+import Icon from "../components/Icon";
 
-const { width, height } = Dimensions.get("screen");
+const Home = ({ navigation }) => {
+  const [showBalance, setShowBalance] = useState(true);
+  const toggleBalanceVisibility = () => setShowBalance(!showBalance);
 
-const Home = () => {
-  const [currentPage, setCurrentPage] = useState(0);
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [selectedTag, setSelectedTag] = useState(null);
-  const [allItemsLoaded, setAllItemsLoaded] = useState(false);
-  const [endReachedThreshold, setEndReachedThreshold] = useState(0.1); // Valor inicial
-
-  const navigation = useNavigation();
-  const route = useRoute();
-  const tabId = route.params?.tabId;
-
-  useEffect(() => {
-    setSelectedTag(tabId);
-    setData([]);
-    setCurrentPage(0);
-    setAllItemsLoaded(false);
-  }, [tabId]);
-
-  useEffect(() => {
-    fetchRecipes();
-  }, [selectedTag, currentPage]);
-
-  const fetchRecipes = async () => {
-    if (loading || allItemsLoaded) return;
-
-    setLoading(true);
-    try {
-      const page = currentPage;
-
-      const tag = selectedTag !== "ALL" ? selectedTag : undefined;
-      const { response: recipes } = await backendApi.transactionsGateway.getAll(
-        page,
-        tag
-      );
-
-      if (recipes.length > 0) {
-        setData((prevData) => [...prevData, ...recipes]);
-      } else {
-        setAllItemsLoaded(true);
-      }
-    } catch (error) {
-      console.error("Error fetching recipes:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadMoreItems = () => {
-    if (!loading && !allItemsLoaded) {
-      setCurrentPage(currentPage + 1);
-    }
-  };
-
-  const renderFooter = () => {
-    if (!loading) return null;
+  const ActionButton = ({ icon, family, title, onPress }) => {
     return (
-      <View style={{ paddingVertical: 20 }}>
-        <ActivityIndicator
-          animating
-          size="large"
-          color={walletTheme.COLORS.GRADIENT_START}
+      <View style={styles.actionButtonContainer}>
+        <TouchableOpacity style={styles.buttonStyle} onPress={onPress}>
+          <Icon
+            family={family}
+            size={20}
+            name={icon}
+            color={walletTheme.COLORS.WHITE}
+          />
+        </TouchableOpacity>
+        <Text style={styles.actionText}>{title}</Text>
+      </View>
+    );
+  };
+
+  const renderButtons = () => {
+    return (
+      <View style={styles.buttonsRow}>
+        <ActionButton
+          icon="arrow-down"
+          family="Feather"
+          title="Recibir"
+          onPress={() => {
+            /* Acción aquí */
+          }}
+        />
+        <ActionButton
+          icon="arrow-up"
+          family="Feather"
+          title="Enviar"
+          onPress={() => {
+            /* Acción aquí */
+          }}
+        />
+        <ActionButton
+          icon="dollar-sign"
+          family="Feather"
+          title="Invertir"
+          onPress={() => {
+            /* Acción aquí */
+          }}
+        />
+        <ActionButton
+          icon="receipt"
+          family="FontAwesome5"
+          title="Impuestos"
+          onPress={() => {
+            /* Acción aquí */
+          }}
         />
       </View>
     );
   };
 
-  const renderTransaction = ({ item, index }) => {
-    const marginRight = index % 2 === 0 ? theme.SIZES.BASE : 0;
-    return <Card item={item} horizontal />;
+  updateState = (newState) => {
+    this.setState(newState);
   };
 
+  const sections = [
+    {
+      key: "mainInformation",
+      render: () => <RenderMainInformation />,
+    },
+    { key: "buttons", render: renderButtons },
+    {
+      key: "transactionsDetail",
+      render: () => <RenderTransactionsDetail />,
+    },
+  ];
+
   return (
-    <Block flex style={styles.home}>
-      <Block flex row={false}>
-        <Block style={styles.header}>
-          <Block style={{ flexDirection: "row", alignItems: "center" }}>
-            <Block flex={1}>
-              <SearchBar></SearchBar>
-            </Block>
-          </Block>
-          <Tabs
-            data={tabs}
-            initialIndex={tabs[0].id}
-            onChange={(id) => navigation.setParams({ tabId: id })}
-          />
-        </Block>
-        <Block center style={{ height: "80%" }}>
+    <Block flex style={styles.Home}>
+      <Block flex>
+        <ImageBackground
+          source={Images.Background}
+          imageStyle={styles.Background}
+        >
           <FlatList
-            data={data}
-            renderItem={renderTransaction}
-            keyExtractor={(item, index) => index.toString()}
+            data={sections}
+            renderItem={({ item }) => {
+              switch (item.key) {
+                case "mainInformation":
+                  return (
+                    <RenderMainInformation
+                      showBalance={showBalance}
+                      toggleBalanceVisibility={toggleBalanceVisibility}
+                    />
+                  );
+                case "buttons":
+                  return renderButtons();
+                case "transactionsDetail":
+                  return (
+                    <RenderTransactionsDetail
+                      showBalance={showBalance}
+                      navigation={navigation}
+                    />
+                  );
+                default:
+                  return null;
+              }
+            }}
+            keyExtractor={(item) => item.key}
+            ListHeaderComponent={<View style={{ height: 20 }} />}
+            ListFooterComponent={<View style={{ height: 20 }} />}
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.transactions}
-            onEndReached={loadMoreItems}
-            onEndReachedThreshold={0.3}
-            ListFooterComponent={renderFooter}
-            numColumns={1}
           />
-        </Block>
+        </ImageBackground>
       </Block>
     </Block>
   );
 };
-
-const styles = StyleSheet.create({
-  home: {
-    height: height,
-    width: "100%",
-  },
-  transactions: {
-    width: width - theme.SIZES.BASE,
-    paddingVertical: 5,
-  },
-  header: {
-    paddingHorizontal: 10,
-    backgroundColor: theme.COLORS.WHITE,
-    shadowColor: "black",
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 6,
-    shadowOpacity: 0.2,
-    elevation: 3,
-  },
-});
 
 export default Home;

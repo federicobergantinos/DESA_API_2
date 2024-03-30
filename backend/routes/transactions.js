@@ -7,18 +7,12 @@ const {
   create,
   getAll,
   getById,
-  searchAll,
-  update,
   uploadImage,
-  deleteTransaction,
 } = require("../controllers/transactionController");
 
 router.post("/create", create);
-router.post("/uploadImage", upload.single("image"), uploadImage);
+router.post("/uploadImage", upload.single("image"), uploadImage); // TODO esto capaz hay que movelro a otro router
 router.get("/", getAll);
-router.get("/search", searchAll);
 router.get("/:transactionId", getById);
-router.put("/:transactionId", update);
-router.delete("/:transactionId", deleteTransaction);
 
 module.exports = router;

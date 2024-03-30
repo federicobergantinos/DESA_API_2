@@ -45,7 +45,7 @@ export default function Profile() {
             const imageUrl = response.response.images;
             // Actualizar el perfil del usuario en el backend
             const userData = { photoUrl: imageUrl };
-            const updateResponse = await backendApi.users.editProfile(
+            const updateResponse = await backendApi.usersGateway.editProfile(
               userId,
               userData
             );
@@ -125,7 +125,7 @@ export default function Profile() {
         // Obtener el userId una sola vez
         const storedUserId = await AsyncStorage.getItem("userId");
         const { response, statusCode } =
-          await backendApi.users.getUser(storedUserId);
+          await backendApi.usersGateway.getUser(storedUserId);
         setUserId(storedUserId); // Almacenar userId en el estado
         setUserInfo(response.user); // Almacenar userId en el estado
 
@@ -143,7 +143,7 @@ export default function Profile() {
     const fetchFavorites = async () => {
       if (!userId) return; // Asegurar que userId esté disponible
       try {
-        const response = await backendApi.users.favorites(userId);
+        const response = await backendApi.usersGateway.favorites(userId);
         setFavorites(response.response.favorites);
         setFavoritesCount(response.response.favorites.length);
       } catch (error) {
