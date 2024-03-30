@@ -13,7 +13,7 @@ enableScreens();
 
 import Screens from "./navigation/Screens";
 import { walletTheme } from "./constants";
-import { RecipeProvider } from "./navigation/RecipeContext";
+import { WalletProvider } from "./navigation/WalletContext";
 
 const assetImages = [];
 
@@ -66,7 +66,7 @@ export default function App() {
   }
 
   return (
-    <RecipeProvider>
+    <WalletProvider>
       <NavigationContainer onReady={onLayoutRootView}>
         <GalioProvider theme={walletTheme}>
           <Block flex>
@@ -74,6 +74,6 @@ export default function App() {
           </Block>
         </GalioProvider>
       </NavigationContainer>
-    </RecipeProvider>
+    </WalletProvider>
   );
 }

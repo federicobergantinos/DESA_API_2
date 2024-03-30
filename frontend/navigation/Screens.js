@@ -4,7 +4,7 @@ import { Header, Icon } from "../components";
 import { walletTheme, tabs } from "../constants";
 // screens
 import Home from "../screens/Home";
-import Transactions from "../screens/Transactions";
+import Transaction from "../screens/Transaction";
 import Profile from "../screens/Profile";
 import React from "react";
 import Login from "../screens/Login";
@@ -25,17 +25,6 @@ function HomeStack(props) {
       }}
     >
       <Stack.Screen
-        name="Transactions"
-        component={Transactions}
-        transparent
-        options={{
-          header: ({ navigation, scene }) => (
-            <Header title="Home" search navigation={navigation} scene={scene} />
-          ),
-          cardStyle: { backgroundColor: "#F8F9FE" },
-        }}
-      />
-      <Stack.Screen
         name="Login"
         component={Login}
         options={{
@@ -47,7 +36,30 @@ function HomeStack(props) {
         component={Home}
         options={{
           header: ({ navigation, scene }) => (
-            <Header title="Home" search navigation={navigation} scene={scene} />
+            <Header
+              transparent
+              white
+              title="Home"
+              navigation={navigation}
+              scene={scene}
+            />
+          ),
+          cardStyle: { backgroundColor: "#F8F9FE" },
+        }}
+      />
+      <Stack.Screen
+        name="Transaction"
+        component={Transaction}
+        options={{
+          header: ({ navigation, scene }) => (
+            <Header
+              transparent
+              white
+              back
+              title="Transaccion"
+              navigation={navigation}
+              scene={scene}
+            />
           ),
           cardStyle: { backgroundColor: "#F8F9FE" },
         }}

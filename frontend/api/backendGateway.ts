@@ -2,13 +2,13 @@ import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createAuthDTO, Credentials } from "./authDTO";
 import { TransactionDTO } from "./TransactionDTO";
-import { TransactionsDTO } from "./TransactionsDTO";
-import { TransactionsSearchDTO } from "./TransactionsSearchDTO";
+import { ContactDTO, ContactsDTO, ContactsSearchDTO } from "./ContactDTO";
 
 // const api = axios.create({ baseURL: "https://wallet-elb.federicobergantinos.com:443" });
-const api = axios.create({ baseURL: "http://192.168.1.116:8080" });
+const api = axios.create({ baseURL: "http://192.168.1.108:8080" });
 const transactionBaseUrl = "/v1/transactions";
 const usersBaseUrl = "/v1/users";
+const contactsBaseUrl = "/v1/contacts";
 
 // Interceptores de solicitud y respuesta
 api.interceptors.request.use(
@@ -44,15 +44,15 @@ const responseBodyWithStatusCode = (response: AxiosResponse): { response: any, s
 const requests = {
   get: (url: string) => api.get(url).then(responseBodyWithStatusCode),
   post: (url: string, body?: any) => {
-    console.log(`Making POST request to: ${api.defaults.baseURL}${url}`); // Esta línea imprime la URL
+    console.log(`Making POST request to: ${api.defaults.baseURL}${url}`);
     return api.post(url, body).then(responseBodyWithStatusCode);
   },
   put: (url: string, body?: any) => {
-    console.log(`Making PUT request to: ${api.defaults.baseURL}${url}`); // Imprimir para solicitudes PUT
+    console.log(`Making PUT request to: ${api.defaults.baseURL}${url}`); 
     return api.put(url, body).then(responseBodyWithStatusCode);
   },
   delete: (url: string) => {
-    console.log(`Making DELETE request to: ${api.defaults.baseURL}${url}`); // Imprimir para solicitudes DELETE
+    console.log(`Making DELETE request to: ${api.defaults.baseURL}${url}`); 
     return api.delete(url).then(responseBodyWithStatusCode);
   },
 };
@@ -64,13 +64,8 @@ const authUser = {
   deleteCredential: () => requests.delete('/v1/auth'),
 };
 
-const rating = {
-  rate: (userId: number, transactionId: number, value: number): Promise<{ response: any; statusCode: number }>  => requests.put('/v1/transactions/'+transactionId+'/ratings', { userId: userId, value: value}),
-};
-
 // Objeto para funciones relacionadas con recetas
 const transactionsGateway = {
-  deleteTransaction: async (transactionId: number) => requests.delete(transactionBaseUrl + "/" + transactionId),
   createTransaction: async (transactionData) => {
     try {
       const url = `${transactionBaseUrl}` + "/create"
@@ -83,7 +78,7 @@ const transactionsGateway = {
   },
 
   getTransactionById: ( id: number, userId: number): Promise<{ response: TransactionDTO; statusCode: number }> => requests.get(transactionBaseUrl + "/" + id + "?userId=" + userId),
-  getAll: (page = 0, userId): Promise<{ response: TransactionsDTO; statusCode: number }> => {
+  getAll: (page = 0, userId): Promise<{ response: TransactionDTO; statusCode: number }> => {
 
     let url = `${transactionBaseUrl}/?page=${page}&limit=10`;
     if (userId) {
@@ -93,21 +88,6 @@ const transactionsGateway = {
     return requests.get(url);
   },
 
-  searchTransactions: (searchTerm = "", page = 0, limit = 10): Promise<{ response: TransactionsSearchDTO; statusCode: number }> => {
-    const url = `${transactionBaseUrl}/search?page=${page}&limit=${limit}&searchTerm=${searchTerm}`;
-    return requests.get(url);
-  },
-  updateTransaction: async (id: number, transactionData: any): Promise<{ response: any; statusCode: number }> => {
-    try {
-      const url = `${transactionBaseUrl}/${id}`;
-      const response = await requests.put(url, transactionData);
-
-      return response;
-    } catch (error) {
-      console.error('Error al actualizar la receta:', error);
-      throw error;
-    }
-  },
   uploadImage: async (image) => {
     try {
       const url = `${transactionBaseUrl}` + "/uploadImage"
@@ -121,16 +101,49 @@ const transactionsGateway = {
   },
 };
 
+const contactsGateway = {
+  deleteContact: async (contactId: number) => requests.delete(contactsBaseUrl + "/" + contactId),
+  createContact: async (contactData) => {
+    try {
+      const url = `${contactsBaseUrl}` + "/create"
+      const response = await requests.post(url, contactData);
+      return response;
+    } catch (error) {
+      console.error('Error al crear la receta:', error);
+      throw error;
+    }
+  },
+
+  getContactById: ( id: number, userId: number): Promise<{ response: ContactDTO; statusCode: number }> => requests.get(contactsBaseUrl + "/" + id + "?userId=" + userId),
+  getAll: (page = 0, userId): Promise<{ response: ContactsDTO; statusCode: number }> => {
+
+    let url = `${contactsBaseUrl}/?page=${page}&limit=10`;
+    if (userId) {
+      url += `&userId=${userId}`;
+    }
+    
+    return requests.get(url);
+  },
+
+  searchContacts: (searchTerm = "", page = 0, limit = 10): Promise<{ response: ContactsSearchDTO; statusCode: number }> => {
+    const url = `${contactsBaseUrl}/search?page=${page}&limit=${limit}&searchTerm=${searchTerm}`;
+    return requests.get(url);
+  },
+  updateContact: async (id: number, contactData: any): Promise<{ response: any; statusCode: number }> => {
+    try {
+      const url = `${contactsBaseUrl}/${id}`;
+      const response = await requests.put(url, contactData);
+
+      return response;
+    } catch (error) {
+      console.error('Error al actualizar la receta:', error);
+      throw error;
+    }
+  },
+};
+
 // Objeto para funciones relacionadas con usuarios
-const users = {
-  like: ( userId: number, transactionId: number,): Promise<{ response: any; statusCode: number }> =>
-    requests.post(usersBaseUrl + "/" + userId + "/favorites",
-        {transactionId: transactionId,}
-    ),
-  dislike: ( userId: number, transactionId: number,): Promise<{ response: any; statusCode: number }> =>
-    requests.delete(usersBaseUrl + "/" + userId + "/favorites/" + transactionId),
-  favorites: (userId: number): Promise<{ response: any; statusCode: number  }> =>
-    requests.get(usersBaseUrl + "/" + userId + "/favorites"),
+const usersGateway = {
   getUser: (
     userId: number,
   ): Promise<{ response: any; statusCode: number }> =>
@@ -162,4 +175,4 @@ const getToken = async (): Promise<string> => {
     return "";
   }
 };
-export default { authUser, transactionsGateway, users, rating };
+export default { authUser, transactionsGateway, contactsGateway, usersGateway };

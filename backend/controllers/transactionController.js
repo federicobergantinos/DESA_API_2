@@ -2,9 +2,6 @@ const {
   createTransaction,
   getTransactions,
   getTransaction,
-  updateTransaction,
-  searchTransactions,
-  deleteTransactionById,
 } = require("../services/transactionService");
 const { findUserById } = require("../services/userService");
 const { v4: uuidv4 } = require("uuid");
@@ -85,43 +82,14 @@ const getAll = async (req, res) => {
   }
 };
 
-const searchAll = async (req, res) => {
-  const searchTerm = req.query.searchTerm || "";
-  const page = parseInt(req.query.page) || 0;
-  const limit = parseInt(req.query.limit) || 50;
-  const offset = page * limit;
-
-  try {
-    const transactions = await searchTransactions({
-      searchTerm,
-      limit,
-      offset,
-    });
-    res.status(200).json(transactions);
-  } catch (error) {
-    console.error(`searchTransactions: ${error}`);
-    res.status(500).json({
-      msg: "An exception has occurred",
-    });
-  }
-};
-
 const getById = async (req, res) => {
   try {
     const { transactionId } = req.params;
-    const userId = req.query.userId;
+    const userId = transaction.userId;
+    console.log(req.params);
     const transaction = await getTransaction(transactionId);
-    const user = await findUserById(transaction.userId);
-
-    // Se filtran los elementos de media según su tipo y se agregan a los atributos correspondientes.
-    const images = transaction.media
-      .filter((m) => m.type === "image")
-      .map((m) => m.data);
-    const videos = transaction.media
-      .filter((m) => m.type === "video")
-      .map((m) => m.data)[0];
-
-    const rating = await getTransactionRating(transactionId);
+    console.log(transaction);
+    const user = await findUserById(userId);
 
     res.status(200).json({
       ...transaction,
@@ -135,26 +103,6 @@ const getById = async (req, res) => {
     console.error(` ${error}`);
     res.status(error.code || 500).json({
       msg: error.message || "An exception has occurred",
-    });
-  }
-};
-
-const update = async (req, res) => {
-  try {
-    const { transactionId } = req.params;
-    const updateData = {
-      ...req.body,
-    };
-    await updateTransaction(transactionId, updateData);
-
-    res.status(200).json({
-      message: "Receta actualizada con éxito",
-      images: req.body.images, // Devolver las URLs de las imágenes proporcionadas
-    });
-  } catch (error) {
-    console.error(`Error al actualizar la receta: ${error}`);
-    res.status(error.code || 500).json({
-      msg: error.message || "Ha ocurrido una excepción",
     });
   }
 };
@@ -177,25 +125,9 @@ const uploadImage = async (req, res) => {
   }
 };
 
-const deleteTransaction = async (req, res) => {
-  try {
-    deleteTransactionById(req.params.transactionId);
-
-    res.status(204).send();
-  } catch (error) {
-    console.error(`Hubo un problema al subir la imagen: ${error}`);
-    res.status(error.code || 500).json({
-      msg: error.message || "Ha ocurrido un error al actualizar la receta",
-    });
-  }
-};
-
 module.exports = {
   create,
   getAll,
   getById,
-  searchAll,
-  update,
   uploadImage,
-  deleteTransaction,
 };

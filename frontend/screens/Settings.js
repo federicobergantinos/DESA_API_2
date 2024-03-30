@@ -45,7 +45,7 @@ export default function Settings() {
         surname: apellido,
       };
 
-      const updateResponse = await backendApi.users.editProfile(
+      const updateResponse = await backendApi.usersGateway.editProfile(
         userId,
         userData
       );
@@ -66,7 +66,7 @@ export default function Settings() {
       try {
         const userId = await AsyncStorage.getItem("userId");
         const { response, statusCode } =
-          await backendGateway.users.getUser(userId);
+          await backendGateway.usersGateway.getUser(userId);
         if (statusCode === 200) {
           setNombre(response.user.name);
           setApellido(response.user.surname);
