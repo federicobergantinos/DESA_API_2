@@ -38,7 +38,7 @@ export default function Profile() {
       const newImage = await openImagePickerAsync();
       if (newImage) {
         try {
-          const response = await backendApi.recipesGateway.uploadImage({
+          const response = await backendApi.transactionsGateway.uploadImage({
             image: newImage.base64,
           });
           if (response.statusCode === 200) {
@@ -154,11 +154,8 @@ export default function Profile() {
     const fetchRecipes = async () => {
       if (!userId) return; // Asegurar que userId esté disponible
       try {
-        const { response: recipes } = await backendApi.recipesGateway.getAll(
-          0,
-          undefined,
-          userId
-        );
+        const { response: recipes } =
+          await backendApi.transactionsGateway.getAll(0, undefined, userId);
         setRecipes(recipes);
         setRecipesCount(recipes.length);
       } catch (error) {

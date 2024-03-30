@@ -42,44 +42,18 @@ const createTransaction = async (transactionData) => {
 const getTransactions = async (queryData) => {
   let includeOptions = [
     {
-      model: Media,
-      as: "media",
-      attributes: ["data", "type"],
-      where: { type: "image" },
-    },
-    {
-      model: Tag,
-      as: "tags",
-      through: { attributes: [] },
-    },
-  ];
-
-  // Agrega un filtro por userId si se proporciona
-  if (queryData.userId) {
-    includeOptions.push({
       model: User,
       as: "user",
       where: { id: queryData.userId },
-      required: true, // Solo incluye recetas que pertenecen al userId especificado
-    });
-  }
-
+      required: true,
+    },
+  ];
   const transactions = await Transaction.findAll({
     include: includeOptions,
   });
+  console.log(transactions);
 
-  const ratingPromise = transactions.map(async (it) => {
-    const rating = await getTransactionRating(it.id);
-    return { ...it.toJSON(), rating };
-  });
-
-  const updatedTransactions = await Promise.all(ratingPromise);
-
-  updatedTransactions.sort((a, b) => b.rating - a.rating);
-  return updatedTransactions.slice(
-    queryData.offset,
-    queryData.offset + queryData.limit
-  );
+  return transactions;
 };
 
 const updateTransaction = async (recipeId, updateData) => {

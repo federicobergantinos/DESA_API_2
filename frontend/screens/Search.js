@@ -48,10 +48,10 @@ export default class Search extends React.Component {
     this.setState({ loading: true });
     try {
       const { response, statusCode } =
-        await backendApi.recipesGateway.searchRecipes(
+        await backendApi.transactionsGateway.searchRecipes(
           search,
           currentPage,
-          ITEMS_PER_PAGE,
+          ITEMS_PER_PAGE
         );
       if (response && response.length > 0) {
         this.setState((prevState) => ({
