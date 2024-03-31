@@ -84,20 +84,12 @@ const getAll = async (req, res) => {
 
 const getById = async (req, res) => {
   try {
-    const { transactionId } = req.params;
-    const userId = transaction.userId;
-    console.log(req.params);
-    const transaction = await getTransaction(transactionId);
-    console.log(transaction);
-    const user = await findUserById(userId);
+    const transactionId = req.params.transactionId;
+    const response = await getTransaction(transactionId);
+    const transaction = response.dataValues;
 
     res.status(200).json({
       ...transaction,
-      username: user.name + " " + user.surname,
-      userImage: user.photoUrl,
-      media: images,
-      video: videos,
-      rating: rating,
     });
   } catch (error) {
     console.error(` ${error}`);

@@ -12,8 +12,6 @@ const authenticate = async (req, res) => {
     const googleToken = req.body.token;
     const accessToken = req.headers["authorization"];
 
-    console.info("asd");
-
     let user = null;
     let tokens = null;
     if (googleToken !== null) {

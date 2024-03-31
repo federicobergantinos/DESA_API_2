@@ -77,7 +77,10 @@ const transactionsGateway = {
     }
   },
 
-  getTransactionById: ( id: number, userId: number): Promise<{ response: TransactionDTO; statusCode: number }> => requests.get(transactionBaseUrl + "/" + id + "?userId=" + userId),
+  getTransactionById: ( id: number): Promise<{ response: TransactionDTO; statusCode: number }> => 
+  {
+    console.log(`Making GET request to: ${transactionBaseUrl + "/" + id }`); 
+    return requests.get(transactionBaseUrl + "/" + id)},
   getAll: (page = 0, userId): Promise<{ response: TransactionDTO; statusCode: number }> => {
 
     let url = `${transactionBaseUrl}/?page=${page}&limit=10`;
@@ -88,17 +91,6 @@ const transactionsGateway = {
     return requests.get(url);
   },
 
-  uploadImage: async (image) => {
-    try {
-      const url = `${transactionBaseUrl}` + "/uploadImage"
-      const response = await requests.post(url, image);
-
-      return response;
-    } catch (error) {
-      console.error('Error al crear la receta:', error);
-      throw error;
-    }
-  },
 };
 
 const contactsGateway = {
@@ -151,7 +143,18 @@ const usersGateway = {
   editProfile: (
       userId: number, userData: any,
     ): Promise<{ response: any; statusCode: number }> =>
-      requests.put(usersBaseUrl + "/" + userId, userData),
+      requests.put(usersBaseUrl + "/" + userId, userData), 
+  uploadImage: async (image) => {
+    try {
+      const url = `${transactionBaseUrl}` + "/uploadImage"
+      const response = await requests.post(url, image);
+
+      return response;
+    } catch (error) {
+      console.error('Error al subir una imagen:', error);
+      throw error;
+    }
+  }
   };
 
 
