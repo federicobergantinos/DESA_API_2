@@ -40,7 +40,7 @@ const transactionsData = [
     description: "Cafe Latte Grande",
     amount: 467.99,
     currency: "USD",
-    status: "Cancel",
+    status: "Paid",
     date: "03/24/2024",
     userId: 1,
   },

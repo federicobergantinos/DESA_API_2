@@ -22,6 +22,14 @@ const RenderTransactionsDetail = ({ showBalance, navigation }) => {
   const [attempts, setAttempts] = useState(0);
   const [modalVisible, setModalVisible] = useState(false);
 
+  const renderEmptyListMessage = () => {
+    return (
+      <View style={styles.emptyListContainer}>
+        <Text style={styles.emptyListText}>Sin Transacciones</Text>
+      </View>
+    );
+  };
+
   useEffect(() => {
     const fetchTransactions = async () => {
       if (loading || allItemsLoaded || attempts >= 3) return;
@@ -138,6 +146,7 @@ const RenderTransactionsDetail = ({ showBalance, navigation }) => {
         onEndReached={loadMoreItems}
         onEndReachedThreshold={0.3}
         ListFooterComponent={renderFooter}
+        ListEmptyComponent={renderEmptyListMessage}
       />
       <Modal
         animationType="slide"

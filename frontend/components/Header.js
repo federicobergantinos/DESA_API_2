@@ -44,10 +44,6 @@ const SettingsButton = ({ isWhite, style }) => {
   );
 };
 
-const getUserId = async () => {
-  return await AsyncStorage.getItem("userId");
-};
-
 const Header = ({
   back,
   title,
@@ -63,28 +59,27 @@ const Header = ({
 }) => {
   const navigation = useNavigation();
   const { transaction } = useContext(WalletContext);
-  const [isOwner, setIsOwner] = useState(false);
-
-  useEffect(() => {
-    const checkOwner = async () => {
-      if (transaction !== null) {
-        const userId = await getUserId();
-        setCurrentUserId(userId);
-        setIsOwner(userId.toString() === transaction.userId.toString());
-      }
-    };
-
-    checkOwner().then(renderRight());
-  }, [transaction]);
 
   const handleShare = async () => {
-    try {
-      await Share.share({
-        title: "Compartir por",
-        message: `${transaction.title}: ${transaction.description}`,
-      });
-    } catch (error) {
-      console.error("Error al compartir:", error.message);
+    if (transaction) {
+      const message = `
+        Detalles de la Transacción:
+        - Nombre: ${transaction.name}
+        - Descripción: ${transaction.description}
+        - Monto: ${transaction.amount} ${transaction.currency}
+        - Estado: ${transaction.status === "Paid" ? "Pagado" : "Cancelado"}
+        - Fecha: ${transaction.date}
+      `;
+
+      try {
+        await Share.share({
+          message,
+        });
+      } catch (error) {
+        console.error("Error al compartir:", error.message);
+      }
+    } else {
+      console.log("Detalles de la transacción no disponibles.");
     }
   };
 
@@ -92,8 +87,8 @@ const Header = ({
     return (
       <TouchableOpacity style={{ paddingHorizontal: 5 }} onPress={handleShare}>
         <Icon
-          family="MaterialIcons"
-          name="share"
+          family="AntDesign"
+          name="sharealt"
           size={25}
           color={walletTheme.COLORS.WHITE}
         />
@@ -112,18 +107,20 @@ const Header = ({
   };
 
   const renderRight = () => {
-    switch (title) {
-      case "Transaccion":
-        return [<RenderShareButton key="share-button" />];
-      case "Home":
-        return [
-          <ProfileButton key="profile-title" isWhite={white} />,
-          <SettingsButton key="settings-title" isWhite={white} />,
-        ];
-      case "Perfil":
-      case "Configuracion":
-      default:
-        return null;
+    if (title === "Transaccion" && transaction) {
+      // Ensure RenderShareButton is only shown if transaction is loaded
+      return [<RenderShareButton key="share-button" />];
+    } else {
+      // Adjust according to your requirements for other titles
+      switch (title) {
+        case "Home":
+          return [
+            <ProfileButton key="profile-button" isWhite={white} />,
+            <SettingsButton key="settings-button" isWhite={white} />,
+          ];
+        default:
+          return null;
+      }
     }
   };
 
@@ -144,7 +141,10 @@ const Header = ({
         style={navbarStyles}
         transparent={transparent}
         right={renderRight()}
-        rightStyle={{ alignItems: "center", marginRight: 0 }}
+        rightStyle={{
+          alignItems: "center",
+          marginRight: title !== "Transaccion" ? 20 : 0,
+        }}
         left={
           <Icon
             name={back ? "chevron-left" : "home"}

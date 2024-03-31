@@ -42,7 +42,7 @@ const Home = ({ navigation }) => {
           family="Feather"
           title="Recibir"
           onPress={() => {
-            /* Acción aquí */
+            navigation.navigate("AccountDetails");
           }}
         />
         <ActionButton

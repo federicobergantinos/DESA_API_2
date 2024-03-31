@@ -1,47 +1,45 @@
 const { User } = require("../../../entities/associateModels");
 
 const populateUser = async () => {
-  const users = [
+  // Datos de usuarios
+  const userData = [
     {
-      name: "Fedeasdrico",
+      name: "Federico",
       surname: "Bergantinos",
-      email: "email1@uade.edu.ar",
+      email: "fbergantinos@uade.edu.ar",
       photoUrl:
         "https://fotos.perfil.com/2024/02/15/trim/1140/641/yeti-de-bruta-cocina-1755883.jpg",
-    },
-    {
-      name: "Axel",
-      surname: "Santoro",
-      email: "email2@uade.edu.ar",
-      photoUrl:
-        "https://fotos.perfil.com/2024/02/15/trim/1140/641/yeti-de-bruta-cocina-1755883.jpg",
-    },
-    {
-      name: "Nicolas",
-      surname: "Garcia",
-      email: "email3@uade.edu.ar",
-      photoUrl:
-        "https://fotos.perfil.com/2024/02/15/trim/1140/641/yeti-de-bruta-cocina-1755883.jpg",
-    },
-    {
-      name: "Matias",
-      surname: "Caliz",
-      email: "email4@uade.edu.ar",
-      photoUrl:
-        "https://fotos.perfil.com/2024/02/15/trim/1140/641/yeti-de-bruta-cocina-1755883.jpg",
+      accountDetails: [
+        {
+          beneficiaryName: "Federico Bergantinos",
+          beneficiaryAddress: "Lima 123, Buenos Aires, Argentina",
+          accountNumber: "000123456789",
+          accountType: "Checking Account",
+        },
+      ],
     },
   ];
 
   try {
-    const userExist = await User.count();
-    if (userExist === 0) {
-      await User.bulkCreate(users);
-      console.log("User table has been populated with initial data.");
-    } else {
-      console.log("User table is already populated.");
+    for (const user of userData) {
+      // Verifica si el usuario ya existe
+      const userExist = await User.findOne({ where: { email: user.email } });
+      if (!userExist) {
+        // Crea el usuario y sus detalles de cuenta asociados en una transacción atómica
+        const newUser = await User.create(user, {
+          include: [
+            {
+              association: User.associations.accountDetails,
+            },
+          ],
+        });
+        console.log(`Usuario ${newUser.name} creado con detalles de cuenta.`);
+      } else {
+        console.log(`El usuario con el email ${user.email} ya existe.`);
+      }
     }
   } catch (error) {
-    console.error("Error populating User table:", error);
+    console.error("Error al poblar la base de datos:", error);
   }
 };
 

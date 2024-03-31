@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useContext, useEffect } from "react";
 import {
   View,
   ImageBackground,
@@ -15,12 +15,13 @@ import backendApi from "../api/backendGateway";
 import moment from "moment";
 import Clipboard from "@react-native-community/clipboard";
 import Icon from "../components/Icon";
+import WalletContext from "../navigation/WalletContext";
 const { width, height } = Dimensions.get("screen");
 
 const Transaction = () => {
   const route = useRoute();
   const { transactionId } = route.params;
-  const [transaction, setTransaction] = useState(null);
+  const { transaction, setTransaction } = useContext(WalletContext);
 
   useEffect(() => {
     const fetchTransaction = async () => {
@@ -65,14 +66,16 @@ const Transaction = () => {
     const icon =
       status === "Paid" ? (
         <Icon
-          name="check-circle"
+          name="checkcircle"
+          family="AntDesign"
           size={20}
           color="green"
           style={{ marginRight: 5, marginTop: 7 }}
         />
       ) : (
         <Icon
-          name="times-circle"
+          name="closecircle"
+          family="AntDesign"
           size={20}
           color="red"
           style={{ marginRight: 5, marginTop: 7 }}

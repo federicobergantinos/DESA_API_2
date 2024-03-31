@@ -9,6 +9,7 @@ import Profile from "../screens/Profile";
 import React from "react";
 import Login from "../screens/Login";
 import Search from "../screens/Search";
+import AccountDetails from "../screens/AccountDetails";
 // settings
 import Settings from "../screens/Settings";
 import { createStackNavigator } from "@react-navigation/stack";
@@ -70,6 +71,21 @@ function HomeStack(props) {
         options={{
           header: ({ navigation, scene }) => (
             <Header title="Search" back navigation={navigation} scene={scene} />
+          ),
+          cardStyle: { backgroundColor: "#F8F9FE" },
+        }}
+      />
+      <Stack.Screen
+        name="AccountDetails"
+        component={AccountDetails}
+        options={{
+          header: ({ navigation, scene }) => (
+            <Header
+              title="Recibir"
+              back
+              navigation={navigation}
+              scene={scene}
+            />
           ),
           cardStyle: { backgroundColor: "#F8F9FE" },
         }}
