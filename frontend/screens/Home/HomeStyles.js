@@ -197,4 +197,12 @@ export default StyleSheet.create({
     marginTop: 10,
     marginRight: 10,
   },
+  emptyListContainer: {
+    alignItems: "center",
+    marginTop: 20,
+  },
+  emptyListText: {
+    fontSize: 16,
+    color: "grey",
+  },
 });

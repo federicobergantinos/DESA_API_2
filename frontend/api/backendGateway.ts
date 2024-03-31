@@ -3,12 +3,14 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createAuthDTO, Credentials } from "./authDTO";
 import { TransactionDTO } from "./TransactionDTO";
 import { ContactDTO, ContactsDTO, ContactsSearchDTO } from "./ContactDTO";
+import { AccountDTO } from "./AccountDTO";
 
 // const api = axios.create({ baseURL: "https://wallet-elb.federicobergantinos.com:443" });
-const api = axios.create({ baseURL: "http://192.168.1.108:8080" });
+const api = axios.create({ baseURL: "http://192.168.1.116:8080" });
 const transactionBaseUrl = "/v1/transactions";
 const usersBaseUrl = "/v1/users";
 const contactsBaseUrl = "/v1/contacts";
+const accountBaseUrl = "/v1/account";
 
 // Interceptores de solicitud y respuesta
 api.interceptors.request.use(
@@ -64,7 +66,7 @@ const authUser = {
   deleteCredential: () => requests.delete('/v1/auth'),
 };
 
-// Objeto para funciones relacionadas con recetas
+// Objeto para funciones relacionadas con transacciones
 const transactionsGateway = {
   createTransaction: async (transactionData) => {
     try {
@@ -72,7 +74,7 @@ const transactionsGateway = {
       const response = await requests.post(url, transactionData);
       return response;
     } catch (error) {
-      console.error('Error al crear la receta:', error);
+      console.error('Error al crear la transaccion:', error);
       throw error;
     }
   },
@@ -101,7 +103,7 @@ const contactsGateway = {
       const response = await requests.post(url, contactData);
       return response;
     } catch (error) {
-      console.error('Error al crear la receta:', error);
+      console.error('Error al crear el contacto:', error);
       throw error;
     }
   },
@@ -128,11 +130,30 @@ const contactsGateway = {
 
       return response;
     } catch (error) {
-      console.error('Error al actualizar la receta:', error);
+      console.error('Error al actualizar el contacto:', error);
       throw error;
     }
   },
 };
+
+
+const accountGateway = {
+  createAccount: async (accountData) => {
+    try {
+      const url = `${accountBaseUrl}` + "/create"
+      const response = await requests.post(url, accountData);
+      return response;
+    } catch (error) {
+      console.error('Error al crear la cuenta:', error);
+      throw error;
+    }
+  },
+
+  getAccountById: ( id: number, userId: number): Promise<{ response: AccountDTO; statusCode: number }> => requests.get(accountBaseUrl + "/" + id + "?userId=" + userId),
+
+};
+
+
 
 // Objeto para funciones relacionadas con usuarios
 const usersGateway = {
@@ -178,4 +199,4 @@ const getToken = async (): Promise<string> => {
     return "";
   }
 };
-export default { authUser, transactionsGateway, contactsGateway, usersGateway };
+export default { authUser, transactionsGateway, contactsGateway, usersGateway, accountGateway };
