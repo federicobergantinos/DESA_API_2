@@ -144,7 +144,7 @@ const Header = ({
         style={navbarStyles}
         transparent={transparent}
         right={renderRight()}
-        rightStyle={{ alignItems: "center", marginRight: isOwner ? 50 : 20 }}
+        rightStyle={{ alignItems: "center", marginRight: 0 }}
         left={
           <Icon
             name={back ? "chevron-left" : "home"}

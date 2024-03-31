@@ -5,12 +5,16 @@ import {
   Text,
   StyleSheet,
   Dimensions,
+  TouchableOpacity,
   ScrollView,
 } from "react-native";
 import { theme, Block } from "galio-framework";
 import { Images, walletTheme } from "../constants";
 import { useRoute } from "@react-navigation/native";
 import backendApi from "../api/backendGateway";
+import moment from "moment";
+import Clipboard from "@react-native-community/clipboard";
+import Icon from "../components/Icon";
 const { width, height } = Dimensions.get("screen");
 
 const Transaction = () => {
@@ -24,10 +28,8 @@ const Transaction = () => {
       try {
         const response =
           await backendApi.transactionsGateway.getTransactionById(
-            transactionId,
             transactionId
-          ); // Asegúrate de que esta llamada coincida con la definición de tu API
-        console.warn("Detalles de la transacción cargados:", response);
+          );
         setTransaction(response.response);
       } catch (error) {
         console.error("Error al cargar detalles de la transacción:", error);
@@ -37,72 +39,137 @@ const Transaction = () => {
     fetchTransaction();
   }, [transactionId]);
 
+  // Creating separate cards for each detail
+  const TransactionDetailCard = ({ title, children }) => (
+    <View style={styles.detailCard}>
+      <Text style={styles.cardTitle}>{title}</Text>
+      {children}
+    </View>
+  );
+
+  // Function to format date
+  const formatDate = (dateString) => {
+    return moment(dateString).format("D [de] MMMM [de] YYYY");
+  };
+
+  // Function to determine amount text color
+  const getAmountTextColor = (amount) => {
+    return amount >= 0 ? "green" : "red";
+  };
+
+  const copyToClipboard = () => {
+    Clipboard.setString(`${transactionId}`);
+  };
+
+  const renderStatus = (status) => {
+    const icon =
+      status === "Paid" ? (
+        <Icon
+          name="check-circle"
+          size={20}
+          color="green"
+          style={{ marginRight: 5, marginTop: 7 }}
+        />
+      ) : (
+        <Icon
+          name="times-circle"
+          size={20}
+          color="red"
+          style={{ marginRight: 5, marginTop: 7 }}
+        />
+      );
+    const textStatus = status === "Paid" ? "Pagado" : "Cancelado";
+
+    return (
+      <View style={{ flexDirection: "row", alignItems: "center" }}>
+        {icon}
+        <Text style={styles.status}>{textStatus}</Text>
+      </View>
+    );
+  };
+
   return (
-    <Block flex style={styles.Home}>
-      <Block flex>
-        <ImageBackground
-          source={Images.Background}
-          imageStyle={styles.Background}
+    <Block flex style={styles.home}>
+      <ImageBackground source={Images.Background} style={styles.background}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          style={{ width }}
+          contentContainerStyle={styles.scrollViewContent}
         >
-          <ScrollView showsVerticalScrollIndicator={false} style={{ width }}>
-            <Block flex style={styles.card}>
-              <View>
-                <Text>Detalles de la Transacción ID: {transactionId}</Text>
-                {transaction && (
-                  <>
-                    <Text style={styles.title}>{transaction.name}</Text>
-                    <Text style={styles.amount}>
-                      {transaction.amount} {transaction.currency}
-                    </Text>
-                    <Text style={styles.status}>{transaction.status}</Text>
-                    <Text style={styles.date}>{transaction.date}</Text>
-                    <Text style={styles.description}>
-                      {transaction.description}
-                    </Text>
-                  </>
-                )}
+          {transaction && (
+            <>
+              {/* Transaction Details */}
+              <TransactionDetailCard title="Detalles">
+                <Text style={styles.title}>{transaction.name}</Text>
+                <Text style={styles.description}>
+                  {transaction.description}
+                </Text>
+              </TransactionDetailCard>
+
+              {/* Amount */}
+              <TransactionDetailCard title="Monto">
+                <Text
+                  style={[
+                    styles.amount,
+                    { color: getAmountTextColor(transaction.amount) },
+                  ]}
+                >
+                  {transaction.amount} {transaction.currency}
+                </Text>
+              </TransactionDetailCard>
+
+              {/* Status and Date */}
+              <TransactionDetailCard title="Estado">
+                {renderStatus(transaction.status)}
+                <Text style={styles.date}>{formatDate(transaction.date)}</Text>
+              </TransactionDetailCard>
+
+              {/* Transaction ID */}
+              <View style={styles.detailCard}>
+                <Text style={styles.cardTitle}>ID de Transacción</Text>
+                <View style={styles.transactionIdContainer}>
+                  <Text style={styles.transactionId}>{transactionId}</Text>
+                  <TouchableOpacity onPress={copyToClipboard}>
+                    <Icon name="clipboard" family="Feather" size={20} />
+                  </TouchableOpacity>
+                </View>
               </View>
-            </Block>
-          </ScrollView>
-        </ImageBackground>
-      </Block>
+            </>
+          )}
+        </ScrollView>
+      </ImageBackground>
     </Block>
   );
 };
 
 const styles = StyleSheet.create({
-  Home: {
+  home: {
     marginTop: 0,
   },
-  Background: {
+  background: {
     width: width,
     height: height * 1.1,
     marginTop: -100,
   },
-  container: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    padding: theme.SIZES.BASE,
-  },
-  card: {
+  detailCard: {
+    backgroundColor: theme.COLORS.WHITE,
     padding: theme.SIZES.BASE,
     marginHorizontal: theme.SIZES.BASE,
-    marginTop: 0,
-    borderTopLeftRadius: 6,
-    borderTopRightRadius: 6,
-    backgroundColor: theme.COLORS.WHITE,
+    marginTop: theme.SIZES.BASE,
+    borderRadius: theme.SIZES.BASE / 2,
     shadowColor: "black",
-    backgroundColor: "#FFF",
-    shadowOffset: { width: 0, height: 0 },
-    shadowRadius: 8,
-    shadowOpacity: 0.2,
-    zIndex: 2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 6,
+    shadowOpacity: 0.1,
+    elevation: 2,
+  },
+  cardTitle: {
+    fontSize: 16,
+    marginBottom: theme.SIZES.BASE / 2,
   },
   title: {
     fontSize: 18,
     fontWeight: "bold",
-    marginBottom: theme.SIZES.BASE,
   },
   amount: {
     fontSize: 16,
@@ -111,7 +178,6 @@ const styles = StyleSheet.create({
   },
   status: {
     fontSize: 14,
-    color: "green",
     marginTop: theme.SIZES.BASE / 2,
   },
   date: {
@@ -122,8 +188,30 @@ const styles = StyleSheet.create({
   description: {
     fontSize: 14,
     color: theme.COLORS.BLACK,
-    marginTop: theme.SIZES.BASE,
     textAlign: "justify",
+  },
+  scrollViewContent: {
+    paddingTop: 100,
+  },
+  copyButton: {
+    marginTop: 10,
+    backgroundColor: theme.COLORS.PRIMARY,
+    padding: 10,
+    borderRadius: 5,
+  },
+  copyButtonText: {
+    color: "#FFF",
+    textAlign: "center",
+  },
+  transactionIdContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingRight: 10, // Adjust padding as needed
+  },
+  transactionId: {
+    fontSize: 14,
+    color: theme.COLORS.BLACK,
   },
 });
 

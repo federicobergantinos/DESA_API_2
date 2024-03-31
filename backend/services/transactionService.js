@@ -56,9 +56,7 @@ const getTransactions = async (queryData) => {
 };
 
 const getTransaction = async (transactionId) => {
-  console.log(transactionId);
   const transaction = await Transaction.findByPk(transactionId);
-  console.log(transaction);
   if (transaction === null) {
     throw new NotFound("Transaction not found");
   }
