@@ -5,3 +5,10 @@ export interface AccountDTO {
   accountNumber: number
   accountType: string
 }
+
+
+export interface AccountSummaryDTO {
+  accountId: number;
+  accountNumber: string;
+  accountType: string;
+}

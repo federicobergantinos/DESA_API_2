@@ -60,17 +60,23 @@ const getById = async (req, res) => {
   }
 }
 
-const calculateAccountBalance = async (accountId) => {
+const calculateAccountBalance = async (req) => {
   try {
-    const transactions = await getTransactions({ accountId })
+    const accountId = req.query.accountId
+    if (!Number.isInteger(Number(accountId))) {
+      throw new Error('Invalid accountId')
+    }
+
+    const page = parseInt(req.query.page) || 0 // Asegúrate de proporcionar un valor por defecto
+    const limit = parseInt(req.query.limit) || 20 // Límite de ítems por página
+    const offset = page * limit
+
+    const transactions = await getTransactions({ accountId, limit, offset })
 
     let balance = 0
-
     transactions.forEach((transaction) => {
       balance += transaction.amount
     })
-
-    console.log(transactions)
 
     return balance
   } catch (error) {

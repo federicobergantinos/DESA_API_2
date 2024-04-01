@@ -7,36 +7,41 @@ import styles from './HomeStyles'
 import backendApi from '../../api/backendGateway'
 import WalletContext from '../../navigation/WalletContext'
 
-const RenderMainInformation = () => {
-  const [showBalance, setShowBalance] = useState(false)
+const RenderMainInformation = ({
+  showBalance,
+  toggleBalanceVisibility,
+  refreshing,
+}) => {
   const [balance, setBalance] = useState(0)
-  const { user } = useContext(WalletContext)
+  const { user, selectedAccount } = useContext(WalletContext)
 
   useEffect(() => {
     const fetchBalance = async () => {
       try {
-        const account = await backendApi.accountGateway.getAccountByUserId(1)
-        console.log(account)
+        // Simula la obtención de datos del backend
+        // Aquí deberías realizar la llamada real al backend
         const balanceResult = await backendApi.transactionsGateway.balance(
-          account.id
+          selectedAccount.accountId
         )
-        console.log(balanceResult)
         setBalance(balanceResult)
       } catch (error) {
         console.error('Error fetching balance:', error)
       }
     }
 
-    fetchBalance()
-  }, [1])
+    // Si refreshing es true, reinicia los estados relevantes antes de obtener los datos
+    if (refreshing) {
+      setBalance(0) // Reinicia el balance
+    }
 
-  const toggleBalanceVisibility = () => {
-    setShowBalance(!showBalance)
-  }
+    fetchBalance()
+  }, [selectedAccount, refreshing]) // Añade refreshing al array de dependencias
 
   return (
     <Block flex style={styles.balanceContainer}>
-      <Text style={styles.balanceText}>Balance</Text>
+      <Text style={styles.balanceText}>
+        Balance | Cta: {selectedAccount.accountNumber}
+      </Text>
       <Text style={styles.amountText}>
         {showBalance ? `${balance} USD` : '***'}
       </Text>

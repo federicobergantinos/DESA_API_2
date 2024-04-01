@@ -40,14 +40,18 @@ const createTransaction = async (transactionData) => {
 }
 
 const getTransactions = async (queryData) => {
+  const accountId = parseInt(queryData.accountId, 10)
+  const limit = queryData.limit || 20 // Establecer un límite predeterminado si no se proporciona en la consulta
+  const offset = queryData.offset || 0 // Establecer un offset predeterminado si no se proporciona en la consulta
+
   let includeOptions = [
     {
       model: Account,
-      as: 'account', // Use the 'as' keyword with the alias you defined in the association
+      as: 'account',
       include: [
         {
           model: User,
-          as: 'user', // If you also have an alias for the User model, make sure to include it here
+          as: 'user',
           required: true,
         },
       ],
@@ -56,11 +60,14 @@ const getTransactions = async (queryData) => {
 
   const transactions = await Transaction.findAll({
     where: {
-      // If you're filtering by accountId, ensure it's done correctly here
-      accountId: queryData.accountId,
+      accountId: accountId,
     },
     include: includeOptions,
+    limit,
+    offset,
   })
+
+  console.log(transactions)
 
   return transactions
 }

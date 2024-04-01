@@ -6,43 +6,10 @@ import { CommonActions, useNavigation } from '@react-navigation/native' // Impor
 import Icon from './Icon'
 import walletTheme from '../constants/Theme'
 import WalletContext from '../navigation/WalletContext'
+import AccountSelector from '../components/AccountSelector'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
 const { height, width } = Dimensions.get('window')
-
-const ProfileButton = ({ isWhite, style }) => {
-  const navigation = useNavigation()
-  return (
-    <TouchableOpacity
-      style={[styles.button, style]}
-      onPress={() => navigation.navigate('Profile')}
-    >
-      <Icon
-        family="Feather"
-        size={20}
-        name="user"
-        color={walletTheme.COLORS[isWhite ? 'WHITE' : 'ICON']}
-      />
-    </TouchableOpacity>
-  )
-}
-
-const SettingsButton = ({ isWhite, style }) => {
-  const navigation = useNavigation()
-  return (
-    <TouchableOpacity
-      style={[styles.button, style]}
-      onPress={() => navigation.navigate('Settings')}
-    >
-      <Icon
-        family="Feather"
-        size={20}
-        name="settings"
-        color={walletTheme.COLORS[isWhite ? 'WHITE' : 'ICON']}
-      />
-    </TouchableOpacity>
-  )
-}
 
 const Header = ({
   back,
@@ -58,7 +25,9 @@ const Header = ({
   ...props
 }) => {
   const navigation = useNavigation()
-  const { transaction } = useContext(WalletContext)
+  const [isAccountSelectorVisible, setIsAccountSelectorVisible] =
+    useState(false)
+  const { transaction, setSelectedAccount } = useContext(WalletContext)
 
   const handleShare = async () => {
     if (transaction) {
@@ -85,7 +54,7 @@ const Header = ({
 
   const RenderShareButton = () => {
     return (
-      <TouchableOpacity style={{ paddingHorizontal: 5 }} onPress={handleShare}>
+      <TouchableOpacity style={[styles.button]} onPress={handleShare}>
         <Icon
           family="AntDesign"
           name="sharealt"
@@ -95,6 +64,54 @@ const Header = ({
       </TouchableOpacity>
     )
   }
+
+  const ProfileButton = ({ isWhite, style }) => {
+    const navigation = useNavigation()
+    return (
+      <TouchableOpacity
+        style={[styles.button, style]}
+        onPress={() => navigation.navigate('Profile')}
+      >
+        <Icon
+          family="Feather"
+          size={20}
+          name="user"
+          color={walletTheme.COLORS[isWhite ? 'WHITE' : 'ICON']}
+        />
+      </TouchableOpacity>
+    )
+  }
+
+  const SettingsButton = ({ isWhite, style }) => {
+    const navigation = useNavigation()
+    return (
+      <TouchableOpacity
+        style={[styles.button, style]}
+        onPress={() => navigation.navigate('Settings')}
+      >
+        <Icon
+          family="Feather"
+          size={20}
+          name="settings"
+          color={walletTheme.COLORS[isWhite ? 'WHITE' : 'ICON']}
+        />
+      </TouchableOpacity>
+    )
+  }
+
+  const SwitchAccountButton = ({ style }) => (
+    <TouchableOpacity
+      style={[styles.button, style]}
+      onPress={() => setIsAccountSelectorVisible(true)}
+    >
+      <Icon
+        family="AntDesign"
+        size={20}
+        name="swap"
+        color={walletTheme.COLORS[white ? 'WHITE' : 'ICON']}
+      />
+    </TouchableOpacity>
+  )
 
   const renderLeft = () => {
     if (title === 'Transaccion') {
@@ -107,21 +124,33 @@ const Header = ({
   }
 
   const renderRight = () => {
+    let components = [] // Arreglo para almacenar los componentes del lado derecho
+
     if (title === 'Transaccion' && transaction) {
-      // Ensure RenderShareButton is only shown if transaction is loaded
-      return [<RenderShareButton key="share-button" />]
+      // Añade el botón de compartir solo en la página de Transacción cuando hay una transacción
+      components.push(<RenderShareButton key="share-button" />)
     } else {
-      // Adjust according to your requirements for other titles
       switch (title) {
         case 'Home':
-          return [
-            <ProfileButton key="profile-button" isWhite={white} />,
-            <SettingsButton key="settings-button" isWhite={white} />,
-          ]
+          // Añade los botones de perfil y configuración solo en la página de Inicio
+          components.push(
+            <SwitchAccountButton key="account-switch-button" isWhite={white} />
+          )
+          components.push(
+            <ProfileButton key="profile-button" isWhite={white} />
+          )
+          components.push(
+            <SettingsButton key="settings-button" isWhite={white} />
+          )
+          break
+        // Puedes agregar más casos si necesitas botones específicos en otras páginas
         default:
-          return null
+          // Aquí puedes añadir botones que aparecen por defecto en todas las páginas que no sean 'Home' o 'Transaccion'
+          break
       }
     }
+
+    return components
   }
 
   const noShadow = ['Search', 'Perfil', 'Home'].includes(title)
@@ -143,7 +172,7 @@ const Header = ({
         right={renderRight()}
         rightStyle={{
           alignItems: 'center',
-          marginRight: title !== 'Transaccion' ? 20 : 0,
+          marginRight: title == 'Home' ? 50 : 0,
         }}
         left={
           <Icon
@@ -166,6 +195,13 @@ const Header = ({
         ]}
         {...props}
       />
+      {isAccountSelectorVisible && (
+        <AccountSelector
+          isVisible={isAccountSelectorVisible}
+          onClose={() => setIsAccountSelectorVisible(false)}
+          onSelectAccount={setSelectedAccount}
+        />
+      )}
     </Block>
   )
 }

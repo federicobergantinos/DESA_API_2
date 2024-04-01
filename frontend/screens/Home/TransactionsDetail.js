@@ -15,14 +15,14 @@ import WalletContext from '../../navigation/WalletContext'
 
 const MAX_ITEMS = 5
 
-const RenderTransactionsDetail = ({ showBalance, navigation }) => {
+const RenderTransactionsDetail = ({ showBalance, navigation, refreshing }) => {
   const [currentPage, setCurrentPage] = useState(0)
   const [data, setData] = useState([])
   const [loading, setLoading] = useState(false)
   const [allItemsLoaded, setAllItemsLoaded] = useState(false)
   const [attempts, setAttempts] = useState(0)
   const [modalVisible, setModalVisible] = useState(false)
-  const { user } = useContext(WalletContext)
+  const { user, selectedAccount } = useContext(WalletContext)
 
   const renderEmptyListMessage = () => {
     return (
@@ -33,37 +33,53 @@ const RenderTransactionsDetail = ({ showBalance, navigation }) => {
   }
 
   useEffect(() => {
+    setCurrentPage(0)
+    setData([])
+    setAllItemsLoaded(false)
+    setAttempts(0)
+  }, [selectedAccount, refreshing])
+
+  useEffect(() => {
     const fetchTransactions = async () => {
-      if (loading || allItemsLoaded || attempts >= 3) return
+      if (loading || allItemsLoaded || !selectedAccount || attempts >= 3) return
 
       setLoading(true)
       try {
+        const accountId = selectedAccount.accountId
+        if (!accountId) {
+          throw new Error('Account ID is not available')
+        }
+
         const response = await backendApi.transactionsGateway.getAll(
           currentPage,
-          user.id
+          accountId
         )
 
         const transactions = response.response
 
         if (transactions.length > 0) {
-          setData((prevData) => [...prevData, ...transactions])
-          setAttempts(0) // Restablecer intentos si se obtienen datos
-        } else {
-          if (attempts < 2) {
-            setAttempts(attempts + 1)
+          if (currentPage === 0) {
+            setData(transactions)
           } else {
-            setAllItemsLoaded(true)
+            setData((prevData) => [...prevData, ...transactions])
           }
+          setAttempts(0)
+        } else {
+          setAllItemsLoaded(true)
         }
       } catch (error) {
-        console.error('Error fetching recipes:', error)
+        console.error('Error fetching transactions:', error)
+        setAttempts((prevAttempts) => prevAttempts + 1)
+        setTimeout(() => {
+          setCurrentPage(currentPage)
+        }, 1000 * attempts)
       } finally {
         setLoading(false)
       }
     }
 
     fetchTransactions()
-  }, [currentPage, attempts])
+  }, [currentPage, attempts, selectedAccount])
 
   const renderTransaction = ({ item }) => {
     const isPositive = item.amount > 0
@@ -108,8 +124,9 @@ const RenderTransactionsDetail = ({ showBalance, navigation }) => {
       setCurrentPage((prevPage) => prevPage + 1)
     }
   }
+
   const renderFooter = () => {
-    if (data.length > MAX_ITEMS) {
+    if (!modalVisible && data.length > MAX_ITEMS) {
       return (
         <TouchableOpacity
           style={styles.modalButton}
@@ -121,6 +138,19 @@ const RenderTransactionsDetail = ({ showBalance, navigation }) => {
     }
 
     return loading ? <ActivityIndicator animating size="large" /> : null
+  }
+
+  const renderModalFooter = () => {
+    return loading ? (
+      <ActivityIndicator animating size="large" />
+    ) : (
+      <TouchableOpacity
+        style={styles.modalButton}
+        onPress={() => setModalVisible(false)}
+      >
+        <Text style={styles.buttonText}>Cerrar</Text>
+      </TouchableOpacity>
+    )
   }
 
   return (
@@ -140,7 +170,7 @@ const RenderTransactionsDetail = ({ showBalance, navigation }) => {
       </View>
       <FlatList
         data={data.slice(0, MAX_ITEMS)}
-        renderItem={renderTransaction}
+        renderItem={({ item }) => renderTransaction({ item })}
         keyExtractor={(item, index) => index.toString()}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.transactions}
@@ -163,13 +193,8 @@ const RenderTransactionsDetail = ({ showBalance, navigation }) => {
               data={data}
               renderItem={renderTransaction}
               keyExtractor={(item, index) => index.toString()}
+              ListFooterComponent={renderModalFooter}
             />
-            <TouchableOpacity
-              style={styles.modalButton}
-              onPress={() => setModalVisible(!modalVisible)}
-            >
-              <Text style={styles.buttonText}>Cerrar</Text>
-            </TouchableOpacity>
           </View>
         </View>
       </Modal>

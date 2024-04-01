@@ -31,7 +31,7 @@ const DismissKeyboard = ({ children }) => (
 
 const Login = () => {
   const navigation = useNavigation()
-  const { setUser } = useContext(WalletContext)
+  const { setUser, setSelectedAccount } = useContext(WalletContext)
   const isLoggedUser = async () => {
     return (
       (await AsyncStorage.getItem('token')) !== null &&
@@ -145,8 +145,19 @@ const Login = () => {
       if (statusCode === 200) {
         setUser(userData.user)
 
-        // Navegamos a la pantalla Home
-        navigation.replace('Home')
+        const { response: accountData, statusCode } =
+          await backendApi.accountGateway.getAccountByUserId(1)
+        // await backendApi.accountGateway.getAccountByUserId(userId)
+        console.log(accountData[0])
+        if (statusCode === 200) {
+          setSelectedAccount(accountData[0])
+
+          // Navegamos a la pantalla Home
+          navigation.replace('Home')
+        } else {
+          // Manejo de situaciones donde la solicitud de datos del usuario falla
+          console.error('Error fetching account data: Status Code', statusCode)
+        }
       } else {
         // Manejo de situaciones donde la solicitud de datos del usuario falla
         console.error('Error fetching user data: Status Code', statusCode)
