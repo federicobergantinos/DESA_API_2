@@ -1,6 +1,7 @@
 const {
   createAccount,
-  findFirstAccountByUserId,
+  findAccountByUserId,
+  findAccountById,
 } = require('../services/accountService')
 const { findUserById } = require('../services/userService')
 const { v4: uuidv4 } = require('uuid')
@@ -27,7 +28,7 @@ const create = async (req, res) => {
 const getById = async (req, res) => {
   try {
     const accountId = req.params.accountId
-    const response = await getAccount(accountId)
+    const response = await findAccountById(accountId)
     const account = response.dataValues
 
     res.status(200).json({
@@ -40,29 +41,30 @@ const getById = async (req, res) => {
     })
   }
 }
-// Función sleep que retorna una promesa que se resuelve después de un tiempo específico
-function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms))
-}
 
-const getByUserId = async (req, res) => {
+const getAccountsByUserId = async (req, res) => {
   try {
-    const userId = req.params.userId
+    const userId = req.query.userId // Asegurándose de usar query si es cómo se envía el userId.
 
-    // Supongamos que quieres hacer una pausa de 2 segundos antes de buscar la cuenta
-    await sleep(2000) // Pausa de 2 segundos
+    const accounts = await findAccountByUserId(userId)
 
-    const response = await findFirstAccountByUserId(userId)
-    console.log('response', response)
+    // Verificar que se encontraron cuentas antes de intentar acceder a sus propiedades.
+    if (accounts && accounts.length > 0) {
+      // Mapear cada cuenta a un objeto con los campos específicos que deseas incluir.
+      const accountDetails = accounts.map((account) => ({
+        accountId: account.id,
+        accountNumber: account.accountNumber,
+        accountType: account.accountType,
+        // Puedes agregar más campos aquí según sea necesario.
+      }))
 
-    const account = response.dataValues
-    console.log('account', account)
-
-    res.status(200).json({
-      ...account,
-    })
+      // Devolver la lista de objetos.
+      res.status(200).json(accountDetails)
+    } else {
+      res.status(404).json({ msg: 'No accounts found for the given user ID' })
+    }
   } catch (error) {
-    console.error(` ${error}`)
+    console.error(`Error fetching accounts by user ID: ${error}`)
     res.status(error.code || 500).json({
       msg: error.message || 'An exception has occurred',
     })
@@ -72,5 +74,5 @@ const getByUserId = async (req, res) => {
 module.exports = {
   create,
   getById,
-  getByUserId,
+  getAccountsByUserId,
 }

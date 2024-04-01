@@ -16,7 +16,7 @@ const isValidAccount = async (accountId) => {
 }
 
 const findAccountById = async (accountId) => {
-  const account = await User.findByPk(accountId)
+  const account = await Account.findByPk(accountId)
   if (account === null) {
     throw new NotFound('Account not found')
   }
@@ -24,8 +24,8 @@ const findAccountById = async (accountId) => {
   return account
 }
 
-const findFirstAccountByUserId = async (userId) => {
-  const account = await Account.findOne({
+const findAccountByUserId = async (userId) => {
+  const account = await Account.findAll({
     where: { userId: userId },
     order: [['id', 'ASC']],
   })
@@ -41,5 +41,5 @@ module.exports = {
   createAccount,
   isValidAccount,
   findAccountById,
-  findFirstAccountByUserId,
+  findAccountByUserId,
 }

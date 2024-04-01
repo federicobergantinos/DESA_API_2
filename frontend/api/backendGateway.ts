@@ -3,14 +3,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import { createAuthDTO, Credentials } from './authDTO'
 import { TransactionDTO } from './TransactionDTO'
 import { ContactDTO, ContactsDTO, ContactsSearchDTO } from './ContactDTO'
-import { AccountDTO } from './AccountDTO'
+import { AccountDTO, AccountSummaryDTO } from './AccountDTO'
 
 // const api = axios.create({ baseURL: "https://wallet-elb.federicobergantinos.com:443" });
 const api = axios.create({ baseURL: 'http://192.168.1.116:8080' })
 const transactionBaseUrl = '/v1/transactions'
 const usersBaseUrl = '/v1/users'
 const contactsBaseUrl = '/v1/contacts'
-const accountBaseUrl = '/v1/account'
+const accountBaseUrl = '/v1/accounts'
 
 // Interceptores de solicitud y respuesta
 api.interceptors.request.use(
@@ -95,13 +95,14 @@ const transactionsGateway = {
   },
   getAll: (
     page = 0,
-    accountId
+    accountId: any
   ): Promise<{ response: TransactionDTO; statusCode: number }> => {
     let url = `${transactionBaseUrl}/?page=${page}&limit=10`
     if (accountId) {
       url += `&accountId=${accountId}`
     }
 
+    console.log(`Making GET request to: ${url}`); 
     return requests.get(url)
   },
 
@@ -181,11 +182,26 @@ const accountGateway = {
     }
   },
 
-  getAccountByUserId: (
+  getAccountByUserId: async (
     userId: number
+  ): Promise<{ response: AccountSummaryDTO[]; statusCode: number }> => {
+    const url = `${accountBaseUrl}/?userId=${userId}`;
+    console.log(`Making GET request to: ${url}`); 
+  
+    try {
+      const { response, statusCode } = await requests.get(url);
+      return { response, statusCode };
+    } catch (error) {
+      console.error('Error fetching accounts by userId:', error);
+      throw error; 
+    }
+  },
+
+  getById: (
+    accountId: number
   ): Promise<{ response: AccountDTO; statusCode: number }> =>
     {
-      const url = accountBaseUrl + '/firstAccount/' + userId
+      const url = accountBaseUrl + '/' + accountId
       console.log(`Making GET request to: ${url}`)
       return requests.get(url)
     },

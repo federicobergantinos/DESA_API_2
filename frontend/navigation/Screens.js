@@ -9,7 +9,11 @@ import Profile from '../screens/Profile'
 import React from 'react'
 import Login from '../screens/Login'
 import Search from '../screens/Search'
+import Signup from '../screens/Signup'
+import Transfer from '../screens/Transfer'
+import Others from '../screens/Others'
 import AccountDetails from '../screens/AccountDetails'
+import Analytics from '../screens/Analytics'
 // settings
 import Settings from '../screens/Settings'
 import { createStackNavigator } from '@react-navigation/stack'
@@ -58,6 +62,74 @@ function HomeStack(props) {
               white
               back
               title="Transaccion"
+              navigation={navigation}
+              scene={scene}
+            />
+          ),
+          cardStyle: { backgroundColor: '#F8F9FE' },
+        }}
+      />
+      <Stack.Screen
+        name="Analytics"
+        component={Analytics}
+        options={{
+          header: ({ navigation, scene }) => (
+            <Header
+              transparent
+              white
+              back
+              title="Analytics"
+              navigation={navigation}
+              scene={scene}
+            />
+          ),
+          cardStyle: { backgroundColor: '#F8F9FE' },
+        }}
+      />
+      <Stack.Screen
+        name="Transfer"
+        component={Transfer}
+        options={{
+          header: ({ navigation, scene }) => (
+            <Header
+              transparent
+              white
+              back
+              title="Transferencias"
+              navigation={navigation}
+              scene={scene}
+            />
+          ),
+          cardStyle: { backgroundColor: '#F8F9FE' },
+        }}
+      />
+      <Stack.Screen
+        name="Others"
+        component={Others}
+        options={{
+          header: ({ navigation, scene }) => (
+            <Header
+              transparent
+              white
+              back
+              title="Otros"
+              navigation={navigation}
+              scene={scene}
+            />
+          ),
+          cardStyle: { backgroundColor: '#F8F9FE' },
+        }}
+      />
+      <Stack.Screen
+        name="Signup"
+        component={Signup}
+        options={{
+          header: ({ navigation, scene }) => (
+            <Header
+              transparent
+              white
+              back
+              title="Registro"
               navigation={navigation}
               scene={scene}
             />

@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from 'react'
-import { FlatList, View, ImageBackground, TouchableOpacity } from 'react-native'
+import {
+  FlatList,
+  View,
+  ImageBackground,
+  TouchableOpacity,
+  RefreshControl,
+} from 'react-native'
 import { Block, Text } from 'galio-framework'
 import { Images, walletTheme } from '../constants'
 import {
@@ -11,7 +17,15 @@ import Icon from '../components/Icon'
 
 const Home = ({ navigation }) => {
   const [showBalance, setShowBalance] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
   const toggleBalanceVisibility = () => setShowBalance(!showBalance)
+
+  const onRefresh = () => {
+    setRefreshing(true)
+    setTimeout(() => {
+      setRefreshing(false)
+    }, 100)
+  }
 
   const ActionButton = ({ icon, family, title, onPress }) => {
     return (
@@ -43,25 +57,25 @@ const Home = ({ navigation }) => {
         <ActionButton
           icon="arrow-up"
           family="Feather"
-          title="Enviar"
+          title="Transferir"
           onPress={() => {
-            /* Acción aquí */
+            navigation.navigate('Transfer')
           }}
         />
         <ActionButton
           icon="dollar-sign"
           family="Feather"
-          title="Invertir"
+          title="Analytics"
           onPress={() => {
-            /* Acción aquí */
+            navigation.navigate('Analytics')
           }}
         />
         <ActionButton
           icon="receipt"
           family="FontAwesome5"
-          title="Impuestos"
+          title="Otros"
           onPress={() => {
-            /* Acción aquí */
+            navigation.navigate('Others')
           }}
         />
       </View>
@@ -75,12 +89,24 @@ const Home = ({ navigation }) => {
   const sections = [
     {
       key: 'mainInformation',
-      render: () => <RenderMainInformation />,
+      render: () => (
+        <RenderMainInformation
+          showBalance={showBalance}
+          toggleBalanceVisibility={toggleBalanceVisibility}
+          refreshing={refreshing}
+        />
+      ),
     },
     { key: 'buttons', render: renderButtons },
     {
       key: 'transactionsDetail',
-      render: () => <RenderTransactionsDetail />,
+      render: () => (
+        <RenderTransactionsDetail
+          showBalance={showBalance}
+          navigation={navigation}
+          refreshing={refreshing}
+        />
+      ),
     },
   ]
 
@@ -100,6 +126,7 @@ const Home = ({ navigation }) => {
                     <RenderMainInformation
                       showBalance={showBalance}
                       toggleBalanceVisibility={toggleBalanceVisibility}
+                      refreshing={refreshing}
                     />
                   )
                 case 'buttons':
@@ -109,6 +136,7 @@ const Home = ({ navigation }) => {
                     <RenderTransactionsDetail
                       showBalance={showBalance}
                       navigation={navigation}
+                      refreshing={refreshing}
                     />
                   )
                 default:
@@ -119,6 +147,9 @@ const Home = ({ navigation }) => {
             ListHeaderComponent={<View style={{ height: 20 }} />}
             ListFooterComponent={<View style={{ height: 20 }} />}
             showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
           />
         </ImageBackground>
       </Block>

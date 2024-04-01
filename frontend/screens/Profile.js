@@ -17,7 +17,7 @@ import { openImagePickerAsync } from '../components/ImagePicker.js'
 import { useNavigation } from '@react-navigation/native'
 import backendApi from '../api/backendGateway'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import Modal from 'react-native-modal'
+import Icon from '../components/Icon'
 
 const { width, height } = Dimensions.get('screen')
 const thumbMeasure = (width - 48 - 32) / 3
@@ -103,7 +103,7 @@ export default function Profile() {
                     style={styles.container}
                     onPress={handleImagePicked}
                   >
-                    <Text>Adjuntar Imagen</Text>
+                    <Icon name="camera" family="Feather" size={20} />
                   </TouchableOpacity>
                   <Text> </Text>
                 </View>
@@ -126,18 +126,6 @@ export default function Profile() {
                   space="evenly"
                   style={{ marginTop: 5, paddingBottom: 24 }}
                 ></Block>
-              </Block>
-              <Block flex>
-                <Modal
-                  isVisible={isModalVisible}
-                  onBackdropPress={handleCloseModal}
-                >
-                  <View style={styles.modalContent}>
-                    <ScrollView showsHorizontalScrollIndicator={false}>
-                      {renderModalContent()}
-                    </ScrollView>
-                  </View>
-                </Modal>
               </Block>
             </Block>
             <Block style={{ marginBottom: 25 }} />
@@ -198,7 +186,7 @@ const styles = StyleSheet.create({
   },
 
   nameInfo: {
-    marginTop: 35,
+    marginTop: 5,
   },
   divider: {
     width: '90%',
@@ -231,9 +219,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#E8E8E8',
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 8,
-    width: 120,
-    height: 45,
+    borderRadius: 100,
+    marginTop: -30,
+    marginLeft: 80,
+    width: 40,
+    height: 40,
   },
   containerInterno: {
     backgroundColor: '#E8E8E8',
