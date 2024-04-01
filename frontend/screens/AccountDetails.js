@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState } from 'react'
 import {
   View,
   Text,
@@ -8,25 +8,25 @@ import {
   ImageBackground,
   Dimensions,
   ScrollView,
-} from "react-native";
-import { theme, Block } from "galio-framework";
-import { Images, walletTheme } from "../constants";
-import Clipboard from "@react-native-community/clipboard";
-import Icon from "../components/Icon";
-const { width, height } = Dimensions.get("screen");
+} from 'react-native'
+import { theme, Block } from 'galio-framework'
+import { Images, walletTheme } from '../constants'
+import Clipboard from '@react-native-community/clipboard'
+import Icon from '../components/Icon'
+const { width, height } = Dimensions.get('screen')
 
 const AccountDetails = () => {
   const [accountDetails, setAccountDetails] = useState({
-    beneficiaryName: "Juan Pérez",
-    beneficiaryAddress: "123 Calle Principal, Ciudad, País",
-    accountNumber: "000123456789",
-    accountType: "Ahorros",
-  });
+    beneficiaryName: 'Juan Pérez',
+    beneficiaryAddress: '123 Calle Principal, Ciudad, País',
+    accountNumber: '000123456789',
+    accountType: 'Ahorros',
+  })
 
   const copyToClipboard = (text) => {
-    Clipboard.setString(text);
-    alert("Copiado en el portapapeles");
-  };
+    Clipboard.setString(text)
+    alert('Copiado en el portapapeles')
+  }
 
   const shareAccountDetails = () => {
     const message = `
@@ -35,11 +35,11 @@ const AccountDetails = () => {
       - Domicilio del Beneficiario: ${accountDetails.beneficiaryAddress}
       - Número de Cuenta: ${accountDetails.accountNumber}
       - Tipo de Cuenta: ${accountDetails.accountType}
-    `;
+    `
     Share.share({
       message,
-    });
-  };
+    })
+  }
 
   return (
     <Block flex style={styles.home}>
@@ -105,8 +105,8 @@ const AccountDetails = () => {
         </ScrollView>
       </ImageBackground>
     </Block>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   home: {
@@ -119,17 +119,17 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     padding: theme.SIZES.BASE,
   },
   title: {
     fontSize: 20,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     marginBottom: theme.SIZES.BASE,
   },
   detailContainer: {
-    width: "100%",
+    width: '100%',
     backgroundColor: walletTheme.COLORS.WHITE,
     padding: theme.SIZES.BASE,
     marginTop: theme.SIZES.BASE / 2,
@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
   },
   shareButtonText: {
     color: walletTheme.COLORS.WHITE,
-    textAlign: "center",
+    textAlign: 'center',
     fontSize: 16,
   },
   scrollViewContent: {
@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
     marginHorizontal: theme.SIZES.BASE,
     marginTop: theme.SIZES.BASE,
     borderRadius: theme.SIZES.BASE / 2,
-    shadowColor: "black",
+    shadowColor: 'black',
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 6,
     shadowOpacity: 0.1,
@@ -168,12 +168,12 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     fontSize: 16,
-    color: "grey",
+    color: 'grey',
     marginBottom: theme.SIZES.BASE / 2,
   },
   title: {
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
   copyButton: {
     marginTop: 10,
@@ -182,13 +182,13 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   copyButtonText: {
-    color: "#FFF",
-    textAlign: "center",
+    color: '#FFF',
+    textAlign: 'center',
   },
   fieldContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingRight: 10,
   },
   field: {
@@ -201,6 +201,6 @@ const styles = StyleSheet.create({
     marginTop: 15,
     marginVertical: theme.SIZES.BASE / 2,
   },
-});
+})
 
-export default AccountDetails;
+export default AccountDetails

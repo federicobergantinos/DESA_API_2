@@ -1,28 +1,28 @@
-import { Animated, Dimensions, Easing } from "react-native";
+import { Animated, Dimensions, Easing } from 'react-native'
 // header for screens
-import { Header, Icon } from "../components";
-import { walletTheme, tabs } from "../constants";
+import { Header, Icon } from '../components'
+import { walletTheme, tabs } from '../constants'
 // screens
-import Home from "../screens/Home";
-import Transaction from "../screens/Transaction";
-import Profile from "../screens/Profile";
-import React from "react";
-import Login from "../screens/Login";
-import Search from "../screens/Search";
-import AccountDetails from "../screens/AccountDetails";
+import Home from '../screens/Home'
+import Transaction from '../screens/Transaction'
+import Profile from '../screens/Profile'
+import React from 'react'
+import Login from '../screens/Login'
+import Search from '../screens/Search'
+import AccountDetails from '../screens/AccountDetails'
 // settings
-import Settings from "../screens/Settings";
-import { createStackNavigator } from "@react-navigation/stack";
+import Settings from '../screens/Settings'
+import { createStackNavigator } from '@react-navigation/stack'
 
-const { width } = Dimensions.get("screen");
-const Stack = createStackNavigator();
+const { width } = Dimensions.get('screen')
+const Stack = createStackNavigator()
 
 function HomeStack(props) {
   return (
     <Stack.Navigator
       screenOptions={{
-        mode: "card",
-        headerShown: "screen",
+        mode: 'card',
+        headerShown: 'screen',
       }}
     >
       <Stack.Screen
@@ -45,7 +45,7 @@ function HomeStack(props) {
               scene={scene}
             />
           ),
-          cardStyle: { backgroundColor: "#F8F9FE" },
+          cardStyle: { backgroundColor: '#F8F9FE' },
         }}
       />
       <Stack.Screen
@@ -62,7 +62,7 @@ function HomeStack(props) {
               scene={scene}
             />
           ),
-          cardStyle: { backgroundColor: "#F8F9FE" },
+          cardStyle: { backgroundColor: '#F8F9FE' },
         }}
       />
       <Stack.Screen
@@ -72,7 +72,7 @@ function HomeStack(props) {
           header: ({ navigation, scene }) => (
             <Header title="Search" back navigation={navigation} scene={scene} />
           ),
-          cardStyle: { backgroundColor: "#F8F9FE" },
+          cardStyle: { backgroundColor: '#F8F9FE' },
         }}
       />
       <Stack.Screen
@@ -87,7 +87,7 @@ function HomeStack(props) {
               scene={scene}
             />
           ),
-          cardStyle: { backgroundColor: "#F8F9FE" },
+          cardStyle: { backgroundColor: '#F8F9FE' },
         }}
       />
       <Stack.Screen
@@ -103,7 +103,7 @@ function HomeStack(props) {
               scene={scene}
             />
           ),
-          cardStyle: { backgroundColor: "#FFFFFF" },
+          cardStyle: { backgroundColor: '#FFFFFF' },
         }}
       />
       <Stack.Screen
@@ -118,22 +118,22 @@ function HomeStack(props) {
               navigation={navigation}
             />
           ),
-          cardStyle: { backgroundColor: "#F8F9FE" },
+          cardStyle: { backgroundColor: '#F8F9FE' },
         }}
       />
     </Stack.Navigator>
-  );
+  )
 }
 
 export default function OnboardingStack(props) {
   return (
     <Stack.Navigator
       screenOptions={{
-        mode: "card",
+        mode: 'card',
         headerShown: false,
       }}
     >
       <Stack.Screen name="App" component={HomeStack} />
     </Stack.Navigator>
-  );
+  )
 }

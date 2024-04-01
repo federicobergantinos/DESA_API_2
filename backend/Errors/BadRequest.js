@@ -1,8 +1,8 @@
 class BadRequest extends Error {
   constructor(message) {
-    super(message);
-    this.code = 400;
+    super(message)
+    this.code = 400
   }
 }
 
-module.exports = BadRequest;
+module.exports = BadRequest

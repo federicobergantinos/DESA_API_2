@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react'
 import {
   StyleSheet,
   Dimensions,
@@ -8,172 +8,76 @@ import {
   Platform,
   TouchableOpacity,
   View,
-} from "react-native";
-import { Block, Text, theme } from "galio-framework";
-import { Button, Header } from "../components";
-import { Images, walletTheme } from "../constants";
-import { HeaderHeight } from "../constants/utils";
-import { openImagePickerAsync } from "../components/ImagePicker.js";
-import { useNavigation } from "@react-navigation/native";
-import backendApi from "../api/backendGateway";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import Modal from "react-native-modal";
+} from 'react-native'
+import { Block, Text, theme } from 'galio-framework'
+import { Button, Header } from '../components'
+import { Images, walletTheme } from '../constants'
+import { HeaderHeight } from '../constants/utils'
+import { openImagePickerAsync } from '../components/ImagePicker.js'
+import { useNavigation } from '@react-navigation/native'
+import backendApi from '../api/backendGateway'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import Modal from 'react-native-modal'
 
-const { width, height } = Dimensions.get("screen");
-const thumbMeasure = (width - 48 - 32) / 3;
+const { width, height } = Dimensions.get('screen')
+const thumbMeasure = (width - 48 - 32) / 3
 
 export default function Profile() {
-  const navigation = useNavigation();
-  const [userId, setUserId] = useState(null);
-  const [userInfo, setUserInfo] = useState(null);
-  const [favorites, setFavorites] = useState([]);
-  const [favoritesCount, setFavoritesCount] = useState(0);
-  const [recipesCount, setRecipesCount] = useState(0);
-  const [recipes, setRecipes] = useState([]);
-  const [modalContent, setModalContent] = useState({ type: "", items: [] });
-  const [isModalVisible, setModalVisible] = useState(false);
+  const navigation = useNavigation()
+  const [userId, setUserId] = useState(null)
+  const [userInfo, setUserInfo] = useState(null)
 
   const handleImagePicked = async () => {
     try {
-      const newImage = await openImagePickerAsync();
+      const newImage = await openImagePickerAsync()
       if (newImage) {
         try {
           const response = await backendApi.transactionsGateway.uploadImage({
             image: newImage.base64,
-          });
+          })
           if (response.statusCode === 200) {
-            const imageUrl = response.response.images;
+            const imageUrl = response.response.images
             // Actualizar el perfil del usuario en el backend
-            const userData = { photoUrl: imageUrl };
+            const userData = { photoUrl: imageUrl }
             const updateResponse = await backendApi.usersGateway.editProfile(
               userId,
               userData
-            );
+            )
             if (updateResponse.statusCode === 200) {
               // Actualizar el estado local y la UI
-              setUserInfo({ ...userInfo, photoUrl: imageUrl });
-              alert("Foto del perfil actualizada con éxito.");
+              setUserInfo({ ...userInfo, photoUrl: imageUrl })
+              alert('Foto del perfil actualizada con éxito.')
             } else {
-              console.error("Error al actualizar el perfil del usuario.");
-              alert("No se pudo actualizar la foto del perfil.");
+              console.error('Error al actualizar el perfil del usuario.')
+              alert('No se pudo actualizar la foto del perfil.')
             }
           }
         } catch (error) {
-          console.error("Error al subir la imagen:", error);
-          alert("No se pudo subir la imagen.");
+          console.error('Error al subir la imagen:', error)
+          alert('No se pudo subir la imagen.')
         }
       }
     } catch (error) {
-      console.error("Error al seleccionar la imagen:", error);
-      alert("No se pudo seleccionar la imagen.");
+      console.error('Error al seleccionar la imagen:', error)
+      alert('No se pudo seleccionar la imagen.')
     }
-  };
-
-  const handleOpenModal = (type) => {
-    setModalContent({
-      type: type,
-      items: type === "recipes" ? recipes : favorites,
-    });
-    setModalVisible(true);
-  };
-
-  // Función para cerrar el modal
-  const handleCloseModal = () => {
-    setModalVisible(false);
-  };
-
-  const renderModalContent = () => {
-    return (
-      <Block
-        style={{
-          flexDirection: "row",
-          flexWrap: "wrap",
-          // marginHorizontal: -theme.SIZES.BASE,
-          width: width * 0.86,
-        }}
-      >
-        {modalContent.items.map((item) => {
-          // Determinar la fuente de la imagen basada en el tipo de contenido
-          let imageSource;
-          if (modalContent.type === "recipes") {
-            imageSource = { uri: item.media }; // Asumiendo que 'media' es una URL en el caso de recetas
-          } else if (modalContent.type === "favorites") {
-            imageSource = { uri: item.media[0].data }; // Asumiendo que 'media' es un array y queremos la URL del primer objeto para favoritos
-          }
-
-          return (
-            <TouchableOpacity
-              key={item.id}
-              style={styles.favoritesContainerModal}
-              onPress={() => navigateToRecipe(item.id)} // Ajusta esta función si es necesario para favoritos
-            >
-              <Image
-                source={imageSource}
-                style={styles.thumb}
-                resizeMode="cover"
-              />
-            </TouchableOpacity>
-          );
-        })}
-      </Block>
-    );
-  };
+  }
 
   useEffect(() => {
     const init = async () => {
       try {
-        // Obtener el userId una sola vez
-        const storedUserId = await AsyncStorage.getItem("userId");
+        const storedUserId = await AsyncStorage.getItem('userId')
         const { response, statusCode } =
-          await backendApi.usersGateway.getUser(storedUserId);
-        setUserId(storedUserId); // Almacenar userId en el estado
-        setUserInfo(response.user); // Almacenar userId en el estado
-
-        // Llamadas a la API pueden ser movidas aquí si dependen de userId
-        // Asegúrate de verificar que userId no sea null antes de hacer las llamadas
+          await backendApi.usersGateway.getUser(storedUserId)
+        setUserId(storedUserId) // Almacenar userId en el estado
+        setUserInfo(response.user) // Almacenar userId en el estado
       } catch (error) {
-        console.error("Error inicializando el perfil:", error);
+        console.error('Error inicializando el perfil:', error)
       }
-    };
-
-    init();
-  }, []);
-
-  useEffect(() => {
-    const fetchFavorites = async () => {
-      if (!userId) return; // Asegurar que userId esté disponible
-      try {
-        const response = await backendApi.usersGateway.favorites(userId);
-        setFavorites(response.response.favorites);
-        setFavoritesCount(response.response.favorites.length);
-      } catch (error) {
-        console.error("Error al obtener los favoritos", error);
-      }
-    };
-
-    const fetchRecipes = async () => {
-      if (!userId) return; // Asegurar que userId esté disponible
-      try {
-        const { response: recipes } =
-          await backendApi.transactionsGateway.getAll(0, undefined, userId);
-        setRecipes(recipes);
-        setRecipesCount(recipes.length);
-      } catch (error) {
-        console.error("Error al obtener las recetas", error);
-      }
-    };
-
-    if (userId) {
-      fetchFavorites();
-      fetchRecipes();
     }
-  }, [userId]);
 
-  const navigateToRecipe = (recipeId) => {
-    navigation.navigate("Recipe", {
-      recipeId: recipeId,
-    });
-  };
+    init()
+  }, [])
 
   return (
     <Block flex style={styles.profile}>
@@ -184,7 +88,7 @@ export default function Profile() {
         >
           <ScrollView
             showsVerticalScrollIndicator={false}
-            style={{ width, marginTop: "25%" }}
+            style={{ width, marginTop: '25%' }}
           >
             <Block flex style={styles.profileCard}>
               <Block middle style={styles.avatarContainer}>
@@ -207,13 +111,13 @@ export default function Profile() {
               <Block style={styles.info}>
                 <Block middle style={styles.nameInfo}>
                   <Text
-                    style={{ fontFamily: "open-sans-regular" }}
+                    style={{ fontFamily: 'open-sans-regular' }}
                     size={24}
                     color="#32325D"
                   >
                     {userInfo
                       ? `${userInfo.name} ${userInfo.surname}`
-                      : "Cargando..."}
+                      : 'Cargando...'}
                   </Text>
                 </Block>
                 <Block
@@ -241,12 +145,12 @@ export default function Profile() {
         </ImageBackground>
       </Block>
     </Block>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
   profile: {
-    marginTop: Platform.OS === "android" ? -HeaderHeight : 0,
+    marginTop: Platform.OS === 'android' ? -HeaderHeight : 0,
     flex: 1,
   },
   profileBackground: {
@@ -255,8 +159,8 @@ const styles = StyleSheet.create({
     top: height / 10,
   },
   parent: {
-    flexDirection: "row",
-    justifyContent: "space-around",
+    flexDirection: 'row',
+    justifyContent: 'space-around',
   },
   profileCard: {
     padding: theme.SIZES.BASE,
@@ -265,8 +169,8 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 6,
     borderTopRightRadius: 6,
     backgroundColor: theme.COLORS.WHITE,
-    shadowColor: "black",
-    backgroundColor: "#FFF",
+    shadowColor: 'black',
+    backgroundColor: '#FFF',
     shadowOffset: { width: 0, height: 0 },
     shadowRadius: 8,
     shadowOpacity: 0.2,
@@ -276,7 +180,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 40,
   },
   avatarContainer: {
-    position: "relative",
+    position: 'relative',
     marginTop: -80,
   },
   avatar: {
@@ -297,9 +201,9 @@ const styles = StyleSheet.create({
     marginTop: 35,
   },
   divider: {
-    width: "90%",
+    width: '90%',
     borderWidth: 1,
-    borderColor: "#E9ECEF",
+    borderColor: '#E9ECEF',
   },
   thumb: {
     width: thumbMeasure,
@@ -310,51 +214,51 @@ const styles = StyleSheet.create({
   },
   // Asegúrate de que el bloque que contiene las miniaturas tenga `flexWrap: 'wrap'`
   favoritesContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "flex-start", // Ajusta esto para cambiar la alineación si es necesario
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'flex-start', // Ajusta esto para cambiar la alineación si es necesario
     // Otros estilos que puedas necesitar para este contenedor
   },
   favoritesContainerModal: {
-    flexDirection: "row",
-    flexWrap: "wrap",
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     width: thumbMeasure,
     margin: theme.SIZES.BASE / 4,
-    justifyContent: "flex-end", // Ajusta esto para cambiar la alineación si es necesario
+    justifyContent: 'flex-end', // Ajusta esto para cambiar la alineación si es necesario
     // Otros estilos que puedas necesitar para este contenedor
   },
   container: {
-    backgroundColor: "#E8E8E8",
-    alignItems: "center",
-    justifyContent: "center",
+    backgroundColor: '#E8E8E8',
+    alignItems: 'center',
+    justifyContent: 'center',
     borderRadius: 8,
     width: 120,
     height: 45,
   },
   containerInterno: {
-    backgroundColor: "#E8E8E8",
-    alignItems: "center",
-    justifyContent: "center",
+    backgroundColor: '#E8E8E8',
+    alignItems: 'center',
+    justifyContent: 'center',
     borderRadius: 8,
     width: 140,
     height: 45,
     top: 220,
   },
   editarPerfilPopup: {
-    backgroundColor: "#000000aa",
+    backgroundColor: '#000000aa',
     flex: 1,
   },
   editarPerfilPopupInterno: {
-    backgroundColor: "000000aa",
-    alignItems: "center",
+    backgroundColor: '000000aa',
+    alignItems: 'center',
   },
   modalContent: {
-    backgroundColor: "white",
+    backgroundColor: 'white',
     padding: 10,
     width: width * 0.9,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
     borderRadius: 4,
-    borderColor: "rgba(0, 0, 0, 0.1)",
+    borderColor: 'rgba(0, 0, 0, 0.1)',
   },
-});
+})

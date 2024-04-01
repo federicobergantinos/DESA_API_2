@@ -1,26 +1,26 @@
-require("dotenv").config();
-const express = require("express");
-const { dbConnection } = require("./configurations/database/config");
+require('dotenv').config()
+const express = require('express')
+const { dbConnection } = require('./configurations/database/config')
 
-const app = express();
-app.use(express.json());
+const app = express()
+app.use(express.json())
 
-dbConnection();
+dbConnection()
 paths = {
-  status: "/ping",
-  loginV1: "/v1/auth",
-  transactions: "/v1/transactions",
-  users: "/v1/users",
-  contacts: "/v1/contacts",
-};
+  status: '/ping',
+  loginV1: '/v1/auth',
+  transactions: '/v1/transactions',
+  users: '/v1/users',
+  contacts: '/v1/contacts',
+}
 
-app.use(paths.status, require("./routes/healthCheck"));
-app.use(paths.loginV1, require("./routes/auth"));
-app.use(paths.transactions, require("./routes/transactions"));
-app.use(paths.users, require("./routes/users"));
-app.use(paths.contacts, require("./routes/contacts"));
+app.use(paths.status, require('./routes/healthCheck'))
+app.use(paths.loginV1, require('./routes/auth'))
+app.use(paths.transactions, require('./routes/transactions'))
+app.use(paths.users, require('./routes/users'))
+app.use(paths.contacts, require('./routes/contacts'))
 
-const PORT = 8080;
+const PORT = 8080
 app.listen(PORT, () => {
-  console.log(`Servidor escuchando en el puerto ${PORT}`);
-});
+  console.log(`Servidor escuchando en el puerto ${PORT}`)
+})

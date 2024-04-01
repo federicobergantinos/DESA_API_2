@@ -1,16 +1,16 @@
-const { Media, Transaction, User } = require("../entities/associateModels");
-const BadRequest = require("../Errors/BadRequest");
-const { isValidUser } = require("./userService");
-const NotFound = require("../Errors/NotFound");
-const { Op } = require("sequelize");
-const sequelize = require("../configurations/database/sequelizeConnection");
+const { Account, Transaction, User } = require('../entities/associateModels')
+const BadRequest = require('../Errors/BadRequest')
+const { isValidAccount } = require('./accountService')
+const NotFound = require('../Errors/NotFound')
+const { Op } = require('sequelize')
+const sequelize = require('../configurations/database/sequelizeConnection')
 
 const createTransaction = async (transactionData) => {
-  const { userId, name, description, amount, currency, status, date } =
-    transactionData;
+  const { accountId, name, description, amount, currency, status, date } =
+    transactionData
 
-  if (!(await isValidUser(userId))) {
-    throw new BadRequest("Invalid User");
+  if (!(await isValidAccount(accountId))) {
+    throw new BadRequest('Invalid Account')
   }
 
   try {
@@ -19,7 +19,7 @@ const createTransaction = async (transactionData) => {
       // Crear la transacción
       const newTransaction = await Transaction.create(
         {
-          userId,
+          accountId,
           name,
           description,
           amount,
@@ -28,43 +28,53 @@ const createTransaction = async (transactionData) => {
           date,
         },
         { transaction: t }
-      );
+      )
 
-      return newTransaction;
-    });
+      return newTransaction
+    })
 
-    return result;
+    return result
   } catch (error) {
-    throw error;
+    throw error
   }
-};
+}
 
 const getTransactions = async (queryData) => {
   let includeOptions = [
     {
-      model: User,
-      as: "user",
-      where: { id: queryData.userId },
-      required: true,
+      model: Account,
+      as: 'account', // Use the 'as' keyword with the alias you defined in the association
+      include: [
+        {
+          model: User,
+          as: 'user', // If you also have an alias for the User model, make sure to include it here
+          required: true,
+        },
+      ],
     },
-  ];
-  const transactions = await Transaction.findAll({
-    include: includeOptions,
-  });
+  ]
 
-  return transactions;
-};
+  const transactions = await Transaction.findAll({
+    where: {
+      // If you're filtering by accountId, ensure it's done correctly here
+      accountId: queryData.accountId,
+    },
+    include: includeOptions,
+  })
+
+  return transactions
+}
 
 const getTransaction = async (transactionId) => {
-  const transaction = await Transaction.findByPk(transactionId);
+  const transaction = await Transaction.findByPk(transactionId)
   if (transaction === null) {
-    throw new NotFound("Transaction not found");
+    throw new NotFound('Transaction not found')
   }
 
-  return transaction;
-};
+  return transaction
+}
 module.exports = {
   createTransaction,
   getTransactions,
   getTransaction,
-};
+}

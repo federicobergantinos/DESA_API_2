@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useContext, useState, useEffect } from 'react'
 import {
   FlatList,
   View,
@@ -6,78 +6,79 @@ import {
   Text,
   Modal,
   TouchableOpacity,
-} from "react-native";
-import { Block, Icon } from "galio-framework";
-import styles from "./HomeStyles";
-import backendApi from "../../api/backendGateway";
-import { walletTheme } from "../../constants";
+} from 'react-native'
+import { Block, Icon } from 'galio-framework'
+import styles from './HomeStyles'
+import backendApi from '../../api/backendGateway'
+import { walletTheme } from '../../constants'
+import WalletContext from '../../navigation/WalletContext'
 
-const MAX_ITEMS = 5;
+const MAX_ITEMS = 5
 
 const RenderTransactionsDetail = ({ showBalance, navigation }) => {
-  const [currentPage, setCurrentPage] = useState(0);
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [allItemsLoaded, setAllItemsLoaded] = useState(false);
-  const [attempts, setAttempts] = useState(0);
-  const [modalVisible, setModalVisible] = useState(false);
+  const [currentPage, setCurrentPage] = useState(0)
+  const [data, setData] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [allItemsLoaded, setAllItemsLoaded] = useState(false)
+  const [attempts, setAttempts] = useState(0)
+  const [modalVisible, setModalVisible] = useState(false)
+  const { user } = useContext(WalletContext)
 
   const renderEmptyListMessage = () => {
     return (
       <View style={styles.emptyListContainer}>
         <Text style={styles.emptyListText}>Sin Transacciones</Text>
       </View>
-    );
-  };
+    )
+  }
 
   useEffect(() => {
     const fetchTransactions = async () => {
-      if (loading || allItemsLoaded || attempts >= 3) return;
+      if (loading || allItemsLoaded || attempts >= 3) return
 
-      setLoading(true);
+      setLoading(true)
       try {
-        const userId = 1;
         const response = await backendApi.transactionsGateway.getAll(
           currentPage,
-          userId
-        );
+          user.id
+        )
 
-        const transactions = response.response;
+        const transactions = response.response
 
         if (transactions.length > 0) {
-          setData((prevData) => [...prevData, ...transactions]);
-          setAttempts(0); // Restablecer intentos si se obtienen datos
+          setData((prevData) => [...prevData, ...transactions])
+          setAttempts(0) // Restablecer intentos si se obtienen datos
         } else {
           if (attempts < 2) {
-            setAttempts(attempts + 1);
+            setAttempts(attempts + 1)
           } else {
-            setAllItemsLoaded(true);
+            setAllItemsLoaded(true)
           }
         }
       } catch (error) {
-        console.error("Error fetching recipes:", error);
+        console.error('Error fetching recipes:', error)
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchTransactions();
-  }, [currentPage, attempts]);
+    fetchTransactions()
+  }, [currentPage, attempts])
 
   const renderTransaction = ({ item }) => {
-    const isPositive = item.amount > 0;
+    const isPositive = item.amount > 0
     const containerStyle = isPositive
       ? styles.iconContainerNegative
-      : styles.iconContainer;
-    const iconColor = isPositive ? "#00C853" : "#C70039";
+      : styles.iconContainer
+    const iconColor = isPositive ? '#00C853' : '#C70039'
     const amountDisplay = showBalance
       ? `${item.amount} ${item.currency}`
-      : "***";
+      : '***'
 
     return (
       <TouchableOpacity
         onPress={() =>
-          navigation.navigate("Transaction", { transactionId: item.id })
+          navigation.navigate('Transaction', { transactionId: item.id })
         }
       >
         <View style={styles.itemContainer}>
@@ -99,14 +100,14 @@ const RenderTransactionsDetail = ({ showBalance, navigation }) => {
           </View>
         </View>
       </TouchableOpacity>
-    );
-  };
+    )
+  }
 
   const loadMoreItems = () => {
     if (!loading && !allItemsLoaded) {
-      setCurrentPage((prevPage) => prevPage + 1);
+      setCurrentPage((prevPage) => prevPage + 1)
     }
-  };
+  }
   const renderFooter = () => {
     if (data.length > MAX_ITEMS) {
       return (
@@ -116,11 +117,11 @@ const RenderTransactionsDetail = ({ showBalance, navigation }) => {
         >
           <Text style={styles.buttonText}>Ver más</Text>
         </TouchableOpacity>
-      );
+      )
     }
 
-    return loading ? <ActivityIndicator animating size="large" /> : null;
-  };
+    return loading ? <ActivityIndicator animating size="large" /> : null
+  }
 
   return (
     <Block
@@ -153,7 +154,7 @@ const RenderTransactionsDetail = ({ showBalance, navigation }) => {
         transparent={true}
         visible={modalVisible}
         onRequestClose={() => {
-          setModalVisible(!modalVisible);
+          setModalVisible(!modalVisible)
         }}
       >
         <View style={styles.centeredView}>
@@ -173,7 +174,7 @@ const RenderTransactionsDetail = ({ showBalance, navigation }) => {
         </View>
       </Modal>
     </Block>
-  );
-};
+  )
+}
 
-export default RenderTransactionsDetail;
+export default RenderTransactionsDetail

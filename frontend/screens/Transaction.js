@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect } from 'react'
 import {
   View,
   ImageBackground,
@@ -7,38 +7,36 @@ import {
   Dimensions,
   TouchableOpacity,
   ScrollView,
-} from "react-native";
-import { theme, Block } from "galio-framework";
-import { Images, walletTheme } from "../constants";
-import { useRoute } from "@react-navigation/native";
-import backendApi from "../api/backendGateway";
-import moment from "moment";
-import Clipboard from "@react-native-community/clipboard";
-import Icon from "../components/Icon";
-import WalletContext from "../navigation/WalletContext";
-const { width, height } = Dimensions.get("screen");
+} from 'react-native'
+import { theme, Block } from 'galio-framework'
+import { Images, walletTheme } from '../constants'
+import { useRoute } from '@react-navigation/native'
+import backendApi from '../api/backendGateway'
+import moment from 'moment'
+import Clipboard from '@react-native-community/clipboard'
+import Icon from '../components/Icon'
+import WalletContext from '../navigation/WalletContext'
+const { width, height } = Dimensions.get('screen')
 
 const Transaction = () => {
-  const route = useRoute();
-  const { transactionId } = route.params;
-  const { transaction, setTransaction } = useContext(WalletContext);
+  const route = useRoute()
+  const { transactionId } = route.params
+  const { transaction, setTransaction } = useContext(WalletContext)
 
   useEffect(() => {
     const fetchTransaction = async () => {
-      console.log("Cargando detalles de la transacción", transactionId);
+      console.log('Cargando detalles de la transacción', transactionId)
       try {
         const response =
-          await backendApi.transactionsGateway.getTransactionById(
-            transactionId
-          );
-        setTransaction(response.response);
+          await backendApi.transactionsGateway.getTransactionById(transactionId)
+        setTransaction(response.response)
       } catch (error) {
-        console.error("Error al cargar detalles de la transacción:", error);
+        console.error('Error al cargar detalles de la transacción:', error)
       }
-    };
+    }
 
-    fetchTransaction();
-  }, [transactionId]);
+    fetchTransaction()
+  }, [transactionId])
 
   // Creating separate cards for each detail
   const TransactionDetailCard = ({ title, children }) => (
@@ -46,25 +44,25 @@ const Transaction = () => {
       <Text style={styles.cardTitle}>{title}</Text>
       {children}
     </View>
-  );
+  )
 
   // Function to format date
   const formatDate = (dateString) => {
-    return moment(dateString).format("D [de] MMMM [de] YYYY");
-  };
+    return moment(dateString).format('D [de] MMMM [de] YYYY')
+  }
 
   // Function to determine amount text color
   const getAmountTextColor = (amount) => {
-    return amount >= 0 ? "green" : "red";
-  };
+    return amount >= 0 ? 'green' : 'red'
+  }
 
   const copyToClipboard = () => {
-    Clipboard.setString(`${transactionId}`);
-  };
+    Clipboard.setString(`${transactionId}`)
+  }
 
   const renderStatus = (status) => {
     const icon =
-      status === "Paid" ? (
+      status === 'Paid' ? (
         <Icon
           name="checkcircle"
           family="AntDesign"
@@ -80,16 +78,16 @@ const Transaction = () => {
           color="red"
           style={{ marginRight: 5, marginTop: 7 }}
         />
-      );
-    const textStatus = status === "Paid" ? "Pagado" : "Cancelado";
+      )
+    const textStatus = status === 'Paid' ? 'Pagado' : 'Cancelado'
 
     return (
-      <View style={{ flexDirection: "row", alignItems: "center" }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
         {icon}
         <Text style={styles.status}>{textStatus}</Text>
       </View>
-    );
-  };
+    )
+  }
 
   return (
     <Block flex style={styles.home}>
@@ -142,8 +140,8 @@ const Transaction = () => {
         </ScrollView>
       </ImageBackground>
     </Block>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   home: {
@@ -160,7 +158,7 @@ const styles = StyleSheet.create({
     marginHorizontal: theme.SIZES.BASE,
     marginTop: theme.SIZES.BASE,
     borderRadius: theme.SIZES.BASE / 2,
-    shadowColor: "black",
+    shadowColor: 'black',
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 6,
     shadowOpacity: 0.1,
@@ -172,11 +170,11 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
   amount: {
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     color: theme.COLORS.PRIMARY,
   },
   status: {
@@ -191,7 +189,7 @@ const styles = StyleSheet.create({
   description: {
     fontSize: 14,
     color: theme.COLORS.BLACK,
-    textAlign: "justify",
+    textAlign: 'justify',
   },
   scrollViewContent: {
     paddingTop: 100,
@@ -203,19 +201,19 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   copyButtonText: {
-    color: "#FFF",
-    textAlign: "center",
+    color: '#FFF',
+    textAlign: 'center',
   },
   transactionIdContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingRight: 10, // Adjust padding as needed
   },
   transactionId: {
     fontSize: 14,
     color: theme.COLORS.BLACK,
   },
-});
+})
 
-export default Transaction;
+export default Transaction

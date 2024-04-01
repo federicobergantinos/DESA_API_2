@@ -1,5 +1,5 @@
-const express = require("express");
-const router = express.Router();
+const express = require('express')
+const router = express.Router()
 
 const {
   create,
@@ -8,14 +8,14 @@ const {
   searchAll,
   update,
   deleteContact,
-} = require("../controllers/contactController");
+} = require('../controllers/contactController')
 
-router.post("/create", create);
-router.get("/", getAll);
-router.get("/search", searchAll);
-router.get("/:contactId", getById);
-router.put("/:contactId", update);
-router.get("/search", searchAll);
-router.delete("/:contactId", deleteContact);
+router.post('/create', create)
+router.get('/', getAll)
+router.get('/search', searchAll)
+router.get('/:contactId', getById)
+router.put('/:contactId', update)
+router.get('/search', searchAll)
+router.delete('/:contactId', deleteContact)
 
-module.exports = router;
+module.exports = router

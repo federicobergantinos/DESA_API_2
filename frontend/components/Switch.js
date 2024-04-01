@@ -1,17 +1,17 @@
-import React from "react";
-import { Switch, Platform } from "react-native";
+import React from 'react'
+import { Switch, Platform } from 'react-native'
 
-import walletTheme from "../constants/Theme";
+import walletTheme from '../constants/Theme'
 
 class MkSwitch extends React.Component {
   render() {
-    const { value, ...props } = this.props;
+    const { value, ...props } = this.props
     const thumbColor =
-      Platform.OS === "ios"
+      Platform.OS === 'ios'
         ? null
-        : Platform.OS === "android" && value
+        : Platform.OS === 'android' && value
           ? walletTheme.COLORS.SWITCH_ON
-          : walletTheme.COLORS.SWITCH_OFF;
+          : walletTheme.COLORS.SWITCH_OFF
 
     return (
       <Switch
@@ -24,8 +24,8 @@ class MkSwitch extends React.Component {
         }}
         {...props}
       />
-    );
+    )
   }
 }
 
-export default MkSwitch;
+export default MkSwitch

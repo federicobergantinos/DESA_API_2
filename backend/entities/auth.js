@@ -1,7 +1,7 @@
-const { DataTypes } = require("sequelize");
-const sequelize = require("../configurations/database/sequelizeConnection");
+const { DataTypes } = require('sequelize')
+const sequelize = require('../configurations/database/sequelizeConnection')
 
-const Authorization = sequelize.define("authorizations", {
+const Authorization = sequelize.define('authorizations', {
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
@@ -17,6 +17,6 @@ const Authorization = sequelize.define("authorizations", {
     allowNull: false,
     unique: true,
   },
-});
+})
 
-module.exports = Authorization;
+module.exports = Authorization

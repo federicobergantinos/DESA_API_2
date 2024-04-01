@@ -1,48 +1,48 @@
-import React, { useContext, useEffect, useState } from "react";
-import { TouchableOpacity, StyleSheet, Dimensions, Share } from "react-native";
-import { Block, NavBar, theme } from "galio-framework";
-import { CommonActions, useNavigation } from "@react-navigation/native"; // Importa useNavigation de '@react-navigation/native'
+import React, { useContext, useEffect, useState } from 'react'
+import { TouchableOpacity, StyleSheet, Dimensions, Share } from 'react-native'
+import { Block, NavBar, theme } from 'galio-framework'
+import { CommonActions, useNavigation } from '@react-navigation/native' // Importa useNavigation de '@react-navigation/native'
 
-import Icon from "./Icon";
-import walletTheme from "../constants/Theme";
-import WalletContext from "../navigation/WalletContext";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import Icon from './Icon'
+import walletTheme from '../constants/Theme'
+import WalletContext from '../navigation/WalletContext'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
-const { height, width } = Dimensions.get("window");
+const { height, width } = Dimensions.get('window')
 
 const ProfileButton = ({ isWhite, style }) => {
-  const navigation = useNavigation();
+  const navigation = useNavigation()
   return (
     <TouchableOpacity
       style={[styles.button, style]}
-      onPress={() => navigation.navigate("Profile")}
+      onPress={() => navigation.navigate('Profile')}
     >
       <Icon
         family="Feather"
         size={20}
         name="user"
-        color={walletTheme.COLORS[isWhite ? "WHITE" : "ICON"]}
+        color={walletTheme.COLORS[isWhite ? 'WHITE' : 'ICON']}
       />
     </TouchableOpacity>
-  );
-};
+  )
+}
 
 const SettingsButton = ({ isWhite, style }) => {
-  const navigation = useNavigation();
+  const navigation = useNavigation()
   return (
     <TouchableOpacity
       style={[styles.button, style]}
-      onPress={() => navigation.navigate("Settings")}
+      onPress={() => navigation.navigate('Settings')}
     >
       <Icon
         family="Feather"
         size={20}
         name="settings"
-        color={walletTheme.COLORS[isWhite ? "WHITE" : "ICON"]}
+        color={walletTheme.COLORS[isWhite ? 'WHITE' : 'ICON']}
       />
     </TouchableOpacity>
-  );
-};
+  )
+}
 
 const Header = ({
   back,
@@ -57,8 +57,8 @@ const Header = ({
   tabIndex,
   ...props
 }) => {
-  const navigation = useNavigation();
-  const { transaction } = useContext(WalletContext);
+  const navigation = useNavigation()
+  const { transaction } = useContext(WalletContext)
 
   const handleShare = async () => {
     if (transaction) {
@@ -67,21 +67,21 @@ const Header = ({
         - Nombre: ${transaction.name}
         - Descripción: ${transaction.description}
         - Monto: ${transaction.amount} ${transaction.currency}
-        - Estado: ${transaction.status === "Paid" ? "Pagado" : "Cancelado"}
+        - Estado: ${transaction.status === 'Paid' ? 'Pagado' : 'Cancelado'}
         - Fecha: ${transaction.date}
-      `;
+      `
 
       try {
         await Share.share({
           message,
-        });
+        })
       } catch (error) {
-        console.error("Error al compartir:", error.message);
+        console.error('Error al compartir:', error.message)
       }
     } else {
-      console.log("Detalles de la transacción no disponibles.");
+      console.log('Detalles de la transacción no disponibles.')
     }
-  };
+  }
 
   const RenderShareButton = () => {
     return (
@@ -93,61 +93,61 @@ const Header = ({
           color={walletTheme.COLORS.WHITE}
         />
       </TouchableOpacity>
-    );
-  };
+    )
+  }
 
   const renderLeft = () => {
-    if (title === "Transaccion") {
-      return () => navigation.replace("Home");
+    if (title === 'Transaccion') {
+      return () => navigation.replace('Home')
     } else {
       return back
         ? () => navigation.dispatch(CommonActions.goBack())
-        : () => navigation.navigate("Home");
+        : () => navigation.navigate('Home')
     }
-  };
+  }
 
   const renderRight = () => {
-    if (title === "Transaccion" && transaction) {
+    if (title === 'Transaccion' && transaction) {
       // Ensure RenderShareButton is only shown if transaction is loaded
-      return [<RenderShareButton key="share-button" />];
+      return [<RenderShareButton key="share-button" />]
     } else {
       // Adjust according to your requirements for other titles
       switch (title) {
-        case "Home":
+        case 'Home':
           return [
             <ProfileButton key="profile-button" isWhite={white} />,
             <SettingsButton key="settings-button" isWhite={white} />,
-          ];
+          ]
         default:
-          return null;
+          return null
       }
     }
-  };
+  }
 
-  const noShadow = ["Search", "Perfil", "Home"].includes(title);
+  const noShadow = ['Search', 'Perfil', 'Home'].includes(title)
 
   const headerStyles = [
     !noShadow ? styles.shadow : null,
-    transparent ? { backgroundColor: "rgba(0, 0, 0, 0)" } : null,
-  ];
+    transparent ? { backgroundColor: 'rgba(0, 0, 0, 0)' } : null,
+  ]
 
-  const navbarStyles = [styles.navbar, bgColor && { backgroundColor: bgColor }];
+  const navbarStyles = [styles.navbar, bgColor && { backgroundColor: bgColor }]
 
   return (
     <Block style={headerStyles}>
       <NavBar
         back={false}
-        title={title !== "Transaccion" ? title : ""}
+        title={title !== 'Transaccion' ? title : ''}
         style={navbarStyles}
         transparent={transparent}
         right={renderRight()}
         rightStyle={{
-          alignItems: "center",
-          marginRight: title !== "Transaccion" ? 20 : 0,
+          alignItems: 'center',
+          marginRight: title !== 'Transaccion' ? 20 : 0,
         }}
         left={
           <Icon
-            name={back ? "chevron-left" : "home"}
+            name={back ? 'chevron-left' : 'home'}
             family="Feather"
             size={25}
             onPress={renderLeft()}
@@ -161,24 +161,24 @@ const Header = ({
         leftStyle={{ flex: 0.35 }}
         titleStyle={[
           styles.title,
-          { color: walletTheme.COLORS[white ? "WHITE" : "HEADER"] },
+          { color: walletTheme.COLORS[white ? 'WHITE' : 'HEADER'] },
           titleColor && { color: titleColor },
         ]}
         {...props}
       />
     </Block>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   button: {
     padding: 12,
-    position: "relative",
+    position: 'relative',
   },
   title: {
-    width: "100%",
+    width: '100%',
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
   navbar: {
     paddingVertical: 0,
@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
   },
   shadow: {
     backgroundColor: theme.COLORS.WHITE,
-    shadowColor: "black",
+    shadowColor: 'black',
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 6,
     shadowOpacity: 0.2,
@@ -202,6 +202,6 @@ const styles = StyleSheet.create({
     borderRadius: 3,
     borderColor: walletTheme.COLORS.BORDER,
   },
-});
+})
 
-export default Header;
+export default Header

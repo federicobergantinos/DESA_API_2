@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react'
 import {
   Animated,
   Dimensions,
@@ -7,29 +7,29 @@ import {
   TouchableWithoutFeedback,
   View,
   ActivityIndicator,
-} from "react-native";
-import { Block, Text, Input, theme } from "galio-framework";
-import { Icon, Card } from "../components/";
-import backendApi from "../api/backendGateway"; // Asegúrate de tener esta API configurada para buscar recetas
+} from 'react-native'
+import { Block, Text, Input, theme } from 'galio-framework'
+import { Icon, Card } from '../components/'
+import backendApi from '../api/backendGateway' // Asegúrate de tener esta API configurada para buscar recetas
 
-const { width } = Dimensions.get("screen");
-const ITEMS_PER_PAGE = 6; // Define cuántos elementos quieres cargar por página
+const { width } = Dimensions.get('screen')
+const ITEMS_PER_PAGE = 6 // Define cuántos elementos quieres cargar por página
 
 export default class Search extends React.Component {
   state = {
     results: [],
-    search: "",
+    search: '',
     active: false,
     currentPage: 0,
     loading: false,
     allItemsLoaded: false,
-  };
+  }
 
-  animatedValue = new Animated.Value(0);
+  animatedValue = new Animated.Value(0)
 
   // Actualizado para manejar la carga de datos
   componentDidMount() {
-    this.fetchSearchResults();
+    this.fetchSearchResults()
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -37,64 +37,64 @@ export default class Search extends React.Component {
       prevState.search !== this.state.search ||
       prevState.currentPage !== this.state.currentPage
     ) {
-      this.fetchSearchResults();
+      this.fetchSearchResults()
     }
   }
 
   fetchSearchResults = async () => {
-    const { search, currentPage } = this.state;
-    if (this.state.loading || this.state.allItemsLoaded) return;
+    const { search, currentPage } = this.state
+    if (this.state.loading || this.state.allItemsLoaded) return
 
-    this.setState({ loading: true });
+    this.setState({ loading: true })
     try {
       const { response, statusCode } =
         await backendApi.transactionsGateway.searchRecipes(
           search,
           currentPage,
           ITEMS_PER_PAGE
-        );
+        )
       if (response && response.length > 0) {
         this.setState((prevState) => ({
           results:
             currentPage === 0 ? response : [...prevState.results, ...response],
           allItemsLoaded: response.length < ITEMS_PER_PAGE,
-        }));
+        }))
       } else {
-        this.setState({ allItemsLoaded: true });
+        this.setState({ allItemsLoaded: true })
       }
     } catch (error) {
-      console.error("Error fetching search results:", error);
+      console.error('Error fetching search results:', error)
     } finally {
-      this.setState({ loading: false });
+      this.setState({ loading: false })
     }
-  };
+  }
 
   handleSearchChange = (search) => {
-    this.setState({ search, currentPage: 0, allItemsLoaded: false }); // Resetea la paginación con cada nueva búsqueda
-  };
+    this.setState({ search, currentPage: 0, allItemsLoaded: false }) // Resetea la paginación con cada nueva búsqueda
+  }
 
   loadMoreItems = () => {
     if (!this.state.loading && !this.state.allItemsLoaded) {
       this.setState((prevState) => ({
         currentPage: prevState.currentPage + 1,
-      }));
+      }))
     }
-  };
+  }
 
   animate() {
-    this.animatedValue.setValue(0);
+    this.animatedValue.setValue(0)
 
     Animated.timing(this.animatedValue, {
       toValue: 1,
       duration: 300,
       useNativeDriver: true,
-    }).start();
+    }).start()
   }
 
   renderSearch = () => {
-    const { search } = this.state;
+    const { search } = this.state
     const iconSearch = search ? (
-      <TouchableWithoutFeedback onPress={() => this.setState({ search: "" })}>
+      <TouchableWithoutFeedback onPress={() => this.setState({ search: '' })}>
         <Icon
           size={16}
           color={theme.COLORS.MUTED}
@@ -109,7 +109,7 @@ export default class Search extends React.Component {
         name="magnifying-glass"
         family="entypo"
       />
-    );
+    )
 
     return (
       <Input
@@ -126,15 +126,15 @@ export default class Search extends React.Component {
         onBlur={() => this.setState({ active: false })}
         onChangeText={this.handleSearchChange}
       />
-    );
-  };
+    )
+  }
 
   renderResult = (result) => {
     const opacity = this.animatedValue.interpolate({
       inputRange: [0, 1],
       outputRange: [0.8, 1],
-      extrapolate: "clamp",
-    });
+      extrapolate: 'clamp',
+    })
 
     return (
       <Animated.View
@@ -143,17 +143,17 @@ export default class Search extends React.Component {
       >
         <Card item={result} horizontal />
       </Animated.View>
-    );
-  };
+    )
+  }
 
   renderFooter = () => {
-    if (!this.state.loading) return null;
+    if (!this.state.loading) return null
     return (
       <View style={{ paddingVertical: 20 }}>
         <ActivityIndicator animating size="large" />
       </View>
-    );
-  };
+    )
+  }
 
   render() {
     return (
@@ -171,7 +171,7 @@ export default class Search extends React.Component {
           ListFooterComponent={this.renderFooter}
         />
       </Block>
-    );
+    )
   }
 }
 
@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
     borderRadius: 3,
   },
   shadow: {
-    shadowColor: "black",
+    shadowColor: 'black',
     shadowOffset: { width: 0, height: 3 },
     shadowRadius: 4,
     shadowOpacity: 0.1,
@@ -197,7 +197,7 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: theme.COLORS.WHITE,
-    shadowColor: "rgba(0, 0, 0, 0.2)",
+    shadowColor: 'rgba(0, 0, 0, 0.2)',
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 8,
     shadowOpacity: 1,
@@ -211,19 +211,19 @@ const styles = StyleSheet.create({
   },
   resultTitle: {
     flex: 1,
-    flexWrap: "wrap",
+    flexWrap: 'wrap',
     paddingBottom: 6,
   },
   resultDescription: {
     padding: theme.SIZES.BASE / 2,
   },
   image: {
-    overflow: "hidden",
+    overflow: 'hidden',
     borderBottomLeftRadius: 4,
     borderTopLeftRadius: 4,
   },
   dealsContainer: {
-    justifyContent: "center",
+    justifyContent: 'center',
     paddingTop: theme.SIZES.BASE,
   },
   deals: {
@@ -233,20 +233,20 @@ const styles = StyleSheet.create({
   },
   dealsTitle: {
     flex: 1,
-    flexWrap: "wrap",
+    flexWrap: 'wrap',
     paddingBottom: 6,
   },
   dealsDescription: {
     padding: theme.SIZES.BASE / 2,
   },
   imageHorizontal: {
-    overflow: "hidden",
+    overflow: 'hidden',
     borderBottomLeftRadius: 4,
     borderTopLeftRadius: 4,
   },
   imageVertical: {
-    overflow: "hidden",
+    overflow: 'hidden',
     borderTopRightRadius: 4,
     borderTopLeftRadius: 4,
   },
-});
+})
