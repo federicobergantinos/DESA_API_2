@@ -1,14 +1,14 @@
-const express = require("express");
-const router = express.Router();
+const express = require('express')
+const router = express.Router()
 
 const {
-    authenticate,
-    refresh,
-    deleteCredential,
-} = require("../controllers/auth");
+  authenticate,
+  refresh,
+  deleteCredential,
+} = require('../controllers/auth')
 
-router.post("/", authenticate);
-router.put('/',refresh);
-router.delete('/',deleteCredential);
+router.post('/', authenticate)
+router.put('/', refresh)
+router.delete('/', deleteCredential)
 
-module.exports = router;
+module.exports = router

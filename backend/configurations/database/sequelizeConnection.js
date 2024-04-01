@@ -1,6 +1,6 @@
-const { Sequelize } = require("sequelize");
+const { Sequelize } = require('sequelize')
 
-let sequelize;
+let sequelize
 
 sequelize = new Sequelize(
   process.env.POSTGRES_DB,
@@ -8,9 +8,9 @@ sequelize = new Sequelize(
   process.env.POSTGRES_PASSWORD,
   {
     host: process.env.POSTGRES_HOST,
-    dialect: "postgres",
+    dialect: 'postgres',
     logging: false,
   }
-);
+)
 
-module.exports = sequelize;
+module.exports = sequelize

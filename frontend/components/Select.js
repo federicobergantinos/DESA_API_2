@@ -1,23 +1,23 @@
-import React from "react";
-import { StyleSheet } from "react-native";
-import PropTypes from "prop-types";
-import ModalDropdown from "react-native-modal-dropdown";
-import { Block, Text } from "galio-framework";
+import React from 'react'
+import { StyleSheet } from 'react-native'
+import PropTypes from 'prop-types'
+import ModalDropdown from 'react-native-modal-dropdown'
+import { Block, Text } from 'galio-framework'
 
-import Icon from "./Icon";
-import { walletTheme } from "../constants";
+import Icon from './Icon'
+import { walletTheme } from '../constants'
 
 class DropDown extends React.Component {
   state = {
     value: 1,
-  };
+  }
 
   handleOnSelect = (index, value) => {
-    const { onSelect } = this.props;
+    const { onSelect } = this.props
 
-    this.setState({ value: value });
-    onSelect && onSelect(index, value);
-  };
+    this.setState({ value: value })
+    onSelect && onSelect(index, value)
+  }
 
   render() {
     const {
@@ -30,15 +30,11 @@ class DropDown extends React.Component {
       textStyle,
       style,
       ...props
-    } = this.props;
+    } = this.props
 
-    const modalStyles = [
-      styles.qty,
-      color && { backgroundColor: color },
-      style,
-    ];
+    const modalStyles = [styles.qty, color && { backgroundColor: color }, style]
 
-    const textStyles = [styles.text, textStyle];
+    const textStyles = [styles.text, textStyle]
 
     return (
       <ModalDropdown
@@ -53,14 +49,14 @@ class DropDown extends React.Component {
             {this.state.value}
           </Text>
           <Icon
-            name={iconName || "nav-down"}
-            family={iconFamily || "WalletExtra"}
+            name={iconName || 'nav-down'}
+            family={iconFamily || 'WalletExtra'}
             size={iconSize || 10}
             color={iconColor || walletTheme.COLORS.WHITE}
           />
         </Block>
       </ModalDropdown>
-    );
+    )
   }
 }
 
@@ -71,7 +67,7 @@ DropDown.propTypes = {
   iconSize: PropTypes.number,
   color: PropTypes.string,
   textStyle: PropTypes.any,
-};
+}
 
 const styles = StyleSheet.create({
   qty: {
@@ -81,20 +77,20 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     paddingBottom: 9.5,
     borderRadius: 4,
-    shadowColor: "rgba(0, 0, 0, 0.1)",
+    shadowColor: 'rgba(0, 0, 0, 0.1)',
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 4,
     shadowOpacity: 1,
   },
   text: {
     color: walletTheme.COLORS.WHITE,
-    fontWeight: "600",
+    fontWeight: '600',
   },
   dropdown: {
     marginTop: 8,
     marginLeft: -16,
     width: 100,
   },
-});
+})
 
-export default DropDown;
+export default DropDown

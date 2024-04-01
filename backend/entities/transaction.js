@@ -1,7 +1,7 @@
-const { DataTypes } = require("sequelize");
-const sequelize = require("../configurations/database/sequelizeConnection");
+const { DataTypes } = require('sequelize')
+const sequelize = require('../configurations/database/sequelizeConnection')
 
-const Transaction = sequelize.define("transactions", {
+const Transaction = sequelize.define('transactions', {
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
@@ -31,6 +31,14 @@ const Transaction = sequelize.define("transactions", {
     type: DataTypes.DATE,
     allowNull: false,
   },
-});
+  accountId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: 'accounts',
+      key: 'id',
+    },
+  },
+})
 
-module.exports = Transaction;
+module.exports = Transaction

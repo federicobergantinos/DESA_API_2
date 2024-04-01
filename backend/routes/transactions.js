@@ -1,18 +1,16 @@
-const express = require("express");
-const router = express.Router();
-const multer = require("multer");
-const upload = multer();
+const express = require('express')
+const router = express.Router()
 
 const {
   create,
   getAll,
   getById,
-  uploadImage,
-} = require("../controllers/transactionController");
+  calculateAccountBalance,
+} = require('../controllers/transactionController')
 
-router.post("/create", create);
-router.post("/uploadImage", upload.single("image"), uploadImage); // TODO esto capaz hay que movelro a otro router
-router.get("/", getAll);
-router.get("/:transactionId", getById);
+router.post('/create', create)
+router.get('/', getAll)
+router.get('/balance', calculateAccountBalance)
+router.get('/:transactionId', getById)
 
-module.exports = router;
+module.exports = router

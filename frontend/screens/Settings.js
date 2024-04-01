@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react'
 import {
   StyleSheet,
   FlatList,
@@ -6,95 +6,95 @@ import {
   View,
   TextInput,
   Dimensions,
-} from "react-native";
-import { Block, Text, theme } from "galio-framework";
-import { Switch } from "../components";
-import walletTheme from "../constants/Theme";
-import { GoogleSignin } from "@react-native-google-signin/google-signin";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useNavigation } from "@react-navigation/native";
-import backendGateway from "../api/backendGateway";
-import backendApi from "../api/backendGateway";
+} from 'react-native'
+import { Block, Text, theme } from 'galio-framework'
+import { Switch } from '../components'
+import walletTheme from '../constants/Theme'
+import { GoogleSignin } from '@react-native-google-signin/google-signin'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import { useNavigation } from '@react-navigation/native'
+import backendGateway from '../api/backendGateway'
+import backendApi from '../api/backendGateway'
 
-const { width } = Dimensions.get("window");
+const { width } = Dimensions.get('window')
 
 export default function Settings() {
-  const navigation = useNavigation();
-  const [nombre, setNombre] = useState("");
-  const [apellido, setApellido] = useState("");
-  const [email, setEmail] = useState("");
+  const navigation = useNavigation()
+  const [nombre, setNombre] = useState('')
+  const [apellido, setApellido] = useState('')
+  const [email, setEmail] = useState('')
   const logOut = async () => {
-    await AsyncStorage.clear();
-    await GoogleSignin.signOut();
-    navigation.navigate("Login");
-  };
+    await AsyncStorage.clear()
+    await GoogleSignin.signOut()
+    navigation.navigate('Login')
+  }
 
   const deleteAccount = async () => {
-    await AsyncStorage.clear();
-    await backendGateway.authUser.deleteCredential();
-    navigation.navigate("Login");
-  };
+    await AsyncStorage.clear()
+    await backendGateway.authUser.deleteCredential()
+    navigation.navigate('Login')
+  }
 
   const editProfile = async () => {
     try {
-      const userId = await AsyncStorage.getItem("userId");
-      if (!userId) throw new Error("Usuario no encontrado");
+      const userId = await AsyncStorage.getItem('userId')
+      if (!userId) throw new Error('Usuario no encontrado')
 
       const userData = {
         name: nombre,
         surname: apellido,
-      };
+      }
 
       const updateResponse = await backendApi.usersGateway.editProfile(
         userId,
         userData
-      );
+      )
       if (updateResponse.statusCode === 200) {
-        alert("Perfil actualizado con éxito.");
+        alert('Perfil actualizado con éxito.')
       } else {
-        console.error("Error al actualizar el perfil:", updateResponse);
-        alert("Error al actualizar el perfil.");
+        console.error('Error al actualizar el perfil:', updateResponse)
+        alert('Error al actualizar el perfil.')
       }
     } catch (error) {
-      console.error("Error al editar el perfil:", error);
-      alert("Error al editar el perfil.");
+      console.error('Error al editar el perfil:', error)
+      alert('Error al editar el perfil.')
     }
-  };
+  }
 
   useEffect(() => {
     const getUser = async () => {
       try {
-        const userId = await AsyncStorage.getItem("userId");
+        const userId = await AsyncStorage.getItem('userId')
         const { response, statusCode } =
-          await backendGateway.usersGateway.getUser(userId);
+          await backendGateway.usersGateway.getUser(userId)
         if (statusCode === 200) {
-          setNombre(response.user.name);
-          setApellido(response.user.surname);
-          setEmail(response.user.email);
+          setNombre(response.user.name)
+          setApellido(response.user.surname)
+          setEmail(response.user.email)
         }
       } catch (error) {
-        console.error("Error al obtener usuario", error);
+        console.error('Error al obtener usuario', error)
         // Handle error or navigation if needed
       }
-    };
-    getUser();
-  }, []);
+    }
+    getUser()
+  }, [])
 
   const renderItem = ({ item }) => {
     switch (item.type) {
-      case "deleteAccount":
+      case 'deleteAccount':
         return (
           <TouchableOpacity onPress={deleteAccount}>
             <View style={styles.deleteButton}>
-              <Text style={{ color: "red" }}>Eliminar Cuenta</Text>
+              <Text style={{ color: 'red' }}>Eliminar Cuenta</Text>
             </View>
           </TouchableOpacity>
-        );
-      case "nameInput":
+        )
+      case 'nameInput':
         return (
           <Block row middle space="between" style={styles.rows}>
             <Text
-              style={{ fontFamily: "open-sans-regular" }}
+              style={{ fontFamily: 'open-sans-regular' }}
               size={14}
               color="#525F7F"
             >
@@ -108,12 +108,12 @@ export default function Settings() {
               placeholderTextColor="#BFBFBF"
             />
           </Block>
-        );
-      case "lastNameInput":
+        )
+      case 'lastNameInput':
         return (
           <Block row middle space="between" style={styles.rows}>
             <Text
-              style={{ fontFamily: "open-sans-regular" }}
+              style={{ fontFamily: 'open-sans-regular' }}
               size={14}
               color="#525F7F"
             >
@@ -127,61 +127,61 @@ export default function Settings() {
               placeholderTextColor="#BFBFBF"
             />
           </Block>
-        );
-      case "mailInput":
+        )
+      case 'mailInput':
         return (
           <Block row middle space="between" style={styles.rows}>
             <Text
-              style={{ fontFamily: "open-sans-regular" }}
+              style={{ fontFamily: 'open-sans-regular' }}
               size={14}
               color="#525F7F"
             >
               {item.title}
             </Text>
             <TextInput
-              style={[styles.inputContainer, { color: "#BFBFBF" }]}
+              style={[styles.inputContainer, { color: '#BFBFBF' }]}
               value={email}
               editable={false}
             />
           </Block>
-        );
-      case "actionRow":
+        )
+      case 'actionRow':
         return (
           <View style={styles.actionRow}>
             <TouchableOpacity onPress={editProfile} style={{ marginRight: 10 }}>
               <View style={styles.editProfile}>
-                <Text style={{ color: "white" }}>Guardar Cambios</Text>
+                <Text style={{ color: 'white' }}>Guardar Cambios</Text>
               </View>
             </TouchableOpacity>
             <TouchableOpacity onPress={logOut}>
               <View style={styles.logoutButton}>
-                <Text style={{ color: "grey" }}>Cerrar sesión</Text>
+                <Text style={{ color: 'grey' }}>Cerrar sesión</Text>
               </View>
             </TouchableOpacity>
           </View>
-        );
+        )
       default:
-        break;
+        break
     }
-  };
+  }
 
   const recommended = [
-    { title: "Nombre", id: "nombre", type: "nameInput" },
-    { title: "Apellido", id: "apellido", type: "lastNameInput" },
-    { title: "Mail", id: "mail", type: "mailInput" },
+    { title: 'Nombre', id: 'nombre', type: 'nameInput' },
+    { title: 'Apellido', id: 'apellido', type: 'lastNameInput' },
+    { title: 'Mail', id: 'mail', type: 'mailInput' },
     // { title: "Guardar Cambios", id: "editProfile", type: "editProfile" },
-    { title: "Cerrar Sesión", id: "sesion", type: "actionRow" },
-  ];
+    { title: 'Cerrar Sesión', id: 'sesion', type: 'actionRow' },
+  ]
 
   const payment = [
-    { title: "Eliminar Cuenta", id: "delete", type: "deleteAccount" },
-  ];
+    { title: 'Eliminar Cuenta', id: 'delete', type: 'deleteAccount' },
+  ]
 
   return (
     <View style={styles.container}>
       <Block center style={styles.title}>
         <Text
-          style={{ fontFamily: "open-sans", paddingBottom: 5 }}
+          style={{ fontFamily: 'open-sans', paddingBottom: 5 }}
           size={theme.SIZES.BASE}
           color={walletTheme.COLORS.TEXT}
         >
@@ -197,9 +197,9 @@ export default function Settings() {
       <Block center style={styles.title}>
         <Text
           style={{
-            fontFamily: "open-sans-bold",
+            fontFamily: 'open-sans-bold',
             paddingBottom: 10,
-            color: "red",
+            color: 'red',
           }}
           size={theme.SIZES.BASE}
           color={walletTheme.COLORS.TEXT}
@@ -214,18 +214,18 @@ export default function Settings() {
         style={styles.list}
       />
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   list: {
     width: width - theme.SIZES.BASE * 2,
-    alignSelf: "center",
+    alignSelf: 'center',
   },
   title: {
     paddingTop: theme.SIZES.BASE,
@@ -240,64 +240,64 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     height: 30,
     borderRadius: 10,
-    justifyContent: "center",
+    justifyContent: 'center',
     width: width * 0.65,
     flexShrink: 1,
     borderWidth: 1,
-    borderColor: "gray",
+    borderColor: 'gray',
   },
   inputContainer: {
     paddingHorizontal: 10,
     height: 30,
     borderRadius: 10,
-    justifyContent: "center",
-    backgroundColor: "gray",
+    justifyContent: 'center',
+    backgroundColor: 'gray',
     width: width * 0.65,
     flexShrink: 1,
     borderWidth: 1,
-    borderColor: "gray",
+    borderColor: 'gray',
   },
   logoutButton: {
     paddingHorizontal: 10,
     width: 150,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     marginTop: 10,
     borderWidth: 1,
     borderRadius: 20,
-    borderColor: "grey",
+    borderColor: 'grey',
     height: 30,
     marginLeft: 10,
   },
   deleteButton: {
     paddingHorizontal: 10,
     width: 150, // O puedes usar 'width: '80%' para que el botón tenga un ancho relativo al contenedor
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     marginTop: 10,
     borderWidth: 1,
     borderRadius: 20,
-    borderColor: "red",
-    alignSelf: "center", // Asegura que el botón esté centrado dentro de su contenedor
+    borderColor: 'red',
+    alignSelf: 'center', // Asegura que el botón esté centrado dentro de su contenedor
     height: 30,
   },
   editProfile: {
     paddingHorizontal: 10,
     height: 30,
     width: 150,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     marginTop: 10,
     borderWidth: 1,
     borderRadius: 20,
-    backgroundColor: "#5a46b4",
-    borderColor: "#5a46b4",
+    backgroundColor: '#5a46b4',
+    borderColor: '#5a46b4',
   },
   actionRow: {
-    flexDirection: "row", // Alinea los elementos en fila
-    justifyContent: "center", // Centra los elementos en el eje principal
-    alignItems: "center", // Centra los elementos en el eje cruzado
+    flexDirection: 'row', // Alinea los elementos en fila
+    justifyContent: 'center', // Centra los elementos en el eje principal
+    alignItems: 'center', // Centra los elementos en el eje cruzado
     marginTop: 10,
     marginBottom: 10,
   },
-});
+})

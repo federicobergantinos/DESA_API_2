@@ -1,9 +1,9 @@
-const express = require("express");
-const router = express.Router();
+const express = require('express')
+const router = express.Router()
 
-const { create, getById } = require("../controllers/accountController");
+const { create, getByUserId } = require('../controllers/accountController')
 
-router.post("/create", create);
-router.get("/:userId", getById);
+router.post('/create', create)
+router.get('/firstAccount/:userId', getByUserId)
 
-module.exports = router;
+module.exports = router

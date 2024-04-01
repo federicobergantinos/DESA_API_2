@@ -1,20 +1,13 @@
-const { Transaction, User } = require("../../../entities/associateModels");
-const { transactionsData } = require("./transactionsData");
+const { Transaction } = require('../../../entities/associateModels')
+const { transactionsData } = require('./transactionsData')
 
 const populateTransactions = async () => {
   try {
     for (const transactionData of transactionsData) {
-      const { name, description, amount, currency, status, date, userId } =
-        transactionData;
+      const { name, description, amount, currency, status, date, accountId } =
+        transactionData
 
-      // Buscar el usuario por userId
-      const user = await User.findByPk(userId);
-      if (!user) {
-        console.log(`User with id ${userId} not found.`);
-        continue; // Saltar esta transacción si el usuario no se encuentra
-      }
-
-      // Crear la transacción
+      // Asumimos que accountId ya está correctamente establecido en transactionsData
       await Transaction.create({
         name,
         description,
@@ -22,14 +15,14 @@ const populateTransactions = async () => {
         currency,
         status,
         date,
-        userId: user.id,
-      });
+        accountId, // Asegúrate de que este campo exista en tu modelo y data
+      })
     }
 
-    console.log("Transactions table has been populated with initial data.");
+    console.log('Transactions table has been populated with initial data.')
   } catch (error) {
-    console.error("Error populating Transactions table:", error);
+    console.error('Error populating Transactions table:', error)
   }
-};
+}
 
-module.exports = populateTransactions;
+module.exports = populateTransactions

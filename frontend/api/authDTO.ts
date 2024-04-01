@@ -1,9 +1,9 @@
 export interface createAuthDTO {
-  token: string;
+  token: string
 }
 
 export interface Credentials {
-  id: number;
-  accessToken: string;
-  refreshToken: string;
+  id: number
+  accessToken: string
+  refreshToken: string
 }

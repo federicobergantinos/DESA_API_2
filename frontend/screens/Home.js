@@ -1,22 +1,17 @@
-import React, { useState, useEffect } from "react";
-import {
-  FlatList,
-  View,
-  ImageBackground,
-  TouchableOpacity,
-} from "react-native";
-import { Block, Text } from "galio-framework";
-import { Images, walletTheme } from "../constants";
+import React, { useState, useEffect } from 'react'
+import { FlatList, View, ImageBackground, TouchableOpacity } from 'react-native'
+import { Block, Text } from 'galio-framework'
+import { Images, walletTheme } from '../constants'
 import {
   RenderMainInformation,
   RenderTransactionsDetail,
   styles,
-} from "./Home/index.js";
-import Icon from "../components/Icon";
+} from './Home/index.js'
+import Icon from '../components/Icon'
 
 const Home = ({ navigation }) => {
-  const [showBalance, setShowBalance] = useState(true);
-  const toggleBalanceVisibility = () => setShowBalance(!showBalance);
+  const [showBalance, setShowBalance] = useState(true)
+  const toggleBalanceVisibility = () => setShowBalance(!showBalance)
 
   const ActionButton = ({ icon, family, title, onPress }) => {
     return (
@@ -31,8 +26,8 @@ const Home = ({ navigation }) => {
         </TouchableOpacity>
         <Text style={styles.actionText}>{title}</Text>
       </View>
-    );
-  };
+    )
+  }
 
   const renderButtons = () => {
     return (
@@ -42,7 +37,7 @@ const Home = ({ navigation }) => {
           family="Feather"
           title="Recibir"
           onPress={() => {
-            navigation.navigate("AccountDetails");
+            navigation.navigate('AccountDetails')
           }}
         />
         <ActionButton
@@ -70,24 +65,24 @@ const Home = ({ navigation }) => {
           }}
         />
       </View>
-    );
-  };
+    )
+  }
 
   updateState = (newState) => {
-    this.setState(newState);
-  };
+    this.setState(newState)
+  }
 
   const sections = [
     {
-      key: "mainInformation",
+      key: 'mainInformation',
       render: () => <RenderMainInformation />,
     },
-    { key: "buttons", render: renderButtons },
+    { key: 'buttons', render: renderButtons },
     {
-      key: "transactionsDetail",
+      key: 'transactionsDetail',
       render: () => <RenderTransactionsDetail />,
     },
-  ];
+  ]
 
   return (
     <Block flex style={styles.Home}>
@@ -100,24 +95,24 @@ const Home = ({ navigation }) => {
             data={sections}
             renderItem={({ item }) => {
               switch (item.key) {
-                case "mainInformation":
+                case 'mainInformation':
                   return (
                     <RenderMainInformation
                       showBalance={showBalance}
                       toggleBalanceVisibility={toggleBalanceVisibility}
                     />
-                  );
-                case "buttons":
-                  return renderButtons();
-                case "transactionsDetail":
+                  )
+                case 'buttons':
+                  return renderButtons()
+                case 'transactionsDetail':
                   return (
                     <RenderTransactionsDetail
                       showBalance={showBalance}
                       navigation={navigation}
                     />
-                  );
+                  )
                 default:
-                  return null;
+                  return null
               }
             }}
             keyExtractor={(item) => item.key}
@@ -128,7 +123,7 @@ const Home = ({ navigation }) => {
         </ImageBackground>
       </Block>
     </Block>
-  );
-};
+  )
+}
 
-export default Home;
+export default Home

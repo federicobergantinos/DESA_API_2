@@ -1,5 +1,5 @@
-import RenderMainInformation from "./MainInformation";
-import RenderTransactionsDetail from "./TransactionsDetail";
-import styles from "./HomeStyles";
+import RenderMainInformation from './MainInformation'
+import RenderTransactionsDetail from './TransactionsDetail'
+import styles from './HomeStyles'
 
-export { RenderMainInformation, RenderTransactionsDetail, styles };
+export { RenderMainInformation, RenderTransactionsDetail, styles }
