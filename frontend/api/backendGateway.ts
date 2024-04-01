@@ -41,24 +41,30 @@ api.interceptors.response.use(
 // Función para agregar el código de estado a la respuesta
 const responseBodyWithStatusCode = (
   response: AxiosResponse
-): { response: any; statusCode: any } => ({
-  response: response.data,
-  statusCode: response.status,
-})
+): { response: any; statusCode: any } => {
+  const data = {
+    response: response.response,
+    statusCode: response.statusCode,
+  }
+  console.info('Response received:', data);
+  return data;
+};
 
 // Definición de funciones de solicitud HTTP
 const requests = {
-  get: (url: string) => api.get(url).then(responseBodyWithStatusCode),
+  get: (url: string) => {
+    console.info(`Making GET request to: ${api.defaults.baseURL}${url}`)
+    return api.get(url).then(responseBodyWithStatusCode)},
   post: (url: string, body?: any) => {
-    console.log(`Making POST request to: ${api.defaults.baseURL}${url}`)
+    console.info(`Making POST request to: ${api.defaults.baseURL}${url}`)
     return api.post(url, body).then(responseBodyWithStatusCode)
   },
   put: (url: string, body?: any) => {
-    console.log(`Making PUT request to: ${api.defaults.baseURL}${url}`)
+    console.info(`Making PUT request to: ${api.defaults.baseURL}${url}`)
     return api.put(url, body).then(responseBodyWithStatusCode)
   },
   delete: (url: string) => {
-    console.log(`Making DELETE request to: ${api.defaults.baseURL}${url}`)
+    console.info(`Making DELETE request to: ${api.defaults.baseURL}${url}`)
     return api.delete(url).then(responseBodyWithStatusCode)
   },
 }
@@ -90,7 +96,6 @@ const transactionsGateway = {
   getTransactionById: (
     id: number
   ): Promise<{ response: TransactionDTO; statusCode: number }> => {
-    console.log(`Making GET request to: ${transactionBaseUrl + '/' + id}`)
     return requests.get(transactionBaseUrl + '/' + id)
   },
   getAll: (
@@ -102,7 +107,6 @@ const transactionsGateway = {
       url += `&accountId=${accountId}`
     }
 
-    console.log(`Making GET request to: ${url}`); 
     return requests.get(url)
   },
 
@@ -110,7 +114,6 @@ const transactionsGateway = {
     accountId: number
   ): Promise<{ response: TransactionDTO; statusCode: number }> => {
     const url = `${transactionBaseUrl}/balance?accountId=${accountId}`
-    console.log(`Making GET request to: ${url}`)
     return requests.get(url)
   },
 }
@@ -186,7 +189,6 @@ const accountGateway = {
     userId: number
   ): Promise<{ response: AccountSummaryDTO[]; statusCode: number }> => {
     const url = `${accountBaseUrl}/?userId=${userId}`;
-    console.log(`Making GET request to: ${url}`); 
   
     try {
       const { response, statusCode } = await requests.get(url);
@@ -202,7 +204,6 @@ const accountGateway = {
   ): Promise<{ response: AccountDTO; statusCode: number }> =>
     {
       const url = accountBaseUrl + '/' + accountId
-      console.log(`Making GET request to: ${url}`)
       return requests.get(url)
     },
 }

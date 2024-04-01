@@ -13,7 +13,7 @@ import { Block, Text } from 'galio-framework'
 
 import { Button } from '../components'
 import { Images, walletTheme } from '../constants'
-import { GoogleSignin } from '@react-native-google-signin/google-signin'
+import { logOut, GoogleSignin } from '../components/Google'
 import backendApi from '../api/backendGateway'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useNavigation } from '@react-navigation/native'
@@ -42,15 +42,6 @@ const Login = () => {
 
   const [isLoading, setIsLoading] = useState(isLoggedUser)
 
-  GoogleSignin.configure({
-    webClientId:
-      '454272373471-5ojg0h21n0et134lvfjgokb9j0ovpsi8.apps.googleusercontent.com',
-    androidClientId:
-      '454272373471-0rikgi4sqndi5ge4gibbsccu690c4813.apps.googleusercontent.com',
-    iosClientId: '',
-    scopes: ['profile', 'email'],
-  })
-
   useEffect(() => {
     const validateLoggedUser = async () => {
       if (await isLoggedUser()) {
@@ -78,10 +69,13 @@ const Login = () => {
           response.refreshToken,
           response.id
         )
+      } else if (statusCode === 301) {
+        navigation.replace('Signup')
       }
       setIsLoading(false)
     } catch (error) {
       await logOut()
+      setIsLoading(false)
     }
   }
 
@@ -101,9 +95,13 @@ const Login = () => {
       try {
         if ((await asyncStorage.getItem('token')) !== null) {
           await refreshToken()
-        } else await logOut()
+        } else {
+          await logOut()
+          setIsLoading(false)
+        }
       } catch (e) {
         await logOut()
+        setIsLoading(false)
       }
     }
   }
@@ -117,17 +115,8 @@ const Login = () => {
       await saveCredentials(response.accessToken, response.refreshToken, userId)
     } else {
       await logOut()
+      setIsLoading(false)
     }
-  }
-
-  const logOut = async () => {
-    await clearAsyncStorage()
-    await GoogleSignin.signOut()
-    setIsLoading(false)
-  }
-
-  const clearAsyncStorage = async () => {
-    await AsyncStorage.clear()
   }
 
   const saveCredentials = async (accessToken, refreshToken, userId) => {
@@ -148,7 +137,7 @@ const Login = () => {
         const { response: accountData, statusCode } =
           await backendApi.accountGateway.getAccountByUserId(1)
         // await backendApi.accountGateway.getAccountByUserId(userId)
-        console.log(accountData[0])
+
         if (statusCode === 200) {
           setSelectedAccount(accountData[0])
 
