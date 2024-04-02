@@ -33,11 +33,13 @@ const RenderTransactionsDetail = ({ showBalance, navigation, refreshing }) => {
   }
 
   useEffect(() => {
-    setCurrentPage(0)
-    setData([])
-    setAllItemsLoaded(false)
-    setAttempts(0)
-  }, [selectedAccount, refreshing])
+    if (refreshing) {
+      setCurrentPage(0)
+      setData([])
+      setAllItemsLoaded(false)
+      setAttempts(0)
+    }
+  }, [refreshing, selectedAccount])
 
   useEffect(() => {
     const fetchTransactions = async () => {
@@ -79,7 +81,7 @@ const RenderTransactionsDetail = ({ showBalance, navigation, refreshing }) => {
     }
 
     fetchTransactions()
-  }, [currentPage, attempts, selectedAccount])
+  }, [currentPage, attempts, selectedAccount, refreshing])
 
   const renderTransaction = ({ item }) => {
     const isPositive = item.amount > 0

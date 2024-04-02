@@ -18,11 +18,10 @@ const RenderMainInformation = ({
   useEffect(() => {
     const fetchBalance = async () => {
       try {
-        // Simula la obtención de datos del backend
-        // Aquí deberías realizar la llamada real al backend
-        const balanceResult = await backendApi.transactionsGateway.balance(
-          selectedAccount.accountId
-        )
+        const { response: balanceResult, balanceStatusCode: statusCode } =
+          await backendApi.transactionsGateway.balance(
+            selectedAccount.accountId
+          )
         setBalance(balanceResult)
       } catch (error) {
         console.error('Error fetching balance:', error)

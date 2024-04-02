@@ -67,6 +67,7 @@ const getTransactions = async (queryData) => {
     include: includeOptions,
     limit,
     offset,
+    order: [['createdAt', 'DESC']],
   })
 
   logger.info(transactions)

@@ -24,7 +24,7 @@ const Home = ({ navigation }) => {
     setRefreshing(true)
     setTimeout(() => {
       setRefreshing(false)
-    }, 100)
+    }, 500)
   }
 
   const ActionButton = ({ icon, family, title, onPress }) => {
