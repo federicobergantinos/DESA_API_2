@@ -15,24 +15,40 @@ import { Images, walletTheme } from '../constants'
 import Clipboard from '@react-native-community/clipboard'
 import Icon from '../components/Icon'
 import backendApi from '../api/backendGateway'
+import LoadingScreen from '../components/LoadingScreen'
 const { width, height } = Dimensions.get('screen')
 
 const AccountDetails = () => {
-  const [accountDetails, setAccountDetails] = useState(null)
+  // Inicializa accountDetails con propiedades esperadas en null o valores por defecto
+  const [accountDetails, setAccountDetails] = useState({
+    beneficiaryName: '',
+    beneficiaryAddress: '',
+    accountNumber: '',
+    accountType: '',
+  })
   const { selectedAccount } = useWallet()
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     const fetchAccounts = async () => {
+      setIsLoading(true)
+      setError(null)
       try {
-        console.log('selectedAccount', selectedAccount)
+        if (!selectedAccount || !selectedAccount.accountId) {
+          throw new Error('No hay una cuenta seleccionada válida.')
+        }
         const { response: accountData, statusCode: accountStatusCode } =
           await backendApi.accountGateway.getById(selectedAccount.accountId)
-        console.log('response', accountData)
         if (accountStatusCode === 200) {
           setAccountDetails(accountData)
+        } else {
+          throw new Error('Error al obtener los detalles de la cuenta.')
         }
       } catch (error) {
-        console.error('Error fetching accounts:', error)
+        setError(error.message)
+      } finally {
+        setIsLoading(false)
       }
     }
 
@@ -120,6 +136,7 @@ const AccountDetails = () => {
           </View>
         </ScrollView>
       </ImageBackground>
+      <LoadingScreen visible={isLoading} />
     </Block>
   )
 }

@@ -47,13 +47,13 @@ const Signup = ({ route }) => {
         },
       })
       if (statusCode === 201) {
-        await authService.saveCredentials(
-          navigation,
-          response.accessToken,
-          response.refreshToken,
-          response.id,
-          updateUserAndAccount
-        )
+        await authService.saveCredentials({
+          accessToken: response.accessToken,
+          refreshToken: response.refreshToken,
+          userId: response.id,
+          navigation: navigation,
+          updateUserAndAccount: updateUserAndAccount,
+        })
       }
       setIsLoading(false)
     } catch (error) {
