@@ -8,7 +8,6 @@ import {
   StyleSheet,
   Dimensions,
 } from 'react-native'
-import Icon from 'react-native-vector-icons/FontAwesome5' // Asegúrate de tener esta librería instalada
 import { useWallet } from '../navigation/WalletContext'
 const { width, height } = Dimensions.get('screen')
 import backendApi from '../api/backendGateway'
@@ -21,8 +20,7 @@ const AccountSelector = ({ isVisible, onClose, onSelectAccount }) => {
     const fetchAccounts = async () => {
       try {
         const { response, statusCode } =
-          await backendApi.accountGateway.getAccountByUserId(1)
-        // await backendApi.accountGateway.getAccountByUserId(user.id)
+          await backendApi.accountGateway.getAccountByUserId(user.id)
         if (statusCode === 200) {
           setAccounts(response)
         }

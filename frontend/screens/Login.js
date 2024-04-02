@@ -75,13 +75,13 @@ const Login = () => {
       })
 
       if (statusCode === 200) {
-        await authService.saveCredentials(
-          response.accessToken,
-          response.refreshToken,
-          response.id,
-          navigation,
-          updateUserAndAccount
-        )
+        await authService.saveCredentials({
+          accessToken: response.accessToken,
+          refreshToken: response.refreshToken,
+          userId: response.id,
+          navigation: navigation,
+          updateUserAndAccount: updateUserAndAccount,
+        })
         setIsLoading(false)
       } else if (statusCode === 301) {
         navigation.replace('Signup', { idToken })
@@ -97,19 +97,17 @@ const Login = () => {
     const { response, statusCode } = await backendApi.authUser.authenticate({
       token: null,
     })
-    logger.info(statusCode)
 
     if (statusCode === 200) {
-      authService.saveCredentials(
-        response.accessToken,
-        response.refreshToken,
-        response.id,
-        navigation,
-        updateUserAndAccount
-      )
+      authService.saveCredentials({
+        accessToken: response.accessToken,
+        refreshToken: response.refreshToken,
+        userId: response.id,
+        navigation: navigation,
+        updateUserAndAccount: updateUserAndAccount,
+      })
       setIsLoading(false)
       const item = await asyncStorage.getItem('token')
-      logger.info(item)
     } else {
       try {
         if ((await asyncStorage.getItem('token')) !== null) {
@@ -127,13 +125,13 @@ const Login = () => {
     )
     if (statusCode === 200) {
       const userId = await AsyncStorage.getItem('userId')
-      await authService.saveCredentials(
-        response.accessToken,
-        response.refreshToken,
-        userId,
-        navigation,
-        updateUserAndAccount
-      )
+      await authService.saveCredentials({
+        accessToken: response.accessToken,
+        refreshToken: response.refreshToken,
+        userId: response.id,
+        navigation: navigation,
+        updateUserAndAccount: updateUserAndAccount,
+      })
       setIsLoading(false)
     } else {
       await logOut()

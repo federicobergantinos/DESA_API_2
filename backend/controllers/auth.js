@@ -1,4 +1,5 @@
 const { createUser, findUserByEmail } = require('../services/userService')
+const { createAccount } = require('../services/accountService')
 const {
   createAuthTokens,
   loginUser,
@@ -25,14 +26,14 @@ const authenticate = async (req, res) => {
     if (googleToken !== null) {
       const userData = await loginUser(googleToken, accessToken)
       user = await findUserByEmail(userData.email)
-      if (registerUser === true && accountData !== null) {
+      if (registerUser === true && accountInfo !== null) {
         user = await createUser(userData)
-        logger.info(userData)
+
         const accountData = {
-          beneficiaryName: userData.name,
-          beneficiaryAddress: 'asdasd',
+          beneficiaryName: userData.name + ' ' + userData.surname,
+          beneficiaryAddress: accountInfo.beneficiaryAddress,
           accountNumber: 123,
-          accountType: 'Checking',
+          accountType: accountInfo.accountType,
           userId: user.id,
         }
         account = await createAccount(accountData)
@@ -67,6 +68,7 @@ const authenticate = async (req, res) => {
       } else {
         statusCode = 200
       }
+      logger.info(statusCode)
       return sendResponse(res, statusCode, {
         id: user.id,
         accessToken: tokens.accessToken,

@@ -1,6 +1,6 @@
 export interface AccountInfo {
-  email: string;
-  username: string;
+  beneficiaryAddress: string;
+  accountType: string;
 }
 
 export interface CreateAuthDTO {

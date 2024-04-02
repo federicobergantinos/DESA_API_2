@@ -30,6 +30,10 @@ const createLogger = (moduleName) => ({
     const timestamp = new Date().toISOString()
     console.error(`${timestamp} [${moduleName}] ERROR: ${message}`)
   },
+  success: (message) => {
+    const timestamp = new Date().toISOString()
+    console.error(`${timestamp} [${moduleName}] SUCCESS: ${message}`)
+  },
 })
 
 export default createLogger

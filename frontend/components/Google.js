@@ -24,14 +24,13 @@ const clearAsyncStorage = async () => {
 }
 
 const authService = {
-  async saveCredentials(
+  async saveCredentials({
     navigation,
     accessToken,
     refreshToken,
     userId,
-    updateUserAndAccount
-  ) {
-    logger.info('entro a saveCredentials')
+    updateUserAndAccount,
+  }) {
     try {
       await AsyncStorage.setItem('token', accessToken)
       await AsyncStorage.setItem('refresh', refreshToken)
@@ -43,12 +42,9 @@ const authService = {
       // Aseguramos que la solicitud fue exitosa
       if (userStatusCode === 200) {
         const { response: accountData, statusCode: accountStatusCode } =
-          logger.info('userId', userId)
-        await backendApi.accountGateway.getAccountByUserId(1) // TODO cambiar
-        // await backendApi.accountGateway.getAccountByUserId(userId)
+          await backendApi.accountGateway.getAccountByUserId(userId)
         if (accountStatusCode === 200) {
           updateUserAndAccount(userData.user, accountData[0])
-
           navigation.replace('Home')
         } else {
           console.error('Error fetching account data: Status Code', statusCode)
