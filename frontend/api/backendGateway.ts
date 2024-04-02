@@ -6,7 +6,7 @@ import { ContactDTO, ContactsDTO, ContactsSearchDTO } from './ContactDTO'
 import { AccountDTO, AccountSummaryDTO } from './AccountDTO'
 
 // const api = axios.create({ baseURL: "https://wallet-elb.federicobergantinos.com:443" });
-const api = axios.create({ baseURL: 'http://192.168.1.116:8080' })
+const api = axios.create({ baseURL: 'http://192.168.1.118:8080' })
 const transactionBaseUrl = '/v1/transactions'
 const usersBaseUrl = '/v1/users'
 const contactsBaseUrl = '/v1/contacts'
@@ -24,31 +24,26 @@ api.interceptors.request.use(
 
 api.interceptors.response.use(
   (response: AxiosResponse) => {
-    return response
+    return response;
   },
   (error) => {
     if (error.response) {
-      return Promise.resolve({
-        response: null,
-        statusCode: error.response.status,
-      })
+      return error.response
     }
-    console.error(error)
-    return Promise.reject(error)
+    console.error(error);
+    return Promise.reject(error);
   }
-)
+);
 
 // Función para agregar el código de estado a la respuesta
 const responseBodyWithStatusCode = (
   response: AxiosResponse
 ): { response: any; statusCode: any } => {
-  const data = {
-    response: response.response,
-    statusCode: response.statusCode,
-  }
+  const data = {"response": response.data.data, "statusCode": response.status }
   console.info('Response received:', data);
   return data;
 };
+
 
 // Definición de funciones de solicitud HTTP
 const requests = {

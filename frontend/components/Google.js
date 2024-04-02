@@ -1,25 +1,6 @@
-import React, { useContext, useEffect, useState } from 'react'
-import {
-  StyleSheet,
-  ImageBackground,
-  Dimensions,
-  StatusBar,
-  TouchableWithoutFeedback,
-  Keyboard,
-  Image,
-  View,
-} from 'react-native'
-import { Block, Text } from 'galio-framework'
-
-import { Button } from '../components'
-import { Images, walletTheme } from '../constants'
 import { GoogleSignin } from '@react-native-google-signin/google-signin'
 import backendApi from '../api/backendGateway'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { useNavigation } from '@react-navigation/native'
-import LoadingScreen from '../components/LoadingScreen'
-import asyncStorage from '@react-native-async-storage/async-storage/src/AsyncStorage'
-import WalletContext from '../navigation/WalletContext'
 
 GoogleSignin.configure({
   webClientId:
@@ -39,4 +20,47 @@ const clearAsyncStorage = async () => {
   await AsyncStorage.clear()
 }
 
-export { logOut, GoogleSignin }
+const authService = {
+  async saveCredentials(
+    navigation,
+    accessToken,
+    refreshToken,
+    userId,
+    updateUserAndAccount
+  ) {
+    console.log('entro a saveCredentials')
+    try {
+      await AsyncStorage.setItem('token', accessToken)
+      await AsyncStorage.setItem('refresh', refreshToken)
+      await AsyncStorage.setItem('userId', JSON.stringify(userId))
+      // Ahora, hacemos el request para obtener los datos del usuario por ID
+      const { response: userData, statusCode: userStatusCode } =
+        await backendApi.usersGateway.getUser(userId)
+
+      // Aseguramos que la solicitud fue exitosa
+      if (userStatusCode === 200) {
+        const { response: accountData, statusCode: accountStatusCode } =
+          await backendApi.accountGateway.getAccountByUserId(1) // TODO cambiar
+        // await backendApi.accountGateway.getAccountByUserId(userId)
+        if (accountStatusCode === 200) {
+          updateUserAndAccount(userData.user, accountData[0])
+
+          // Navegamos a la pantalla Home
+          navigation.replace('Home')
+        } else {
+          // Manejo de situaciones donde la solicitud de datos del usuario falla
+          console.error('Error fetching account data: Status Code', statusCode)
+        }
+      } else {
+        // Manejo de situaciones donde la solicitud de datos del usuario falla
+        console.error('Error fetching user data: Status Code', statusCode)
+        // Aquí puedes decidir qué hacer en caso de error, como desloguear al usuario o mostrar un mensaje, etc.
+      }
+    } catch (error) {
+      console.error('Error in saveCredentials:', error)
+      // Manejo de cualquier otro error
+    }
+  },
+}
+
+export { logOut, GoogleSignin, authService }
