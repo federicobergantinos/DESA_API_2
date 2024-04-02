@@ -6,6 +6,8 @@ const {
 const { findUserById } = require('../services/userService')
 const { v4: uuidv4 } = require('uuid')
 const { sendResponse } = require('../configurations/utils.js')
+const createLogger = require('../configurations/Logger')
+const logger = createLogger(__filename)
 
 const create = async (req, res) => {
   try {
@@ -19,7 +21,7 @@ const create = async (req, res) => {
       message: 'La cuenta creada con éxito',
     })
   } catch (error) {
-    console.error(`Error en la creación de la cuenta: ${error}`)
+    logger.error(`Error en la creación de la cuenta: ${error}`)
     return sendResponse(res, error.code || 500, {
       msg: error.message || 'Ha ocurrido una excepción',
     })
@@ -36,7 +38,7 @@ const getById = async (req, res) => {
       ...account,
     })
   } catch (error) {
-    console.error(` ${error}`)
+    logger.error(` ${error}`)
     return sendResponse(res, error.code || 500, {
       msg: error.message || 'An exception has occurred',
     })
@@ -67,7 +69,7 @@ const getAccountsByUserId = async (req, res) => {
         .json({ msg: 'No accounts found for the given user ID' })
     }
   } catch (error) {
-    console.error(`Error fetching accounts by user ID: ${error}`)
+    logger.error(`Error fetching accounts by user ID: ${error}`)
     return sendResponse(res, error.code || 500, {
       msg: error.message || 'An exception has occurred',
     })

@@ -21,7 +21,9 @@ import { useNavigation } from '@react-navigation/native'
 import LoadingScreen from '../components/LoadingScreen'
 import asyncStorage from '@react-native-async-storage/async-storage/src/AsyncStorage'
 import { useWallet } from '../navigation/WalletContext'
+import createLogger from '../components/Logger'
 
+const logger = createLogger('login.js')
 const { width, height } = Dimensions.get('screen')
 
 const DismissKeyboard = ({ children }) => (
@@ -51,7 +53,9 @@ const Login = () => {
 
   useEffect(() => {
     const validateLoggedUser = async () => {
-      if (await isLoggedUser()) {
+      const isLogged = await isLoggedUser()
+      logger.info(isLogged)
+      if (isLogged) {
         reAuthenticate()
       } else {
         setIsLoading(false)
@@ -93,6 +97,7 @@ const Login = () => {
     const { response, statusCode } = await backendApi.authUser.authenticate({
       token: null,
     })
+    logger.info(statusCode)
 
     if (statusCode === 200) {
       authService.saveCredentials(
@@ -103,7 +108,9 @@ const Login = () => {
         updateUserAndAccount
       )
       setIsLoading(false)
-    } else if (statusCode === undefined) {
+      const item = await asyncStorage.getItem('token')
+      logger.info(item)
+    } else {
       try {
         if ((await asyncStorage.getItem('token')) !== null) {
           await refreshToken()

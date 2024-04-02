@@ -1,6 +1,7 @@
 const Account = require('../entities/account')
-const BadRequest = require('../Errors/BadRequest')
 const NotFound = require('../Errors/NotFound')
+const createLogger = require('../configurations/Logger')
+const logger = createLogger(__filename)
 
 const createAccount = async (accountData) => {
   const newAccount = await Account.create(accountData)

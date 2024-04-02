@@ -8,12 +8,15 @@ const {
 const { verify } = require('jsonwebtoken')
 const Unauthorized = require('../Errors/Unauthorized')
 const { sendResponse } = require('../configurations/utils.js')
+const createLogger = require('../configurations/Logger')
+const logger = createLogger(__filename)
 
 const authenticate = async (req, res) => {
   try {
-    console.info('Starting processing authenticate request.')
+    logger.info('Starting processing request.')
     const googleToken = req.body.token
     const registerUser = req.body.registerUser
+    const accountInfo = req.body.accountInfo
     const accessToken = req.headers['authorization']
 
     let user = null
@@ -22,20 +25,31 @@ const authenticate = async (req, res) => {
     if (googleToken !== null) {
       const userData = await loginUser(googleToken, accessToken)
       user = await findUserByEmail(userData.email)
-      if (registerUser === true) {
+      if (registerUser === true && accountData !== null) {
         user = await createUser(userData)
+        logger.info(userData)
+        const accountData = {
+          beneficiaryName: userData.name,
+          beneficiaryAddress: 'asdasd',
+          accountNumber: 123,
+          accountType: 'Checking',
+          userId: user.id,
+        }
+        account = await createAccount(accountData)
       }
     } else if (accessToken !== null) {
       const decode = verify(accessToken, process.env.CODE, (err, decoded) => {
         if (err) {
-          console.error('ERROR', err)
+          logger.error('ERROR', err)
           throw new Unauthorized('Invalid credentials')
         } else {
           return decoded
         }
       })
       const userData = await findUserByEmail(decode.email)
-      user = userData.dataValues
+      if (userData !== null) {
+        user = userData.dataValues
+      }
     } else {
       return sendResponse(res, 400, { msg: 'invalid credentials' })
     }
@@ -64,7 +78,7 @@ const authenticate = async (req, res) => {
       })
     }
   } catch (error) {
-    console.error(`${error}`)
+    logger.error(`${error}`)
     return sendResponse(res, error.code || 500, {
       msg: error.message || 'An exception has ocurred',
     })
@@ -85,7 +99,7 @@ const refresh = async (req, res) => {
       refreshToken: tokens.refreshToken,
     })
   } catch (error) {
-    console.error(` ${error}`)
+    logger.error(` ${error}`)
     return sendResponse(res, error.code || 500, {
       msg: error.message || 'An exception has ocurred',
     })
@@ -98,7 +112,7 @@ const deleteCredential = async (req, res) => {
     deleteCredentials(accessToken)
     return res.status(204).send()
   } catch (error) {
-    console.error(` ${error}`)
+    logger.error(` ${error}`)
     return sendResponse(res, error.code || 500, {
       msg: error.message || 'An exception has ocurred',
     })

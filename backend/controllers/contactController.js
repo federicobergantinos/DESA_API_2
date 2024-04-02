@@ -9,6 +9,8 @@ const {
 const { findUserById } = require('../services/userService')
 const { v4: uuidv4 } = require('uuid')
 const { sendResponse } = require('../configurations/utils.js')
+const createLogger = require('../configurations/Logger')
+const logger = createLogger(__filename)
 
 const create = async (req, res) => {
   try {
@@ -22,7 +24,7 @@ const create = async (req, res) => {
       message: 'Receta creada con éxito',
     })
   } catch (error) {
-    console.error(`Error en la creación de la receta: ${error}`)
+    logger.error(`Error en la creación de la receta: ${error}`)
     return res.status(error.code || 500).json({
       msg: error.message || 'Ha ocurrido una excepción',
     })
@@ -40,7 +42,7 @@ const getAll = async (req, res) => {
 
     return sendResponse(res, 200, response)
   } catch (error) {
-    console.error(` ${error}`)
+    logger.error(` ${error}`)
     return sendResponse(res, error.code || 500, {
       msg: error.message || 'An exception has occurred',
     })
@@ -61,7 +63,7 @@ const searchAll = async (req, res) => {
     })
     return sendResponse(res, 200, { transactions })
   } catch (error) {
-    console.error(`searchContacts: ${error}`)
+    logger.error(`searchContacts: ${error}`)
     return res.status(500).json({
       msg: 'An exception has occurred',
     })
@@ -92,7 +94,7 @@ const getById = async (req, res) => {
       rating: rating,
     })
   } catch (error) {
-    console.error(` ${error}`)
+    logger.error(` ${error}`)
     return sendResponse(res, error.code || 500, {
       msg: error.message || 'An exception has occurred',
     })
@@ -112,7 +114,7 @@ const update = async (req, res) => {
       images: req.body.images, // Devolver las URLs de las imágenes proporcionadas
     })
   } catch (error) {
-    console.error(`Error al actualizar la receta: ${error}`)
+    logger.error(`Error al actualizar la receta: ${error}`)
     return sendResponse(res, error.code || 500, {
       msg: error.message || 'Ha ocurrido una excepción',
     })
@@ -125,7 +127,7 @@ const deleteContact = async (req, res) => {
 
     return sendResponse(res, 204, {})
   } catch (error) {
-    console.error(`Hubo un problema al subir la imagen: ${error}`)
+    logger.error(`Hubo un problema al subir la imagen: ${error}`)
     return sendResponse(res, error.code || 500, {
       msg: error.message || 'Ha ocurrido un error al actualizar la receta',
     })

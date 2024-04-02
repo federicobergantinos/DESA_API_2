@@ -1,5 +1,7 @@
 const { Transaction } = require('../../../entities/associateModels')
 const { transactionsData } = require('./transactionsData')
+const createLogger = require('../../Logger')
+const logger = createLogger(__filename)
 
 const populateTransactions = async () => {
   try {
@@ -19,9 +21,9 @@ const populateTransactions = async () => {
       })
     }
 
-    console.log('Transactions table has been populated with initial data.')
+    logger.info('Transactions table has been populated with initial data.')
   } catch (error) {
-    console.error('Error populating Transactions table:', error)
+    logger.error('Error populating Transactions table:', error)
   }
 }
 

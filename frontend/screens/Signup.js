@@ -15,7 +15,9 @@ import { logOut, authService } from '../components/Google'
 import LoadingScreen from '../components/LoadingScreen'
 import backendApi from '../api/backendGateway'
 import { useWallet } from '../navigation/WalletContext'
+import createLogger from '../components/Logger'
 
+const logger = createLogger('signup.js')
 const { width, height } = Dimensions.get('screen')
 
 const Signup = ({ route }) => {

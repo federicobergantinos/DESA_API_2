@@ -1,4 +1,6 @@
 const { User, Account } = require('../../../entities/associateModels')
+const createLogger = require('../../Logger')
+const logger = createLogger(__filename)
 
 const populateUser = async () => {
   const usersData = [
@@ -110,9 +112,9 @@ const populateUser = async () => {
       }
     }
 
-    console.log('Users and accounts have been populated.')
+    logger.info('Users and accounts have been populated.')
   } catch (error) {
-    console.error('Error populating users and accounts:', error)
+    logger.error('Error populating users and accounts:', error)
   }
 }
 
