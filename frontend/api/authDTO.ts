@@ -1,6 +1,8 @@
 export interface createAuthDTO {
-  token: string
+  token: string;
+  registerUser?: boolean;
 }
+
 
 export interface Credentials {
   id: number

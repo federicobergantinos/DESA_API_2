@@ -1,4 +1,5 @@
 const { updateUserProfile, findUserById } = require('../services/userService')
+const { sendResponse } = require('../configurations/utils.js')
 
 const AWS = require('aws-sdk')
 AWS.config.update({
@@ -43,10 +44,10 @@ const getUser = async (req, res) => {
   try {
     const { userId } = req.params
     const user = await findUserById(userId)
-    res.status(200).json({ user })
+    return sendResponse(res, 200, { user })
   } catch (error) {
     console.error(`${error}`)
-    res.status(error.code || 500).json({
+    return sendResponse(res, error.code || 500, {
       msg: error.message || 'An exception has ocurred',
     })
   }
@@ -64,14 +65,14 @@ const editProfile = async (req, res) => {
 
     const updatedUser = await updateUserProfile(userId, updateData)
     if (updatedUser) {
-      res.status(200).json({ user: updatedUser })
+      return sendResponse(res, 200, { user: updatedUser })
     } else {
       // Este bloque else podría no ser necesario dado que ahora lanzamos un error si el usuario no se encuentra
-      res.status(404).json({ msg: 'User not found' })
+      return sendResponse(res, 404, { msg: 'User not found' })
     }
   } catch (error) {
     console.error(error)
-    res.status(500).json({
+    return sendResponse(res, 500, {
       msg: 'An exception has occurred',
     })
   }
@@ -83,13 +84,13 @@ const uploadImage = async (req, res) => {
     const filename = `${uuidv4()}.jpeg` // Asegurar un nombre de archivo único
     const imageUrl = await uploadBase64ImageToS3(image, filename) // Subir y obtener la URL
 
-    res.status(200).json({
+    return sendResponse(res, 200, {
       message: 'Imagen subida con éxito',
       images: imageUrl,
     })
   } catch (error) {
     console.error(`Hubo un problema al subir la imagen: ${error}`)
-    res.status(error.code || 500).json({
+    return sendResponse(res, error.code || 500, {
       msg: error.message || 'Ha ocurrido un error al actualizar la receta',
     })
   }

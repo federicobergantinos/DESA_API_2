@@ -1,12 +1,12 @@
 const User = require('../entities/user')
-const BadRequest = require('../Errors/BadRequest')
+const InternalError = require('../Errors/InternalError')
 const jwt = require('jsonwebtoken')
 const { Recipe } = require('../entities/associateModels')
 const NotFound = require('../Errors/NotFound')
 
 const createUser = async (userData) => {
   if (await findUserByEmail(userData.email)) {
-    throw new BadRequest('The user exists')
+    throw new InternalError('The user exists')
   }
 
   const newUser = await User.create(userData)

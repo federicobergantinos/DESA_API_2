@@ -11,46 +11,50 @@ import {
 import { theme, Block } from 'galio-framework'
 import { Images, walletTheme } from '../constants'
 import { useNavigation } from '@react-navigation/native'
-import { logOut, GoogleSignin } from '../components/Google'
+import { logOut, authService } from '../components/Google'
 import LoadingScreen from '../components/LoadingScreen'
+import backendApi from '../api/backendGateway'
+import { useWallet } from '../navigation/WalletContext'
 
 const { width, height } = Dimensions.get('screen')
 
-const Signup = () => {
+const Signup = ({ route }) => {
   const navigation = useNavigation()
   const [isLoading, setIsLoading] = useState(null)
+  const { setUser, setSelectedAccount } = useWallet()
 
-  const authenticate = async () => {
+  const updateUserAndAccount = (userData, accountData) => {
+    setUser(userData)
+    setSelectedAccount(accountData)
+  }
+
+  // Función para manejar el botón de confirmar
+  const handleConfirm = async () => {
+    // Realizar el request a authentication con los datos del registro
+    // Llevar al usuario a la pantalla Home si el registro es exitoso
     try {
       setIsLoading(true)
-      const userInfo = await GoogleSignin.signIn()
-      const { idToken, user } = userInfo
+      const idToken = route.params.idToken
 
       const { response, statusCode } = await backendApi.authUser.authenticate({
         token: idToken,
+        registerUser: true,
       })
 
       if (statusCode === 201) {
-        await saveCredentials(
+        await authService.saveCredentials(
+          navigation,
           response.accessToken,
           response.refreshToken,
-          response.id
+          response.id,
+          updateUserAndAccount
         )
-      } else if (statusCode === 301) {
-        navigation.replace('Signup')
       }
       setIsLoading(false)
     } catch (error) {
       await logOut()
       setIsLoading(false)
     }
-  }
-
-  // Función para manejar el botón de confirmar
-  const handleConfirm = () => {
-    // Realizar el request a authentication con los datos del registro
-    // Llevar al usuario a la pantalla Home si el registro es exitoso
-    setIsLoading(true)
   }
 
   // Función para manejar el botón de cancelar

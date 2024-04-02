@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   StyleSheet,
   ImageBackground,
@@ -13,13 +13,14 @@ import { Block, Text } from 'galio-framework'
 
 import { Button } from '../components'
 import { Images, walletTheme } from '../constants'
-import { logOut, GoogleSignin } from '../components/Google'
+// import { GoogleSignin } from '@react-native-google-signin/google-signin'
+import { authService, GoogleSignin, logOut } from '../components/Google'
 import backendApi from '../api/backendGateway'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useNavigation } from '@react-navigation/native'
 import LoadingScreen from '../components/LoadingScreen'
 import asyncStorage from '@react-native-async-storage/async-storage/src/AsyncStorage'
-import WalletContext from '../navigation/WalletContext'
+import { useWallet } from '../navigation/WalletContext'
 
 const { width, height } = Dimensions.get('screen')
 
@@ -31,7 +32,13 @@ const DismissKeyboard = ({ children }) => (
 
 const Login = () => {
   const navigation = useNavigation()
-  const { setUser, setSelectedAccount } = useContext(WalletContext)
+  const { setUser, setSelectedAccount } = useWallet()
+
+  const updateUserAndAccount = (userData, accountData) => {
+    setUser(userData)
+    setSelectedAccount(accountData)
+  }
+
   const isLoggedUser = async () => {
     return (
       (await AsyncStorage.getItem('token')) !== null &&
@@ -63,19 +70,21 @@ const Login = () => {
         token: idToken,
       })
 
-      if (statusCode === 201) {
-        await saveCredentials(
+      if (statusCode === 200) {
+        await authService.saveCredentials(
           response.accessToken,
           response.refreshToken,
-          response.id
+          response.id,
+          navigation,
+          updateUserAndAccount
         )
+        setIsLoading(false)
       } else if (statusCode === 301) {
-        navigation.replace('Signup')
+        navigation.replace('Signup', { idToken })
       }
       setIsLoading(false)
     } catch (error) {
       await logOut()
-      setIsLoading(false)
     }
   }
 
@@ -85,23 +94,22 @@ const Login = () => {
       token: null,
     })
 
-    if (statusCode === 201) {
-      await saveCredentials(
+    if (statusCode === 200) {
+      authService.saveCredentials(
         response.accessToken,
         response.refreshToken,
-        response.id
+        response.id,
+        navigation,
+        updateUserAndAccount
       )
+      setIsLoading(false)
     } else if (statusCode === undefined) {
       try {
         if ((await asyncStorage.getItem('token')) !== null) {
           await refreshToken()
-        } else {
-          await logOut()
-          setIsLoading(false)
-        }
+        } else await logOut()
       } catch (e) {
         await logOut()
-        setIsLoading(false)
       }
     }
   }
@@ -110,54 +118,19 @@ const Login = () => {
     const { response, statusCode } = await backendApi.authUser.refresh(
       await AsyncStorage.getItem('refresh')
     )
-    if (statusCode === 201) {
+    if (statusCode === 200) {
       const userId = await AsyncStorage.getItem('userId')
-      await saveCredentials(response.accessToken, response.refreshToken, userId)
+      await authService.saveCredentials(
+        response.accessToken,
+        response.refreshToken,
+        userId,
+        navigation,
+        updateUserAndAccount
+      )
+      setIsLoading(false)
     } else {
       await logOut()
-      setIsLoading(false)
     }
-  }
-
-  const saveCredentials = async (accessToken, refreshToken, userId) => {
-    try {
-      // Primero, guardamos el accessToken y el refreshToken
-      await AsyncStorage.setItem('token', accessToken)
-      await AsyncStorage.setItem('refresh', refreshToken)
-      await AsyncStorage.setItem('userId', JSON.stringify(userId))
-
-      // Ahora, hacemos el request para obtener los datos del usuario por ID
-      const { response: userData, statusCode } =
-        await backendApi.usersGateway.getUser(userId)
-
-      // Aseguramos que la solicitud fue exitosa
-      if (statusCode === 200) {
-        setUser(userData.user)
-
-        const { response: accountData, statusCode } =
-          await backendApi.accountGateway.getAccountByUserId(1)
-        // await backendApi.accountGateway.getAccountByUserId(userId)
-
-        if (statusCode === 200) {
-          setSelectedAccount(accountData[0])
-
-          // Navegamos a la pantalla Home
-          navigation.replace('Home')
-        } else {
-          // Manejo de situaciones donde la solicitud de datos del usuario falla
-          console.error('Error fetching account data: Status Code', statusCode)
-        }
-      } else {
-        // Manejo de situaciones donde la solicitud de datos del usuario falla
-        console.error('Error fetching user data: Status Code', statusCode)
-        // Aquí puedes decidir qué hacer en caso de error, como desloguear al usuario o mostrar un mensaje, etc.
-      }
-    } catch (error) {
-      console.error('Error in saveCredentials:', error)
-      // Manejo de cualquier otro error
-    }
-    // Finalmente, ocultamos la pantalla de carga
-    setIsLoading(false)
   }
 
   return (

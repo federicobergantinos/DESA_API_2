@@ -5,6 +5,7 @@ const {
 } = require('../services/accountService')
 const { findUserById } = require('../services/userService')
 const { v4: uuidv4 } = require('uuid')
+const { sendResponse } = require('../configurations/utils.js')
 
 const create = async (req, res) => {
   try {
@@ -13,13 +14,13 @@ const create = async (req, res) => {
     }
     const accountId = await createAccount(accountData)
 
-    res.status(201).json({
+    return sendResponse(res, 201, {
       id: accountId,
       message: 'La cuenta creada con éxito',
     })
   } catch (error) {
     console.error(`Error en la creación de la cuenta: ${error}`)
-    res.status(error.code || 500).json({
+    return sendResponse(res, error.code || 500, {
       msg: error.message || 'Ha ocurrido una excepción',
     })
   }
@@ -31,12 +32,12 @@ const getById = async (req, res) => {
     const response = await findAccountById(accountId)
     const account = response.dataValues
 
-    res.status(200).json({
+    return sendResponse(res, 200, {
       ...account,
     })
   } catch (error) {
     console.error(` ${error}`)
-    res.status(error.code || 500).json({
+    return sendResponse(res, error.code || 500, {
       msg: error.message || 'An exception has occurred',
     })
   }
@@ -59,13 +60,15 @@ const getAccountsByUserId = async (req, res) => {
       }))
 
       // Devolver la lista de objetos.
-      res.status(200).json(accountDetails)
+      return sendResponse(res, 200, accountDetails)
     } else {
-      res.status(404).json({ msg: 'No accounts found for the given user ID' })
+      return es
+        .status(404)
+        .json({ msg: 'No accounts found for the given user ID' })
     }
   } catch (error) {
     console.error(`Error fetching accounts by user ID: ${error}`)
-    res.status(error.code || 500).json({
+    return sendResponse(res, error.code || 500, {
       msg: error.message || 'An exception has occurred',
     })
   }
