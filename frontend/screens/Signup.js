@@ -41,8 +41,11 @@ const Signup = ({ route }) => {
       const { response, statusCode } = await backendApi.authUser.authenticate({
         token: idToken,
         registerUser: true,
+        accountInfo: {
+          beneficiaryAddress: 'asd',
+          accountType: 'Checking',
+        },
       })
-
       if (statusCode === 201) {
         await authService.saveCredentials(
           navigation,

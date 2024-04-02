@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   View,
   Text,
@@ -10,18 +10,34 @@ import {
   ScrollView,
 } from 'react-native'
 import { theme, Block } from 'galio-framework'
+import { useWallet } from '../navigation/WalletContext'
 import { Images, walletTheme } from '../constants'
 import Clipboard from '@react-native-community/clipboard'
 import Icon from '../components/Icon'
+import backendApi from '../api/backendGateway'
 const { width, height } = Dimensions.get('screen')
 
 const AccountDetails = () => {
-  const [accountDetails, setAccountDetails] = useState({
-    beneficiaryName: 'Juan Pérez',
-    beneficiaryAddress: '123 Calle Principal, Ciudad, País',
-    accountNumber: '000123456789',
-    accountType: 'Ahorros',
-  })
+  const [accountDetails, setAccountDetails] = useState(null)
+  const { selectedAccount } = useWallet()
+
+  useEffect(() => {
+    const fetchAccounts = async () => {
+      try {
+        console.log('selectedAccount', selectedAccount)
+        const { response: accountData, statusCode: accountStatusCode } =
+          await backendApi.accountGateway.getById(selectedAccount.accountId)
+        console.log('response', accountData)
+        if (accountStatusCode === 200) {
+          setAccountDetails(accountData)
+        }
+      } catch (error) {
+        console.error('Error fetching accounts:', error)
+      }
+    }
+
+    fetchAccounts()
+  }, [selectedAccount])
 
   const copyToClipboard = (text) => {
     Clipboard.setString(text)
@@ -30,7 +46,7 @@ const AccountDetails = () => {
 
   const shareAccountDetails = () => {
     const message = `
-      Detalles de la Cuenta para Transferencia:
+      Detalles de la Cuenta para Transferencia: 
       - Nombre del Beneficiario: ${accountDetails.beneficiaryName}
       - Domicilio del Beneficiario: ${accountDetails.beneficiaryAddress}
       - Número de Cuenta: ${accountDetails.accountNumber}
