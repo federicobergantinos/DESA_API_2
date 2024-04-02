@@ -1,6 +1,8 @@
 require('dotenv').config()
 const express = require('express')
 const { dbConnection } = require('./configurations/database/config')
+const createLogger = require('./configurations/Logger')
+const logger = createLogger(__filename)
 
 const app = express()
 app.use(express.json())
@@ -24,5 +26,5 @@ app.use(paths.contacts, require('./routes/contacts'))
 
 const PORT = 8080
 app.listen(PORT, () => {
-  console.log(`Servidor escuchando en el puerto ${PORT}`)
+  logger.info(`Servidor escuchando en el puerto ${PORT}`)
 })

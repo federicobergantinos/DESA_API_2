@@ -1,6 +1,9 @@
 import { GoogleSignin } from '@react-native-google-signin/google-signin'
 import backendApi from '../api/backendGateway'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import createLogger from './Logger'
+
+const logger = createLogger('google.js')
 
 GoogleSignin.configure({
   webClientId:
@@ -28,7 +31,7 @@ const authService = {
     userId,
     updateUserAndAccount
   ) {
-    console.log('entro a saveCredentials')
+    logger.info('entro a saveCredentials')
     try {
       await AsyncStorage.setItem('token', accessToken)
       await AsyncStorage.setItem('refresh', refreshToken)
@@ -40,25 +43,21 @@ const authService = {
       // Aseguramos que la solicitud fue exitosa
       if (userStatusCode === 200) {
         const { response: accountData, statusCode: accountStatusCode } =
-          await backendApi.accountGateway.getAccountByUserId(1) // TODO cambiar
+          logger.info('userId', userId)
+        await backendApi.accountGateway.getAccountByUserId(1) // TODO cambiar
         // await backendApi.accountGateway.getAccountByUserId(userId)
         if (accountStatusCode === 200) {
           updateUserAndAccount(userData.user, accountData[0])
 
-          // Navegamos a la pantalla Home
           navigation.replace('Home')
         } else {
-          // Manejo de situaciones donde la solicitud de datos del usuario falla
           console.error('Error fetching account data: Status Code', statusCode)
         }
       } else {
-        // Manejo de situaciones donde la solicitud de datos del usuario falla
         console.error('Error fetching user data: Status Code', statusCode)
-        // Aquí puedes decidir qué hacer en caso de error, como desloguear al usuario o mostrar un mensaje, etc.
       }
     } catch (error) {
       console.error('Error in saveCredentials:', error)
-      // Manejo de cualquier otro error
     }
   },
 }

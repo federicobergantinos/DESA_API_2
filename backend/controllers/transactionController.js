@@ -5,6 +5,8 @@ const {
 } = require('../services/transactionService')
 const { v4: uuidv4 } = require('uuid')
 const { sendResponse } = require('../configurations/utils.js')
+const createLogger = require('../configurations/Logger')
+const logger = createLogger(__filename)
 
 const create = async (req, res) => {
   try {
@@ -18,7 +20,7 @@ const create = async (req, res) => {
       message: 'Receta creada con éxito',
     })
   } catch (error) {
-    console.error(`Error en la creación de la receta: ${error}`)
+    logger.error(`Error en la creación de la receta: ${error}`)
     return sendResponse(res, error.code || 500, {
       msg: error.message || 'Ha ocurrido una excepción',
     })
@@ -29,7 +31,7 @@ const getAll = async (req, res) => {
   const page = parseInt(req.query.page) || 0 // Asegúrate de proporcionar un valor por defecto
   const limit = parseInt(req.query.limit) || 20 // Límite de ítems por página
   const offset = page * limit
-  console.log(req.query)
+  logger.info(req.query)
   const accountId = req.query.accountId
 
   try {
@@ -37,7 +39,7 @@ const getAll = async (req, res) => {
 
     return sendResponse(res, statusCode, response)
   } catch (error) {
-    console.error(` ${error}`)
+    logger.error(` ${error}`)
     return sendResponse(res, error.code || 500, {
       msg: error.message || 'An exception has occurred',
     })
@@ -54,7 +56,7 @@ const getById = async (req, res) => {
       ...transaction,
     })
   } catch (error) {
-    console.error(` ${error}`)
+    logger.error(` ${error}`)
     return sendResponse(res, error.code || 500, {
       msg: error.message || 'An exception has occurred',
     })
@@ -81,7 +83,7 @@ const calculateAccountBalance = async (req, res) => {
 
     return sendResponse(res, 200, balance)
   } catch (error) {
-    console.error('Error calculando el saldo de la cuenta:', error)
+    logger.error('Error calculando el saldo de la cuenta:', error)
     throw error
   }
 }

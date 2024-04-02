@@ -3,6 +3,8 @@ const InternalError = require('../Errors/InternalError')
 const jwt = require('jsonwebtoken')
 const { Recipe } = require('../entities/associateModels')
 const NotFound = require('../Errors/NotFound')
+const createLogger = require('../configurations/Logger')
+const logger = createLogger(__filename)
 
 const createUser = async (userData) => {
   if (await findUserByEmail(userData.email)) {

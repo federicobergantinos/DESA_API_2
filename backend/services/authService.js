@@ -4,6 +4,8 @@ const Authorization = require('../entities/auth')
 const Unauthorized = require('../Errors/Unauthorized')
 const { findUserById } = require('./userService')
 const client = new OAuth2Client()
+const createLogger = require('../configurations/Logger')
+const logger = createLogger(__filename)
 
 const createAuthTokens = (user) => {
   const payload = { id: user.id, email: user.email }

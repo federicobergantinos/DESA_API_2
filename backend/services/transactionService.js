@@ -4,6 +4,8 @@ const { isValidAccount } = require('./accountService')
 const NotFound = require('../Errors/NotFound')
 const { Op } = require('sequelize')
 const sequelize = require('../configurations/database/sequelizeConnection')
+const createLogger = require('../configurations/Logger')
+const logger = createLogger(__filename)
 
 const createTransaction = async (transactionData) => {
   const { accountId, name, description, amount, currency, status, date } =
@@ -67,7 +69,7 @@ const getTransactions = async (queryData) => {
     offset,
   })
 
-  console.log(transactions)
+  logger.info(transactions)
 
   return transactions
 }

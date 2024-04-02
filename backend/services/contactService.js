@@ -1,3 +1,6 @@
+const createLogger = require('../configurations/Logger')
+const logger = createLogger(__filename)
+
 const updateContact = async (recipeId, updateData) => {
   const {
     title,

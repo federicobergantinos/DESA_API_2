@@ -6,6 +6,8 @@ const {
   Account,
 } = require('../../entities/associateModels')
 const { populateTransactions, populateUser } = require('./initialData')
+const createLogger = require('../Logger')
+const logger = createLogger(__filename)
 
 const dbConnection = async () => {
   try {
@@ -23,9 +25,9 @@ const dbConnection = async () => {
     await populateUser()
     await populateTransactions()
 
-    console.log('Database online')
+    logger.info('Database online')
   } catch (error) {
-    console.error('There is an error starting database', error)
+    logger.error('There is an error starting database', error)
     throw new Error('There is an error starting database')
   }
 }
