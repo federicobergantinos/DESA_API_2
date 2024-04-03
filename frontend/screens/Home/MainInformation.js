@@ -36,10 +36,14 @@ const RenderMainInformation = ({
     fetchBalance()
   }, [selectedAccount, refreshing]) // Añade refreshing al array de dependencias
 
+  const lastFourDigits = selectedAccount.accountNumber
+    ? selectedAccount.accountNumber.slice(-4)
+    : '----'
+
   return (
     <Block flex style={styles.balanceContainer}>
       <Text style={styles.balanceText}>
-        Balance | Cta: {selectedAccount.accountNumber}
+        Balance | Cuenta: ...{lastFourDigits}
       </Text>
       <Text style={styles.amountText}>
         {showBalance ? `${balance} USD` : '***'}

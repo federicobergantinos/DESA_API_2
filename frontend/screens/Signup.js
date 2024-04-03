@@ -5,9 +5,11 @@ import {
   Text,
   StyleSheet,
   Dimensions,
-  ScrollView,
   TouchableOpacity,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native'
+import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete'
 import { theme, Block } from 'galio-framework'
 import { Images, walletTheme } from '../constants'
 import { useNavigation } from '@react-navigation/native'
@@ -16,14 +18,20 @@ import LoadingScreen from '../components/LoadingScreen'
 import backendApi from '../api/backendGateway'
 import { useWallet } from '../navigation/WalletContext'
 import createLogger from '../components/Logger'
+import CheckBox from '@react-native-community/checkbox'
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 
 const logger = createLogger('signup.js')
 const { width, height } = Dimensions.get('screen')
 
 const Signup = ({ route }) => {
   const navigation = useNavigation()
-  const [isLoading, setIsLoading] = useState(null)
+  const [isLoading, setIsLoading] = useState(false)
   const { setUser, setSelectedAccount } = useWallet()
+  const [address, setAddress] = useState('')
+  const [isCheckingAccount, setIsCheckingAccount] = useState(true)
+
+  const canConfirm = address !== '' // Aquí agregas las validaciones para otros campos si los hay.
 
   const updateUserAndAccount = (userData, accountData) => {
     setUser(userData)
@@ -32,8 +40,11 @@ const Signup = ({ route }) => {
 
   // Función para manejar el botón de confirmar
   const handleConfirm = async () => {
-    // Realizar el request a authentication con los datos del registro
-    // Llevar al usuario a la pantalla Home si el registro es exitoso
+    if (!canConfirm) {
+      alert('Por favor, completa todos los campos requeridos.')
+      return
+    }
+
     try {
       setIsLoading(true)
       const idToken = route.params.idToken
@@ -42,10 +53,11 @@ const Signup = ({ route }) => {
         token: idToken,
         registerUser: true,
         accountInfo: {
-          beneficiaryAddress: 'asd',
+          beneficiaryAddress: address,
           accountType: 'Checking',
         },
       })
+
       if (statusCode === 201) {
         await authService.saveCredentials({
           accessToken: response.accessToken,
@@ -57,6 +69,7 @@ const Signup = ({ route }) => {
       }
       setIsLoading(false)
     } catch (error) {
+      logger.error(error)
       await logOut()
       setIsLoading(false)
     }
@@ -64,7 +77,6 @@ const Signup = ({ route }) => {
 
   // Función para manejar el botón de cancelar
   const handleCancel = async () => {
-    // Llevar al usuario a la pantalla de Login sin poder volver atrás
     await logOut()
     setIsLoading(false)
     navigation.reset({
@@ -82,37 +94,53 @@ const Signup = ({ route }) => {
   )
 
   return (
-    <Block flex style={styles.home}>
-      <ImageBackground source={Images.Background} style={styles.background}>
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          style={{ width }}
-          contentContainerStyle={styles.scrollViewContent}
-        >
-          {/* Registro1 */}
-          <Card title="Registro1">
-            <Text style={styles.title}>Registro1</Text>
-            <Text style={styles.description}>Registro1</Text>
-          </Card>
-
-          {/* Registro2 */}
-          <Card title="Registro2">
-            <Text style={styles.title}>Registro2</Text>
-            <Text style={styles.description}>Registro2</Text>
-          </Card>
-          {/* Botones de confirmar y cancelar */}
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity onPress={handleCancel} style={styles.button}>
-              <Text style={styles.buttonText}>Cancelar</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={handleConfirm} style={styles.button}>
-              <Text style={styles.buttonText}>Confirmar</Text>
-            </TouchableOpacity>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <Block flex style={styles.home}>
+        <ImageBackground source={Images.Background} style={styles.background}>
+          <View style={{ width: width, ...styles.scrollViewContent }}>
+            <Card title="Dirección">
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <GooglePlacesAutocomplete
+                  placeholder="Ingresa tu dirección"
+                  onPress={(data, details = null) => {
+                    console.log(data)
+                    setAddress(data.description)
+                  }}
+                  query={{
+                    key: 'AIzaSyAZD3DtG2EtBZrau7jzlCxvU2E7TuzGGXA',
+                    language: 'es',
+                  }}
+                  styles={{
+                    textInputContainer: styles.textInputContainer,
+                    textInput: styles.textInput,
+                  }}
+                  fetchDetails={true}
+                  value={address}
+                />
+              </View>
+            </Card>
+            <Card title="Tipo de Cuenta">
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <CheckBox value={isCheckingAccount} onValueChange={() => {}} />
+                <Text style={styles.description}>Checking Account</Text>
+              </View>
+            </Card>
+            {/* Botones de confirmar y cancelar */}
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity onPress={handleCancel} style={styles.button}>
+                <Text style={styles.buttonText}>Cancelar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={handleConfirm} style={styles.button}>
+                <Text style={styles.buttonText}>Confirmar</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </ScrollView>
-      </ImageBackground>
-      <LoadingScreen visible={isLoading} />
-    </Block>
+        </ImageBackground>
+      </Block>
+    </KeyboardAvoidingView>
   )
 }
 
