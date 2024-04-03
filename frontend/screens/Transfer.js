@@ -50,6 +50,19 @@ const Transfer = () => {
     return () => clearTimeout(delayDebounceFn)
   }, [localSearch, fetchContacts]) // Dependencias para re-ejecutar cuando estos valores cambien
 
+  useEffect(() => {
+    if (editingContact) {
+      setContactName(editingContact.name)
+      setContactAccountNumber(editingContact.accountNumber)
+      // Asegúrate de establecer cualquier otro estado necesario para la edición aquí
+    } else {
+      // Resetea los estados a valores predeterminados si no estás en modo de edición
+      setContactName('')
+      setContactAccountNumber('')
+      // Resetea cualquier otro estado necesario aquí
+    }
+  }, [editingContact])
+
   const Card = ({ title, children }) => (
     <View style={styles.detailCard}>
       <Text style={styles.cardTitle}>{title}</Text>
@@ -234,6 +247,41 @@ const Transfer = () => {
     }
   }
 
+  const handleEditContactFinal = async () => {
+    if (!contactName || !contactAccountNumber || !contactAccountType) {
+      Alert.alert('Error', 'Por favor, completa todos los campos.')
+      return
+    }
+
+    // Prepara los datos del contacto a actualizar
+    const updatedContactData = {
+      name: contactName,
+      accountNumber: contactAccountNumber,
+      accountType: contactAccountType,
+      userId: user.id,
+    }
+
+    try {
+      const response = await backendApi.contactsGateway.updateContact(
+        editingContact.id,
+        updatedContactData
+      )
+      if (response.statusCode === 200) {
+        Alert.alert('Éxito', 'Contacto actualizado correctamente.')
+        fetchContacts() // Recargar la lista de contactos para reflejar los cambios
+        hideModal() // Cierra el modal de edición
+      } else {
+        Alert.alert('Error', 'No se pudo actualizar el contacto.')
+      }
+    } catch (error) {
+      console.error('Error al actualizar el contacto:', error)
+      Alert.alert(
+        'Error',
+        'Ocurrió un error al intentar actualizar el contacto.'
+      )
+    }
+  }
+
   const handleAddContactButton = async () => {
     showModal()
     setEditingContact(false)
@@ -312,8 +360,8 @@ const Transfer = () => {
               right
               color="black"
               placeholder="Nombre del contacto"
-              value={editingContact?.name ?? ''}
-              onChangeText={(text) => setContactName(text)}
+              value={contactName}
+              onChangeText={setContactName}
               iconContent={
                 <Icon
                   size={16}
@@ -327,8 +375,8 @@ const Transfer = () => {
               right
               color="black"
               placeholder="Numero de cuenta"
-              value={editingContact?.accountNumber ?? ''}
-              onChangeText={(text) => setContactAccountNumber(text)}
+              value={contactAccountNumber}
+              onChangeText={setContactAccountNumber}
               iconContent={
                 <Icon
                   size={16}
