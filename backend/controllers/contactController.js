@@ -3,7 +3,7 @@ const {
   getContacts,
   getContact,
   updateContact,
-  searchContacts,
+  searchContact,
   deleteContactById,
 } = require('../services/contactService')
 const { findUserById } = require('../services/userService')
@@ -14,19 +14,19 @@ const logger = createLogger(__filename)
 
 const create = async (req, res) => {
   try {
-    const transactionData = {
+    const contactData = {
       ...req.body,
     }
-    const transactionId = await createContact(transactionData)
+    const contactId = await createContact(contactData)
 
-    return res.status(201).json({
-      id: transactionId,
-      message: 'Receta creada con éxito',
+    return sendResponse(res, 201, {
+      contactId: contactId,
+      message: 'The contact was succefully created',
     })
   } catch (error) {
-    logger.error(`Error en la creación de la receta: ${error}`)
-    return res.status(error.code || 500).json({
-      msg: error.message || 'Ha ocurrido una excepción',
+    logger.error(`Error to create the contact: ${error}`)
+    return sendResponse(res, error.code || 500, {
+      msg: error.message || 'An exception has occurred',
     })
   }
 }
@@ -51,20 +51,22 @@ const getAll = async (req, res) => {
 
 const searchAll = async (req, res) => {
   const searchTerm = req.query.searchTerm || ''
+  const userId = req.query.userId || ''
   const page = parseInt(req.query.page) || 0
   const limit = parseInt(req.query.limit) || 50
   const offset = page * limit
 
   try {
-    const transactions = await searchContacts({
+    const contact = await searchContact({
       searchTerm,
       limit,
       offset,
+      userId,
     })
-    return sendResponse(res, 200, { transactions })
+    return sendResponse(res, 200, { contact })
   } catch (error) {
-    logger.error(`searchContacts: ${error}`)
-    return res.status(500).json({
+    logger.error(`searchContact: ${error}`)
+    return sendResponse(res, error.code || 500, {
       msg: 'An exception has occurred',
     })
   }
@@ -72,26 +74,18 @@ const searchAll = async (req, res) => {
 
 const getById = async (req, res) => {
   try {
-    const { transactionId } = req.params
-    const userId = req.query.userId
-    const transaction = await getContact(transactionId)
-    const user = await findUserById(transaction.userId)
-
-    // Se filtran los elementos de media según su tipo y se agregan a los atributos correspondientes.
-    const images = transaction.media
-      .filter((m) => m.type === 'image')
-      .map((m) => m.data)
-    const videos = transaction.media
-      .filter((m) => m.type === 'video')
-      .map((m) => m.data)[0]
+    const contactId = req.params.contactId
+    const response = await getContact(contactId)
+    const contact = response.dataValues
+    console.log(response)
+    console.log(contact)
 
     return sendResponse(res, 200, {
-      ...transaction,
-      username: user.name + ' ' + user.surname,
-      userImage: user.photoUrl,
-      media: images,
-      video: videos,
-      rating: rating,
+      id: contact.id,
+      name: contact.name,
+      accountNumber: contact.accountNumber,
+      accountType: contact.accountType,
+      userId: contact.userId,
     })
   } catch (error) {
     logger.error(` ${error}`)
@@ -103,33 +97,33 @@ const getById = async (req, res) => {
 
 const update = async (req, res) => {
   try {
-    const { transactionId } = req.params
+    const { contactId } = req.params
     const updateData = {
       ...req.body,
     }
-    await updateContact(transactionId, updateData)
+    await updateContact(contactId, updateData)
 
     return sendResponse(res, 200, {
-      message: 'Receta actualizada con éxito',
-      images: req.body.images, // Devolver las URLs de las imágenes proporcionadas
+      message: 'The contact was succefully updated',
     })
   } catch (error) {
-    logger.error(`Error al actualizar la receta: ${error}`)
+    logger.error(`Error to update the contact: ${error}`)
     return sendResponse(res, error.code || 500, {
-      msg: error.message || 'Ha ocurrido una excepción',
+      msg: error.message || 'An exception has occurred',
     })
   }
 }
 
 const deleteContact = async (req, res) => {
   try {
-    deleteContactById(req.params.transactionId)
+    const { contactId } = req.params
+    deleteContactById(contactId)
 
     return sendResponse(res, 204, {})
   } catch (error) {
-    logger.error(`Hubo un problema al subir la imagen: ${error}`)
+    logger.error(`Error to delete the contact: ${error}`)
     return sendResponse(res, error.code || 500, {
-      msg: error.message || 'Ha ocurrido un error al actualizar la receta',
+      msg: error.message || 'Error to update the contact.',
     })
   }
 }

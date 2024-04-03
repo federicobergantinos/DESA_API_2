@@ -70,8 +70,6 @@ const getTransactions = async (queryData) => {
     order: [['createdAt', 'DESC']],
   })
 
-  logger.info(transactions)
-
   return transactions
 }
 

@@ -2,7 +2,7 @@ import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { createAuthDTO, Credentials } from './authDTO'
 import { TransactionDTO } from './TransactionDTO'
-import { ContactDTO, ContactsDTO, ContactsSearchDTO } from './ContactDTO'
+import { ContactDTO, ContactsDTO } from './ContactDTO'
 import { AccountDTO, AccountSummaryDTO } from './AccountDTO'
 
 // const api = axios.create({ baseURL: "https://wallet-elb.federicobergantinos.com:443" });
@@ -30,7 +30,7 @@ api.interceptors.response.use(
     if (error.response) {
       return error.response
     }
-    console.error(error);
+    console.error(error); 
     return Promise.reject(error);
   }
 );
@@ -147,9 +147,10 @@ const contactsGateway = {
   searchContacts: (
     searchTerm = '',
     page = 0,
-    limit = 10
-  ): Promise<{ response: ContactsSearchDTO; statusCode: number }> => {
-    const url = `${contactsBaseUrl}/search?page=${page}&limit=${limit}&searchTerm=${searchTerm}`
+    limit = 10,
+    userId: any
+  ): Promise<{ response: ContactsDTO; statusCode: number }> => {
+    const url = `${contactsBaseUrl}/search?page=${page}&limit=${limit}&userId=${userId}&searchTerm=${searchTerm}`
     return requests.get(url)
   },
   updateContact: async (

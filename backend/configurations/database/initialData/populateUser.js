@@ -7,7 +7,7 @@ const populateUser = async () => {
     {
       name: 'Federico',
       surname: 'Bergantinos',
-      email: 'fbergantinos@uade.edu.ar',
+      email: 'febergantinos@gmail.com',
       photoUrl:
         'https://fotos.perfil.com/2024/02/15/trim/1140/641/yeti-de-bruta-cocina-1755883.jpg',
       accounts: [

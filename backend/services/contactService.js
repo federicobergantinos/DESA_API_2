@@ -1,130 +1,127 @@
 const createLogger = require('../configurations/Logger')
+const { Contact, User } = require('../entities/associateModels')
 const logger = createLogger(__filename)
+const sequelize = require('../configurations/database/sequelizeConnection')
+const { NotFound, BadRequest } = require('http-errors')
+const { Op } = require('sequelize')
 
-const updateContact = async (recipeId, updateData) => {
-  const {
-    title,
-    description,
-    preparationTime,
-    servingCount,
-    ingredients,
-    steps,
-    calories,
-    proteins,
-    totalFats,
-    tags,
-    images,
-    video,
-  } = updateData
-
-  // Convertir arrays a strings para almacenamiento, si es necesario
-  const ingredientsString = ingredients?.join('|')
-  const stepsString = steps?.join('|')
-
-  // Iniciar una transacción
-  const transaction = await sequelize.transaction()
+const updateContact = async (contactId, updateData) => {
+  const { name, accountNumber, accountType, userId } = updateData
 
   try {
-    // Actualizar la receta básica
-    await contact.update(
-      {
-        title,
-        description,
-        preparationTime,
-        servingCount,
-        ingredients: ingredientsString,
-        steps: stepsString,
-        calories,
-        proteins,
-        totalFats,
-      },
-      { where: { id: recipeId } },
-      { transaction }
-    )
+    // Proceder con la actualización del contacto
+    const result = await sequelize.transaction(async (t) => {
+      const contact = await Contact.findByPk(contactId)
+      if (!contact) {
+        throw new NotFound(`Contact with ID ${contactId} not found`)
+      }
 
-    // Eliminar las asociaciones de tags y medios existentes
-    await TransactionTags.destroy({ where: { recipeId }, transaction })
-    await Media.destroy({ where: { recipeId }, transaction })
+      // Forzar el parseo de userId a numérico
+      const numericUserId = parseInt(userId, 10)
+      const numericContactUserId = parseInt(contact.userId, 10)
 
-    // Insertar nuevos tags y crear asociaciones
-    for (const tagName of tags) {
-      let [tag, created] = await Tag.findOrCreate({
-        where: { key: tagName },
-        transaction,
-      })
-      await TransactionTags.create({ recipeId, tagId: tag.id }, { transaction })
-    }
+      // Verificar si el contacto pertenece al usuario
+      if (numericContactUserId !== numericUserId) {
+        throw new BadRequest(
+          `Contact with ID ${contactId} does not belong to user with ID ${userId}`
+        )
+      }
 
-    // Insertar nuevas imágenes
-    for (const url of images) {
-      await Media.create(
-        { recipeId, data: url, type: 'image' },
-        { transaction }
+      await Contact.update(
+        { name, accountNumber, accountType },
+        { where: { id: contactId }, transaction: t }
       )
-    }
+    })
 
-    // Insertar nuevo video si se proporciona
-    if (video) {
-      await Media.create(
-        { recipeId, data: video, type: 'video' },
-        { transaction }
-      )
-    }
-
-    // Hacer commit de la transacción
-    await contact.commit()
+    return result
   } catch (error) {
-    // Revertir la transacción en caso de error
-    await contact.rollback()
     throw error
   }
 }
 
-const searchContact = async ({ searchTerm, limit, offset }) => {
-  const contacts = await contact.findAll({
-    where: {
-      [Op.or]: [
-        { title: { [Op.iLike]: `%${searchTerm}%` } },
-        { ingredients: { [Op.iLike]: `%${searchTerm}%` } },
-      ],
+const searchContact = async ({ searchTerm, limit, offset, userId }) => {
+  let includeOptions = [
+    {
+      model: User,
+      as: 'user',
+      required: true,
+      attributes: ['name', 'surname'],
     },
+  ]
+
+  const contacts = await Contact.findAll({
+    where: {
+      [Op.or]: [{ name: { [Op.iLike]: `%${searchTerm}%` } }],
+      userId: userId,
+    },
+    include: includeOptions,
     limit,
     offset,
-    include: [
-      {
-        model: Media,
-        as: 'media',
-        attributes: ['data', 'type'], // Asegúrate de que 'data' contiene la URL o referencia de la imagen
-        where: { type: 'image' },
-        limit: 1, // Intenta limitar a 1 el resultado de media directamente en la consulta
-      },
-    ],
+    order: [['createdAt', 'DESC']],
+    attributes: ['name', 'accountType', 'id'],
   })
 
-  return contacts.map((transaction) => {
-    const firstImage = contact.media.length > 0 ? contact.media[0].data : null
+  return contacts
+}
 
-    return {
-      id: contact.id,
-      title: contact.title,
-      media: firstImage,
-      description: contact.description,
-    }
+const deleteContactById = async (contactId) => {
+  await Contact.destroy({
+    where: {
+      id: contactId,
+    },
   })
 }
 
-const deleteContactById = async (recipeId) => {
-  await Media.destroy({ where: { recipeId: recipeId } })
+const createContact = async (contactData) => {
+  try {
+    const newContact = await Contact.create(contactData)
 
-  await contact.destroy({
-    where: {
-      id: recipeId,
+    return newContact.id
+  } catch (error) {
+    throw error
+  }
+}
+
+const getContacts = async (queryData) => {
+  const userId = parseInt(queryData.userId, 10)
+  const limit = queryData.limit || 20
+  const offset = queryData.offset || 0
+
+  let includeOptions = [
+    {
+      model: User,
+      as: 'user',
+      required: true,
+      attributes: ['name', 'surname'],
     },
+  ]
+
+  const contacts = await Contact.findAll({
+    where: { userId: userId },
+    include: includeOptions,
+    limit,
+    offset,
+    order: [['createdAt', 'DESC']],
+    attributes: ['name', 'accountType', 'id'],
   })
+
+  return contacts
+}
+
+const getContact = async (contactId) => {
+  const contact = await Contact.findByPk(contactId)
+  if (contact === null) {
+    throw new NotFound('Contact not found')
+  }
+
+  return contact
 }
 
 module.exports = {
   searchContact,
   updateContact,
   deleteContactById,
+  createContact,
+  getContacts,
+  getContact,
 }
