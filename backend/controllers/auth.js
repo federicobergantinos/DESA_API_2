@@ -11,6 +11,7 @@ const Unauthorized = require('../Errors/Unauthorized')
 const { sendResponse } = require('../configurations/utils.js')
 const createLogger = require('../configurations/Logger')
 const logger = createLogger(__filename)
+const { v4: uuidv4 } = require('uuid')
 
 const authenticate = async (req, res) => {
   try {
@@ -32,7 +33,7 @@ const authenticate = async (req, res) => {
         const accountData = {
           beneficiaryName: userData.name + ' ' + userData.surname,
           beneficiaryAddress: accountInfo.beneficiaryAddress,
-          accountNumber: 123,
+          accountNumber: uuidv4(),
           accountType: accountInfo.accountType,
           userId: user.id,
         }

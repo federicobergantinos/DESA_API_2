@@ -63,8 +63,8 @@ const Home = ({ navigation }) => {
           }}
         />
         <ActionButton
-          icon="dollar-sign"
-          family="Feather"
+          icon="barschart"
+          family="AntDesign"
           title="Analytics"
           onPress={() => {
             navigation.navigate('Analytics')
