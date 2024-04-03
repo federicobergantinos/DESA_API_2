@@ -8,6 +8,7 @@ import {
   TextInput,
   Modal,
   Alert,
+  Button,
   FlatList,
   TouchableOpacity,
 } from 'react-native'
@@ -33,6 +34,8 @@ const Transfer = () => {
   const [localSearch, setLocalSearch] = useState('')
   const { user } = useWallet()
   const [editingContact, setEditingContact] = useState(null)
+  const [shouldFocus, setShouldFocus] = useState(false)
+  const [selectedContact, setSelectedContact] = useState(null)
 
   const showModal = () => setIsModalVisible(true)
   const hideModal = () => setIsModalVisible(false)
@@ -153,29 +156,35 @@ const Transfer = () => {
   }
 
   const ContactCard = ({ contact, onEdit, onDelete }) => {
+    const selectContact = (contact) => {
+      setSelectedContact(contact)
+      setLocalSearch('')
+    }
     const initial = contact.name[0].toUpperCase()
 
     return (
-      <View style={styles.contactCard}>
-        <View style={styles.initialCircle}>
-          <Text style={styles.initialText}>{initial}</Text>
+      <TouchableOpacity onPress={() => selectContact(contact)}>
+        <View style={styles.contactCard}>
+          <View style={styles.initialCircle}>
+            <Text style={styles.initialText}>{initial}</Text>
+          </View>
+          <View style={styles.contactDetails}>
+            <Text style={styles.contactName}>{contact.name}</Text>
+            <Text style={styles.contactInfo}>{contact.accountType}</Text>
+          </View>
+          <View style={styles.actionButtons}>
+            <TouchableOpacity
+              onPress={() => onEdit(contact)}
+              style={{ marginRight: 10 }}
+            >
+              <Icon name="edit" family="Feather" size={20} />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => onDelete(contact.id)}>
+              <Icon name="trash" family="Feather" size={20} />
+            </TouchableOpacity>
+          </View>
         </View>
-        <View style={styles.contactDetails}>
-          <Text style={styles.contactName}>{contact.name}</Text>
-          <Text style={styles.contactInfo}>{contact.accountType}</Text>
-        </View>
-        <View style={styles.actionButtons}>
-          <TouchableOpacity
-            onPress={() => onEdit(contact)}
-            style={{ marginRight: 10 }}
-          >
-            <Icon name="edit" family="Feather" size={20} />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => onDelete(contact.id)}>
-            <Icon name="trash" family="Feather" size={20} />
-          </TouchableOpacity>
-        </View>
-      </View>
+      </TouchableOpacity>
     )
   }
 
@@ -289,40 +298,47 @@ const Transfer = () => {
 
   const ContactsCard = () => {
     const handleSearchChange = (text) => {
+      setShouldFocus(true)
       setLocalSearch(text)
     }
+    const dataToShow = selectedContact
+      ? [selectedContact] // Solo muestra el contacto seleccionado
+      : contacts.slice(0, 4)
 
     return (
       <Card title="Contactos">
-        <View style={styles.contactsContainer}>
-          <Input
-            right
-            color="black"
-            autoFocus={true}
-            style={styles.search}
-            value={localSearch}
-            placeholder="Buscar contacto"
-            placeholderTextColor={'#8898AA'}
-            onChangeText={handleSearchChange}
-            ref={searchInputRef}
-            iconContent={
-              <Icon
-                size={16}
-                color={theme.COLORS.MUTED}
-                name="search-zoom-in"
-                family="WalletExtra"
-              />
-            }
-          />
-          <TouchableOpacity
-            onPress={handleAddContactButton}
-            style={styles.iconButton}
-          >
-            <Icon name="user-plus" family="Feather" size={20} />
-          </TouchableOpacity>
-        </View>
+        {!selectedContact && (
+          <View style={styles.contactsContainer}>
+            <Input
+              right
+              color="black"
+              autoFocus={shouldFocus}
+              style={styles.search}
+              value={localSearch}
+              placeholder="Buscar contacto"
+              placeholderTextColor={'#8898AA'}
+              onChangeText={handleSearchChange}
+              ref={searchInputRef}
+              iconContent={
+                <Icon
+                  size={16}
+                  color={theme.COLORS.MUTED}
+                  name="search-zoom-in"
+                  family="WalletExtra"
+                />
+              }
+            />
+            <TouchableOpacity
+              onPress={handleAddContactButton}
+              style={styles.iconButton}
+            >
+              <Icon name="user-plus" family="Feather" size={20} />
+            </TouchableOpacity>
+          </View>
+        )}
+
         <FlatList
-          data={contacts}
+          data={dataToShow}
           keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => (
             <ContactCard
@@ -332,6 +348,13 @@ const Transfer = () => {
             />
           )}
         />
+        {selectedContact && (
+          <Button
+            title="Deseleccionar"
+            style={{ backgroundColor: walletTheme.COLORS.VIOLET }}
+            onPress={() => setSelectedContact(null)}
+          />
+        )}
       </Card>
     )
   }
