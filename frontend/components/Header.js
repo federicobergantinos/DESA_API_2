@@ -27,7 +27,7 @@ const Header = ({
   const navigation = useNavigation()
   const [isAccountSelectorVisible, setIsAccountSelectorVisible] =
     useState(false)
-  const { transaction, setSelectedAccount } = useContext(WalletContext)
+  const { transaction, setSelectedAccount, user } = useContext(WalletContext)
 
   const handleShare = async () => {
     if (transaction) {

@@ -4,10 +4,14 @@ const createLogger = require('../configurations/Logger')
 const logger = createLogger(__filename)
 
 const createAccount = async (accountData) => {
-  const newAccount = await Account.create(accountData)
+  try {
+    const newAccount = await Account.create(accountData)
 
-  return {
-    id: newAccount.id,
+    return {
+      id: newAccount.id,
+    }
+  } catch (error) {
+    throw error
   }
 }
 

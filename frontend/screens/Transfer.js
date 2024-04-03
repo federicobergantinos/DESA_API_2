@@ -1,13 +1,14 @@
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useRef, useEffect, useState } from 'react'
 import {
   View,
   ImageBackground,
   Text,
   StyleSheet,
   Dimensions,
-  ScrollView,
   TextInput,
   Modal,
+  Alert,
+  FlatList,
   TouchableOpacity,
 } from 'react-native'
 import { theme, Block } from 'galio-framework'
@@ -15,17 +16,39 @@ import { Images, walletTheme } from '../constants'
 import Icon from '../components/Icon'
 import Input from '../components/Input'
 import CheckBox from '@react-native-community/checkbox'
+import backendApi from '../api/backendGateway'
+import { useWallet } from '../navigation/WalletContext'
+
 const { width, height } = Dimensions.get('screen')
 
 const Transfer = () => {
   const [isModalVisible, setIsModalVisible] = useState(false)
   const [contactName, setContactName] = useState('')
   const [contactAccountNumber, setContactAccountNumber] = useState('')
-  const [contactAccountType, setContactAccountType] = useState('')
+  const [contactAccountType, setContactAccountType] = useState('Checking')
   const [isCheckingAccount, setIsCheckingAccount] = useState(true)
+  const [contacts, setContacts] = useState([])
+  const [isLoadingContacts, setIsLoadingContacts] = useState(false)
+  const searchInputRef = useRef(null)
+  const [localSearch, setLocalSearch] = useState('')
+  const { user } = useWallet()
+  const [editingContact, setEditingContact] = useState(null)
 
   const showModal = () => setIsModalVisible(true)
   const hideModal = () => setIsModalVisible(false)
+
+  useEffect(() => {
+    // Inicializar la búsqueda cuando el componente se monta
+    fetchContacts(localSearch)
+  }, []) // Dependencias vacías para ejecutar solo en el montaje
+
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      fetchContacts(localSearch) // Llama a tu función de búsqueda aquí
+    }, 500) // Retardo de 500 ms
+
+    return () => clearTimeout(delayDebounceFn)
+  }, [localSearch, fetchContacts]) // Dependencias para re-ejecutar cuando estos valores cambien
 
   const Card = ({ title, children }) => (
     <View style={styles.detailCard}>
@@ -33,6 +56,30 @@ const Transfer = () => {
       {children}
     </View>
   )
+
+  const fetchContacts = async (searchTerm = '') => {
+    setIsLoadingContacts(true)
+    try {
+      const response = await backendApi.contactsGateway.searchContacts(
+        searchTerm,
+        0,
+        10,
+        user.id
+      )
+      if (response.statusCode === 200) {
+        setContacts(response.response.contact)
+      } else {
+        console.error('Error fetching contacts:', response)
+        alert('Error al obtener los contactos.')
+      }
+    } catch (error) {
+      console.error('Error fetching contacts:', error)
+      alert('Error al obtener los contactos.')
+    } finally {
+      setIsLoadingContacts(false)
+    }
+  }
+
   const AmountInputCard = () => {
     const [localAmount, setLocalAmount] = useState('')
 
@@ -58,9 +105,141 @@ const Transfer = () => {
     )
   }
 
-  const ContactsCard = () => {
-    const [localSearch, setLocalSearch] = useState('')
+  const handleAddContact = async () => {
+    // Validación de campos vacíos
+    if (
+      !contactName.trim() ||
+      !contactAccountNumber.trim() ||
+      !contactAccountType.trim()
+    ) {
+      alert('Por favor, completa todos los campos.')
+      return
+    }
 
+    const contactData = {
+      name: contactName,
+      accountNumber: contactAccountNumber,
+      accountType: contactAccountType,
+      userId: user.id,
+    }
+
+    try {
+      const response =
+        await backendApi.contactsGateway.createContact(contactData)
+      if (response.statusCode === 200 || response.statusCode === 201) {
+        alert('Contacto agregado con éxito.')
+        fetchContacts()
+        hideModal()
+      } else {
+        alert('Hubo un problema al agregar el contacto.')
+      }
+    } catch (error) {
+      console.error('Error al agregar el contacto:', error)
+      alert('Error al tratar de agregar el contacto.')
+    }
+  }
+
+  const ContactCard = ({ contact, onEdit, onDelete }) => {
+    const initial = contact.name[0].toUpperCase()
+
+    return (
+      <View style={styles.contactCard}>
+        <View style={styles.initialCircle}>
+          <Text style={styles.initialText}>{initial}</Text>
+        </View>
+        <View style={styles.contactDetails}>
+          <Text style={styles.contactName}>{contact.name}</Text>
+          <Text style={styles.contactInfo}>{contact.accountType}</Text>
+        </View>
+        <View style={styles.actionButtons}>
+          <TouchableOpacity
+            onPress={() => onEdit(contact)}
+            style={{ marginRight: 10 }}
+          >
+            <Icon name="edit" family="Feather" size={20} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => onDelete(contact.id)}>
+            <Icon name="trash" family="Feather" size={20} />
+          </TouchableOpacity>
+        </View>
+      </View>
+    )
+  }
+
+  const handleDeleteContact = async (contactId) => {
+    // Mostrar un alerta de confirmación antes de proceder a eliminar
+    Alert.alert(
+      'Eliminar contacto',
+      '¿Estás seguro de que deseas eliminar este contacto?',
+      [
+        // Botón de cancelar
+        {
+          text: 'Cancelar',
+          style: 'cancel',
+        },
+        // Botón de confirmar, que llama a la función de eliminar
+        {
+          text: 'Eliminar',
+          onPress: async () => {
+            try {
+              const response =
+                await backendApi.contactsGateway.deleteContact(contactId)
+              if (response.statusCode === 204) {
+                Alert.alert(
+                  'Eliminado',
+                  'El contacto ha sido eliminado correctamente.'
+                )
+                // Aquí deberías también actualizar tu estado para reflejar que el contacto fue eliminado,
+                // tal vez removiéndolo de la lista de contactos mostrada.
+                fetchContacts() // Recargar la lista de contactos para reflejar la eliminación.
+              } else {
+                // Manejo de algún código de estado inesperado.
+                Alert.alert('Error', 'No se pudo eliminar el contacto.')
+              }
+            } catch (error) {
+              console.error('Error al eliminar el contacto:', error)
+              Alert.alert(
+                'Error',
+                'Ocurrió un error al intentar eliminar el contacto.'
+              )
+            }
+          },
+        },
+      ]
+    )
+  }
+
+  const handleEditContact = async (contact) => {
+    showModal() // Muestra el modal para editar
+
+    // Realiza la solicitud para obtener los detalles del contacto por ID
+    try {
+      const { response, statusCode } =
+        await backendApi.contactsGateway.getContactById(contact.id, user.id)
+      if (statusCode === 200) {
+        setEditingContact(response)
+      } else {
+        console.error('Error al obtener los detalles del contacto:', response)
+        Alert.alert(
+          'Error',
+          'No se pudieron obtener los detalles del contacto.'
+        )
+      }
+    } catch (error) {
+      console.error('Error al obtener los detalles del contacto:', error)
+      Alert.alert(
+        'Error',
+        'Ocurrió un error al intentar obtener los detalles del contacto.'
+      )
+    }
+  }
+
+  const handleAddContactButton = async () => {
+    showModal()
+    setEditingContact(false)
+  }
+
+  const ContactsCard = () => {
     const handleSearchChange = (text) => {
       setLocalSearch(text)
     }
@@ -71,11 +250,13 @@ const Transfer = () => {
           <Input
             right
             color="black"
+            autoFocus={true}
             style={styles.search}
             value={localSearch}
             placeholder="Buscar contacto"
             placeholderTextColor={'#8898AA'}
             onChangeText={handleSearchChange}
+            ref={searchInputRef}
             iconContent={
               <Icon
                 size={16}
@@ -85,10 +266,24 @@ const Transfer = () => {
               />
             }
           />
-          <TouchableOpacity onPress={showModal} style={styles.iconButton}>
+          <TouchableOpacity
+            onPress={handleAddContactButton}
+            style={styles.iconButton}
+          >
             <Icon name="user-plus" family="Feather" size={20} />
           </TouchableOpacity>
         </View>
+        <FlatList
+          data={contacts}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={({ item }) => (
+            <ContactCard
+              contact={item}
+              onEdit={handleEditContact}
+              onDelete={handleDeleteContact}
+            />
+          )}
+        />
       </Card>
     )
   }
@@ -96,19 +291,14 @@ const Transfer = () => {
   return (
     <Block flex style={styles.home}>
       <ImageBackground source={Images.Background} style={styles.background}>
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          style={{ width }}
-          contentContainerStyle={styles.scrollViewContent}
-          keyboardShouldPersistTaps="always"
-        >
+        <View style={{ width: width, ...styles.scrollViewContent }}>
           {
             <>
               <AmountInputCard />
               <ContactsCard />
             </>
           }
-        </ScrollView>
+        </View>
       </ImageBackground>
       <Modal
         animationType="slide"
@@ -122,6 +312,8 @@ const Transfer = () => {
               right
               color="black"
               placeholder="Nombre del contacto"
+              value={editingContact?.name ?? ''}
+              onChangeText={(text) => setContactName(text)}
               iconContent={
                 <Icon
                   size={16}
@@ -135,6 +327,8 @@ const Transfer = () => {
               right
               color="black"
               placeholder="Numero de cuenta"
+              value={editingContact?.accountNumber ?? ''}
+              onChangeText={(text) => setContactAccountNumber(text)}
               iconContent={
                 <Icon
                   size={16}
@@ -158,12 +352,18 @@ const Transfer = () => {
               <TouchableOpacity
                 style={[styles.modalButton, styles.buttonAdd]}
                 onPress={() => {
-                  console.log('Agregar contacto')
-                  // Aquí agregarías la lógica para realmente agregar el contacto
-                  hideModal()
+                  if (editingContact) {
+                    // Lógica para editar contacto
+                    handleEditContactFinal()
+                  } else {
+                    // Lógica para agregar nuevo contacto
+                    handleAddContact()
+                  }
                 }}
               >
-                <Text style={styles.modalButtonText}>Agregar Contacto</Text>
+                <Text style={styles.modalButtonText}>
+                  {editingContact ? 'Editar' : 'Agregar'}
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -220,11 +420,6 @@ const styles = StyleSheet.create({
     color: walletTheme.COLORS.VIOLET,
     flex: 1,
   },
-  amountDecimal: {
-    fontSize: 24,
-    color: walletTheme.COLORS.VIOLET,
-    paddingBottom: 5, // to align with the decimals input
-  },
   decimalsInput: {
     fontSize: 24,
     fontWeight: 'bold',
@@ -242,7 +437,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   search: {
-    flex: 1, // Asegura que el input tome la mayoría del espacio disponible
     borderWidth: 1,
     borderRadius: 3,
     borderColor: walletTheme.COLORS.BORDER,
@@ -269,24 +463,12 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 5,
   },
-  modalInput: {
-    marginBottom: 15,
-    borderWidth: 1,
-    padding: 10,
-    width: '80%',
-    borderRadius: 5,
-  },
   buttonClose: {
     backgroundColor: walletTheme.COLORS.VIOLET,
     borderRadius: 5,
     marginTop: 5,
     padding: 10,
     elevation: 2,
-  },
-  textStyle: {
-    color: 'white',
-    fontWeight: 'bold',
-    textAlign: 'center',
   },
   modalButtonContainer: {
     flexDirection: 'row',
@@ -309,6 +491,41 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
     textAlign: 'center',
+  },
+  contactCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 10,
+    backgroundColor: 'white',
+    borderRadius: 5,
+    marginVertical: 5,
+  },
+  initialCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: theme.COLORS.MUTED,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  initialText: {
+    color: 'white',
+    fontSize: 20,
+  },
+  contactDetails: {
+    flex: 1,
+    marginLeft: 10,
+  },
+  contactName: {
+    fontSize: 16,
+  },
+  contactInfo: {
+    fontSize: 14,
+    color: theme.COLORS.MUTED,
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
 })
 
