@@ -349,11 +349,12 @@ const Transfer = () => {
           )}
         />
         {selectedContact && (
-          <Button
-            title="Deseleccionar"
-            style={{ backgroundColor: walletTheme.COLORS.VIOLET }}
+          <TouchableOpacity
             onPress={() => setSelectedContact(null)}
-          />
+            style={styles.deselectButtonStyle}
+          >
+            <Text style={styles.deselectButtonText}>Deseleccionar</Text>
+          </TouchableOpacity>
         )}
       </Card>
     )
@@ -597,6 +598,17 @@ const styles = StyleSheet.create({
   actionButtons: {
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  deselectButtonStyle: {
+    backgroundColor: walletTheme.COLORS.VIOLET, // o cualquier color que prefieras
+    padding: 10,
+    borderRadius: 5,
+    marginTop: 10, // Ajusta el margen según necesites
+    alignItems: 'center', // Centra el texto en el botón
+  },
+  deselectButtonText: {
+    color: 'white', // Color del texto
+    fontWeight: 'bold', // Negrita para el texto
   },
 })
 
