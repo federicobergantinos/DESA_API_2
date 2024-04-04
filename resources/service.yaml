@@ -9,29 +9,11 @@ Resources:
         - FARGATE
       Cpu: "256"
       Memory: "512"
-      ExecutionRoleArn: arn:aws:iam::371815123890:role/InfraBase-ExecutionRole-37sMbNnfBodD
-      TaskRoleArn: arn:aws:iam::371815123890:role/InfraBase-TaskRole-OlWl6JdyH1Q9
+      ExecutionRoleArn: arn:aws:iam::137318283310:role/LabRole
+      TaskRoleArn: arn:aws:iam::137318283310:role/LabRole
       ContainerDefinitions:
-        - Name: wallet-db
-          Image: postgres
-          Essential: true
-          Memory: 256
-          Cpu: 128
-          Environment:
-            - Name: POSTGRES_PASSWORD
-              Value: base1234
-            - Name: POSTGRES_DB
-              Value: daidb
-          PortMappings:
-            - ContainerPort: 5432
-          LogConfiguration:
-            LogDriver: awslogs
-            Options:
-              awslogs-group: Logs
-              awslogs-region: us-east-1
-              awslogs-stream-prefix: WalletDB
         - Name: wallet-app
-          Image: 371815123890.dkr.ecr.us-east-1.amazonaws.com/wallet-serving:latest
+          Image: 137318283310.dkr.ecr.us-east-1.amazonaws.com/wallet-serving:latest
           Essential: true
           Memory: 256
           Cpu: 128
@@ -52,10 +34,6 @@ Resources:
               Value: 5432
             - Name: AWS_S3_BUCKET_NAME
               Value: dis-desa-web-dev
-            - Name: AWS_ACCESS_KEY_ID
-              Value:
-            - Name: AWS_SECRET_ACCESS_KEY
-              Value:
             - Name: AWS_DEFAULT_REGION
               Value: us-east-1
             - Name: AWS_REGION
@@ -75,7 +53,7 @@ Resources:
       - WalletALBListener
     Type: AWS::ECS::Service
     Properties:
-      Cluster: InfraBase-ECSCluster-LGxtNiUvnwOO
+      Cluster: InfraBase-ECSCluster-3dDDnuOBUwp3
       LaunchType: FARGATE
       PlatformVersion: "1.3.0"
       DesiredCount: 1
@@ -88,11 +66,10 @@ Resources:
         AwsvpcConfiguration:
           AssignPublicIp: ENABLED
           Subnets:
-            - subnet-0e2b48d919c240b3f
-            - subnet-0204ab161c2fd6926
+            - subnet-084898bfe05cc94c8
+            - subnet-0ebb59b6f23cde65b
           SecurityGroups:
-            - sg-0c659425934fb655b
-            - sg-03076ea8a1a229cee
+            - sg-09fb4d8fdcb58602a
       DeploymentController:
         Type: ECS
       ServiceConnectConfiguration:
@@ -105,11 +82,10 @@ Resources:
       Name: WalletALB
       Type: application
       Subnets:
-        - subnet-0e2b48d919c240b3f
-        - subnet-0204ab161c2fd6926
+        - subnet-084898bfe05cc94c8
+        - subnet-0ebb59b6f23cde65b
       SecurityGroups:
-        - sg-0c659425934fb655b
-        - sg-03076ea8a1a229cee
+        - sg-08bcde548e566e797
 
   # ALB Target Group
   WalletALBTargetGroup:
@@ -122,7 +98,7 @@ Resources:
       TargetType: ip
       HealthCheckPath: /ping
       HealthCheckProtocol: HTTP
-      VpcId: vpc-0abd5e319f3b8bb9e
+      VpcId: vpc-0a76e8c3474875e28
 
   # Listener
   WalletALBListener:
@@ -138,4 +114,20 @@ Resources:
       Port: 443
       Protocol: HTTPS
       Certificates:
-        - CertificateArn: arn:aws:acm:us-east-1:371815123890:certificate/cbcf4f53-a658-4b95-b4e2-7c54ee84d289
+        - CertificateArn: arn:aws:acm:us-east-1:137318283310:certificate/cf6356d6-bc02-485e-8f76-a15e9fd9a5b4
+
+  DBInstance:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBName: daidb
+      AllocatedStorage: "20"
+      DBInstanceClass: db.t3.micro
+      Engine: postgres
+      EngineVersion: "15.4"
+      MasterUsername: postgres
+      MasterUserPassword: base1234
+      VPCSecurityGroups:
+        - sg-081d9a27c10dd5fa4
+      Subnets:
+        - subnet-084898bfe05cc94c8
+        - subnet-0ebb59b6f23cde65b

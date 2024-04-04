@@ -2,8 +2,13 @@
 PROJECT=wallet-serving
 IMAGE_NAME=$(PROJECT)-image
 CONTAINER_NAME=$(PROJECT)-container
-AWS_ACCOUNT_ID=371815123890
+AWS_ACCOUNT_ID=137318283310
 AWS_REGION=us-east-1
+
+
+# IAM ROles
+assume-role:
+	aws sts assume-role --role-arn "arn:aws:iam::137318283310:role/LabRole" --role-session-name AWSCLI-Session
 
 # Docker
 docker-build:
@@ -78,4 +83,5 @@ cloudformation-delete-stack-service:
 
 .PHONY: docker-build docker-run docker-stop docker-rm docker-rmi docker-clean docker-rebuild docker-shell docker-compose-up docker-compose-down docker-run-wallet
 .PHONY: ecr-create-repo ecr-login ecr-tag-image ecr-push-image ecr 
-.PHONY: cloudformation-create-stack cloudformation-delete-stack 
+.PHONY: cloudformation-create-stack cloudformation-delete-stack cloudformation-create-stack-service cloudformation-delete-stack-service
+.PHONY: assume-role
