@@ -8,10 +8,10 @@ const createLogger = require('../configurations/Logger')
 const logger = createLogger(__filename)
 
 const createTransaction = async (transactionData) => {
-  const { accountId, name, description, amount, currency, status, date } =
+  const { accountNumber, name, description, amount, currency, status, date } =
     transactionData
 
-  if (!(await isValidAccount(accountId))) {
+  if (!(await isValidAccount(accountNumber))) {
     throw new BadRequest('Invalid Account')
   }
 
@@ -21,7 +21,7 @@ const createTransaction = async (transactionData) => {
       // Crear la transacción
       const newTransaction = await Transaction.create(
         {
-          accountId,
+          accountNumber,
           name,
           description,
           amount,
@@ -42,32 +42,24 @@ const createTransaction = async (transactionData) => {
 }
 
 const getTransactions = async (queryData) => {
-  const accountId = parseInt(queryData.accountId, 10)
+  const accountNumber = queryData.accountNumber.toString()
   const limit = queryData.limit || 20 // Establecer un límite predeterminado si no se proporciona en la consulta
   const offset = queryData.offset || 0 // Establecer un offset predeterminado si no se proporciona en la consulta
 
-  let includeOptions = [
-    {
-      model: Account,
-      as: 'account',
-      include: [
-        {
-          model: User,
-          as: 'user',
-          required: true,
-        },
-      ],
-    },
-  ]
-
   const transactions = await Transaction.findAll({
-    where: {
-      accountId: accountId,
-    },
-    include: includeOptions,
+    where: { accountNumber: accountNumber },
+    attributes: [
+      'id',
+      'name',
+      'description',
+      'amount',
+      'currency',
+      'accountNumber',
+      'date',
+    ],
     limit,
     offset,
-    order: [['createdAt', 'DESC']],
+    order: [['date', 'DESC']],
   })
 
   return transactions

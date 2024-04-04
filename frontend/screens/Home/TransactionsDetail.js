@@ -47,14 +47,14 @@ const RenderTransactionsDetail = ({ showBalance, navigation, refreshing }) => {
 
       setLoading(true)
       try {
-        const accountId = selectedAccount.accountId
-        if (!accountId) {
+        const accountNumber = selectedAccount.accountNumber
+        if (!accountNumber) {
           throw new Error('Account ID is not available')
         }
 
         const response = await backendApi.transactionsGateway.getAll(
           currentPage,
-          accountId
+          accountNumber
         )
 
         const transactions = response.response
@@ -89,8 +89,9 @@ const RenderTransactionsDetail = ({ showBalance, navigation, refreshing }) => {
       ? styles.iconContainerNegative
       : styles.iconContainer
     const iconColor = isPositive ? '#00C853' : '#C70039'
+    const formattedAmount = parseFloat(item.amount).toFixed(2)
     const amountDisplay = showBalance
-      ? `${item.amount} ${item.currency}`
+      ? `${formattedAmount} ${item.currency}`
       : '***'
 
     return (
