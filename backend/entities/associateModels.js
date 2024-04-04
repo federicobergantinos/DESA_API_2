@@ -17,7 +17,6 @@ Contact.belongsTo(User, { as: 'user', foreignKey: 'userId' }) // Un contacto per
 Transaction.belongsTo(Account, {
   foreignKey: 'accountNumber',
   targetKey: 'accountNumber',
-})
 Account.hasMany(Transaction, {
   foreignKey: 'accountNumber',
   sourceKey: 'accountNumber',
@@ -26,8 +25,6 @@ Account.hasMany(Transaction, {
 module.exports = {
   User,
   Transaction,
-  Media,
-  Authorization,
   Account,
   Contact,
 }

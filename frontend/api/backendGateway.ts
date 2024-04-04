@@ -95,20 +95,34 @@ const transactionsGateway = {
   },
   getAll: (
     page = 0,
+<<<<<<< HEAD
     accountNumber: string
   ): Promise<{ response: TransactionDTO; statusCode: number }> => {
     let url = `${transactionBaseUrl}/?page=${page}&limit=10`
     if (accountNumber) {
       url += `&accountNumber=${accountNumber}`
+=======
+    accountId: any
+  ): Promise<{ response: TransactionDTO; statusCode: number }> => {
+    let url = `${transactionBaseUrl}/?page=${page}&limit=10`
+    if (accountId) {
+      url += `&accountId=${accountId}`
+>>>>>>> master
     }
 
     return requests.get(url)
   },
 
   balance: (
+<<<<<<< HEAD
     accountNumber: string
   ): Promise<{ response: TransactionDTO; statusCode: number }> => {
     const url = `${transactionBaseUrl}/balance?accountNumber=${accountNumber}`
+=======
+    accountId: number
+  ): Promise<{ response: TransactionDTO; statusCode: number }> => {
+    const url = `${transactionBaseUrl}/balance?accountId=${accountId}`
+>>>>>>> master
     return requests.get(url)
   },
 }
