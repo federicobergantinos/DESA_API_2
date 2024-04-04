@@ -16,6 +16,7 @@ export interface ContactsDTO {
   id: number;
   name: string;
   accountType: string;
+  accountNumber: string;
   user: UserDTO;
 }
 

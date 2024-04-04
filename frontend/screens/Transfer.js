@@ -17,6 +17,7 @@ import { Images, walletTheme } from '../constants'
 import Icon from '../components/Icon'
 import Input from '../components/Input'
 import CheckBox from '@react-native-community/checkbox'
+import { useNavigation } from '@react-navigation/native'
 import backendApi from '../api/backendGateway'
 import { useWallet } from '../navigation/WalletContext'
 
@@ -32,13 +33,15 @@ const Transfer = () => {
   const [isLoadingContacts, setIsLoadingContacts] = useState(false)
   const searchInputRef = useRef(null)
   const [localSearch, setLocalSearch] = useState('')
-  const { user } = useWallet()
+  const { user, selectedAccount } = useWallet()
   const [editingContact, setEditingContact] = useState(null)
   const [shouldFocus, setShouldFocus] = useState(false)
   const [selectedContact, setSelectedContact] = useState(null)
+  const [localAmount, setLocalAmount] = useState('')
 
   const showModal = () => setIsModalVisible(true)
   const hideModal = () => setIsModalVisible(false)
+  const navigation = useNavigation()
 
   useEffect(() => {
     // Inicializar la búsqueda cuando el componente se monta
@@ -97,10 +100,9 @@ const Transfer = () => {
   }
 
   const AmountInputCard = () => {
-    const [localAmount, setLocalAmount] = useState('')
-
     // Manejador para actualizar el estado local mientras el usuario escribe
     const handleAmountChange = (text) => {
+      setShouldFocus(true)
       setLocalAmount(text)
     }
 
@@ -353,11 +355,62 @@ const Transfer = () => {
             onPress={() => setSelectedContact(null)}
             style={styles.deselectButtonStyle}
           >
-            <Text style={styles.deselectButtonText}>Deseleccionar</Text>
+            <Text style={styles.deselectButtonText}>Buscar otro contacto</Text>
           </TouchableOpacity>
         )}
       </Card>
     )
+  }
+
+  const handleConfirm = async () => {
+    // Asegurar que un contacto ha sido seleccionado y el monto ha sido ingresado
+    if (!selectedContact || !localAmount) {
+      Alert.alert(
+        'Error',
+        'Debes seleccionar un contacto y especificar un monto.'
+      )
+      return
+    }
+
+    // Construir el objeto de datos de la transacción
+    console.log(selectedContact)
+    const transactionData = {
+      accountNumber: selectedContact.accountNumber,
+      name: 'Transferencia',
+      description: 'Transferencia',
+      amount: -Math.abs(parseFloat(localAmount)),
+      currency: 'USD',
+      status: 'Paid',
+      date: new Date().toISOString(),
+    }
+
+    try {
+      const response =
+        await backendApi.transactionsGateway.createTransaction(transactionData)
+      if (response.statusCode === 200 || response.statusCode === 201) {
+        Alert.alert('Éxito', 'La transferencia ha sido realizada exitosamente.')
+        // Limpieza o acciones post-transacción
+        setLocalAmount('')
+        setSelectedContact(null)
+        navigation.replace('Home')
+      } else {
+        // Manejo de otros códigos de estado HTTP
+        Alert.alert('Error', 'No se pudo realizar la transferencia.')
+      }
+    } catch (error) {
+      console.error('Error al crear la transacción:', error)
+      Alert.alert(
+        'Error',
+        'Ocurrió un error al intentar realizar la transferencia.'
+      )
+    }
+  }
+
+  const handleCancel = () => {
+    // Limpia los estados o navega a otra pantalla
+    setSelectedContact(null)
+    setLocalAmount('')
+    navigation.replace('Home')
   }
 
   return (
@@ -368,6 +421,16 @@ const Transfer = () => {
             <>
               <AmountInputCard />
               <ContactsCard />
+
+              {/* Botones */}
+              <View style={styles.buttonContainer}>
+                <TouchableOpacity onPress={handleCancel} style={styles.button}>
+                  <Text style={styles.buttonText}>Cancelar</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={handleConfirm} style={styles.button}>
+                  <Text style={styles.buttonText}>Transferir</Text>
+                </TouchableOpacity>
+              </View>
             </>
           }
         </View>
@@ -609,6 +672,23 @@ const styles = StyleSheet.create({
   deselectButtonText: {
     color: 'white', // Color del texto
     fontWeight: 'bold', // Negrita para el texto
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginVertical: 20,
+  },
+  button: {
+    backgroundColor: walletTheme.COLORS.WHITE,
+    paddingVertical: 10,
+    paddingHorizontal: 30,
+    borderRadius: 5,
+    marginHorizontal: 10,
+  },
+  buttonText: {
+    color: walletTheme.COLORS.BLACK,
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 })
 

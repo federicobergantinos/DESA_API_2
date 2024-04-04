@@ -6,7 +6,7 @@ const transactionsData = [
     currency: 'USD',
     status: 'Paid',
     date: '03/28/2024',
-    accountId: 1,
+    accountNumber: '000123456789',
   },
   {
     name: 'Walmart2',
@@ -15,7 +15,7 @@ const transactionsData = [
     currency: 'USD',
     status: 'Paid',
     date: '03/28/2024',
-    accountId: 1,
+    accountNumber: '000123456789',
   },
   {
     name: 'Starbucks',
@@ -24,7 +24,7 @@ const transactionsData = [
     currency: 'USD',
     status: 'Paid',
     date: '03/27/2024',
-    accountId: 2,
+    accountNumber: '000275237492',
   },
   {
     name: 'Starbucks',
@@ -33,7 +33,7 @@ const transactionsData = [
     currency: 'USD',
     status: 'Paid',
     date: '03/27/2024',
-    accountId: 2,
+    accountNumber: '000275237492',
   },
   {
     name: 'Starbucks',
@@ -42,7 +42,7 @@ const transactionsData = [
     currency: 'USD',
     status: 'Paid',
     date: '03/27/2024',
-    accountId: 2,
+    accountNumber: '000275237492',
   },
   {
     name: 'Starbucks',
@@ -51,7 +51,7 @@ const transactionsData = [
     currency: 'USD',
     status: 'Paid',
     date: '03/27/2024',
-    accountId: 2,
+    accountNumber: '000275237492',
   },
   {
     name: 'Amazon',
@@ -60,7 +60,7 @@ const transactionsData = [
     currency: 'USD',
     status: 'Cancel',
     date: '03/26/2024',
-    accountId: 1,
+    accountNumber: '000123456789',
   },
   {
     name: 'Starbucks',
@@ -69,7 +69,7 @@ const transactionsData = [
     currency: 'USD',
     status: 'Paid',
     date: '03/25/2024',
-    accountId: 2,
+    accountNumber: '000275237492',
   },
   {
     name: 'Amazon',
@@ -78,7 +78,7 @@ const transactionsData = [
     currency: 'USD',
     status: 'Paid',
     date: '03/24/2024',
-    accountId: 1,
+    accountNumber: '000123456789',
   },
   {
     name: 'Amazon',
@@ -87,7 +87,7 @@ const transactionsData = [
     currency: 'USD',
     status: 'Paid',
     date: '03/23/2024',
-    accountId: 2,
+    accountNumber: '000275237492',
   },
   {
     name: 'Amazon',
@@ -96,7 +96,7 @@ const transactionsData = [
     currency: 'USD',
     status: 'Paid',
     date: '03/22/2024',
-    accountId: 1,
+    accountNumber: '000123456789',
   },
   {
     name: 'Apple Store',
@@ -105,7 +105,7 @@ const transactionsData = [
     currency: 'USD',
     status: 'Cancel',
     date: '03/21/2024',
-    accountId: 2,
+    accountNumber: '000275237492',
   },
   {
     name: 'Starbucks',
@@ -114,7 +114,7 @@ const transactionsData = [
     currency: 'USD',
     status: 'Paid',
     date: '03/20/2024',
-    accountId: 3,
+    accountNumber: '000987654321',
   },
   {
     name: 'Walmart',
@@ -123,7 +123,7 @@ const transactionsData = [
     currency: 'USD',
     status: 'Paid',
     date: '03/19/2024',
-    accountId: 4,
+    accountNumber: '001234567890',
   },
   {
     name: 'Netflix',
@@ -132,7 +132,7 @@ const transactionsData = [
     currency: 'USD',
     status: 'Cancel',
     date: '03/18/2024',
-    accountId: 3,
+    accountNumber: '000987654321',
   },
   {
     name: 'Amazon',
@@ -141,7 +141,7 @@ const transactionsData = [
     currency: 'USD',
     status: 'Paid',
     date: '03/17/2024',
-    accountId: 4,
+    accountNumber: '001234567890',
   },
   {
     name: 'Netflix',
@@ -150,7 +150,7 @@ const transactionsData = [
     currency: 'USD',
     status: 'Paid',
     date: '03/16/2024',
-    accountId: 3,
+    accountNumber: '000987654321',
   },
   {
     name: 'Walmart',
@@ -159,7 +159,7 @@ const transactionsData = [
     currency: 'USD',
     status: 'Paid',
     date: '03/15/2024',
-    accountId: 4,
+    accountNumber: '001234567890',
   },
   {
     name: 'Apple Store',
@@ -168,7 +168,7 @@ const transactionsData = [
     currency: 'USD',
     status: 'Paid',
     date: '03/14/2024',
-    accountId: 3,
+    accountNumber: '000987654321',
   },
   {
     name: 'Apple Store',
@@ -177,7 +177,7 @@ const transactionsData = [
     currency: 'USD',
     status: 'Paid',
     date: '03/13/2024',
-    accountId: 4,
+    accountNumber: '001234567890',
   },
   {
     name: 'Amazon',
@@ -186,7 +186,7 @@ const transactionsData = [
     currency: 'USD',
     status: 'Paid',
     date: '03/12/2024',
-    accountId: 3,
+    accountNumber: '000987654321',
   },
   {
     name: 'Apple Store',
@@ -195,7 +195,7 @@ const transactionsData = [
     currency: 'USD',
     status: 'Paid',
     date: '03/11/2024',
-    accountId: 4,
+    accountNumber: '001234567890',
   },
   {
     name: 'Netflix',
@@ -204,7 +204,7 @@ const transactionsData = [
     currency: 'USD',
     status: 'Paid',
     date: '03/10/2024',
-    accountId: 5,
+    accountNumber: '002345678901',
   },
   {
     name: 'Apple Store',
@@ -213,7 +213,7 @@ const transactionsData = [
     currency: 'USD',
     status: 'Paid',
     date: '03/09/2024',
-    accountId: 6,
+    accountNumber: '003456789012',
   },
 ]
 

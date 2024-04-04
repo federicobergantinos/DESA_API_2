@@ -6,7 +6,7 @@ import { ContactDTO, ContactsDTO } from './ContactDTO'
 import { AccountDTO, AccountSummaryDTO } from './AccountDTO'
 
 // const api = axios.create({ baseURL: "https://wallet-elb.federicobergantinos.com:443" });
-const api = axios.create({ baseURL: 'http://192.168.1.118:8080' })
+const api = axios.create({ baseURL: 'http://192.168.1.112:8080' })
 const transactionBaseUrl = '/v1/transactions'
 const usersBaseUrl = '/v1/users'
 const contactsBaseUrl = '/v1/contacts'
@@ -95,20 +95,20 @@ const transactionsGateway = {
   },
   getAll: (
     page = 0,
-    accountId: any
+    accountNumber: string
   ): Promise<{ response: TransactionDTO; statusCode: number }> => {
     let url = `${transactionBaseUrl}/?page=${page}&limit=10`
-    if (accountId) {
-      url += `&accountId=${accountId}`
+    if (accountNumber) {
+      url += `&accountNumber=${accountNumber}`
     }
 
     return requests.get(url)
   },
 
   balance: (
-    accountId: number
+    accountNumber: string
   ): Promise<{ response: TransactionDTO; statusCode: number }> => {
-    const url = `${transactionBaseUrl}/balance?accountId=${accountId}`
+    const url = `${transactionBaseUrl}/balance?accountNumber=${accountNumber}`
     return requests.get(url)
   },
 }

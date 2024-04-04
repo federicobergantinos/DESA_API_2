@@ -58,7 +58,7 @@ const searchContact = async ({ searchTerm, limit, offset, userId }) => {
     limit,
     offset,
     order: [['createdAt', 'DESC']],
-    attributes: ['name', 'accountType', 'id'],
+    attributes: ['name', 'accountType', 'accountNumber', 'id'],
   })
 
   return contacts
