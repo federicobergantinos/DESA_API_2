@@ -79,9 +79,15 @@ cloudformation-create-stack-service:
 
 cloudformation-delete-stack-service:
 	aws cloudformation delete-stack --stack-name $(PROJECT) --region $(AWS_REGION)
+
+cloudformation-create-stack-db:
+	aws cloudformation create-stack --stack-name $(PROJECT)-db --template-body file://../resources/db.yaml --capabilities CAPABILITY_IAM --region $(AWS_REGION)
+
+cloudformation-delete-stack-db:
+	aws cloudformation delete-stack --stack-name $(PROJECT)-db --region $(AWS_REGION)
 		
 
 .PHONY: docker-build docker-run docker-stop docker-rm docker-rmi docker-clean docker-rebuild docker-shell docker-compose-up docker-compose-down docker-run-wallet
 .PHONY: ecr-create-repo ecr-login ecr-tag-image ecr-push-image ecr 
-.PHONY: cloudformation-create-stack cloudformation-delete-stack cloudformation-create-stack-service cloudformation-delete-stack-service
+.PHONY: cloudformation-create-stack cloudformation-delete-stack cloudformation-create-stack-service cloudformation-delete-stack-service cloudformation-create-stack-db cloudformation-delete-stack-db
 .PHONY: assume-role

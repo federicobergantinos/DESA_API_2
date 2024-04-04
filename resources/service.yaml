@@ -1,4 +1,10 @@
 Resources:
+  # S3 Bucket
+  S3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: desa-api-2
+
   # Task Definition
   WalletECSTaskDefinition:
     Type: AWS::ECS::TaskDefinition
@@ -29,11 +35,11 @@ Resources:
             - Name: POSTGRES_PASSWORD
               Value: base1234
             - Name: POSTGRES_HOST
-              Value: localhost
+              Value: wallet-serving-db-dbinstance-bsjoymycy4gi.ci6gprfovemt.us-east-1.rds.amazonaws.com
             - Name: POSTGRES_PORT
               Value: 5432
             - Name: AWS_S3_BUCKET_NAME
-              Value: dis-desa-web-dev
+              Value: desa-api-2
             - Name: AWS_DEFAULT_REGION
               Value: us-east-1
             - Name: AWS_REGION
@@ -53,7 +59,7 @@ Resources:
       - WalletALBListener
     Type: AWS::ECS::Service
     Properties:
-      Cluster: InfraBase-ECSCluster-3dDDnuOBUwp3
+      Cluster: InfraBase-ECSCluster-uOPN78A1c2as
       LaunchType: FARGATE
       PlatformVersion: "1.3.0"
       DesiredCount: 1
@@ -66,10 +72,10 @@ Resources:
         AwsvpcConfiguration:
           AssignPublicIp: ENABLED
           Subnets:
-            - subnet-084898bfe05cc94c8
-            - subnet-0ebb59b6f23cde65b
+            - subnet-022459452d75c7622
+            - subnet-0b13d89cbf0c16de3
           SecurityGroups:
-            - sg-09fb4d8fdcb58602a
+            - sg-03b1a58376beea64a
       DeploymentController:
         Type: ECS
       ServiceConnectConfiguration:
@@ -82,10 +88,10 @@ Resources:
       Name: WalletALB
       Type: application
       Subnets:
-        - subnet-084898bfe05cc94c8
-        - subnet-0ebb59b6f23cde65b
+        - subnet-022459452d75c7622
+        - subnet-0b13d89cbf0c16de3
       SecurityGroups:
-        - sg-08bcde548e566e797
+        - sg-010dabc2738eb5e2c
 
   # ALB Target Group
   WalletALBTargetGroup:
@@ -98,7 +104,7 @@ Resources:
       TargetType: ip
       HealthCheckPath: /ping
       HealthCheckProtocol: HTTP
-      VpcId: vpc-0a76e8c3474875e28
+      VpcId: vpc-0769b29097342001b
 
   # Listener
   WalletALBListener:
@@ -115,19 +121,3 @@ Resources:
       Protocol: HTTPS
       Certificates:
         - CertificateArn: arn:aws:acm:us-east-1:137318283310:certificate/cf6356d6-bc02-485e-8f76-a15e9fd9a5b4
-
-  DBInstance:
-    Type: AWS::RDS::DBInstance
-    Properties:
-      DBName: daidb
-      AllocatedStorage: "20"
-      DBInstanceClass: db.t3.micro
-      Engine: postgres
-      EngineVersion: "15.4"
-      MasterUsername: postgres
-      MasterUserPassword: base1234
-      VPCSecurityGroups:
-        - sg-081d9a27c10dd5fa4
-      Subnets:
-        - subnet-084898bfe05cc94c8
-        - subnet-0ebb59b6f23cde65b
