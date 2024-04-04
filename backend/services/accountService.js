@@ -15,8 +15,10 @@ const createAccount = async (accountData) => {
   }
 }
 
-const isValidAccount = async (accountId) => {
-  const existingAccount = await Account.findByPk(accountId)
+const isValidAccount = async (accountNumber) => {
+  const existingAccount = await Account.findOne({
+    where: { accountNumber: accountNumber },
+  })
   return existingAccount !== null
 }
 

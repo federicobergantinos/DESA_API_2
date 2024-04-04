@@ -6,10 +6,17 @@ const logger = createLogger(__filename)
 const populateTransactions = async () => {
   try {
     for (const transactionData of transactionsData) {
-      const { name, description, amount, currency, status, date, accountId } =
-        transactionData
+      const {
+        name,
+        description,
+        amount,
+        currency,
+        status,
+        date,
+        accountNumber,
+      } = transactionData
 
-      // Asumimos que accountId ya está correctamente establecido en transactionsData
+      // Asumimos que accountNumber ya está correctamente establecido en transactionsData
       await Transaction.create({
         name,
         description,
@@ -17,7 +24,7 @@ const populateTransactions = async () => {
         currency,
         status,
         date,
-        accountId, // Asegúrate de que este campo exista en tu modelo y data
+        accountNumber, // Asegúrate de que este campo exista en tu modelo y data
       })
     }
 
