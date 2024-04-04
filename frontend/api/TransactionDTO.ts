@@ -4,6 +4,6 @@ export interface TransactionDTO {
   description: string
   amount: number
   currency: string
-  accountId: number
+  accountNumber: string
   date: Date
 }
