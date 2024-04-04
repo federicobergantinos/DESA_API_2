@@ -31,12 +31,12 @@ const Transaction = sequelize.define('transactions', {
     type: DataTypes.DATE,
     allowNull: false,
   },
-  accountId: {
-    type: DataTypes.INTEGER,
+  accountNumber: {
+    type: DataTypes.STRING,
     allowNull: false,
     references: {
       model: 'accounts',
-      key: 'id',
+      key: 'accountNumber',
     },
   },
 })

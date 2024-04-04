@@ -20,9 +20,10 @@ const RenderMainInformation = ({
       try {
         const { response: balanceResult, balanceStatusCode: statusCode } =
           await backendApi.transactionsGateway.balance(
-            selectedAccount.accountId
+            selectedAccount.accountNumber
           )
-        setBalance(balanceResult)
+        const formattedBalance = parseFloat(balanceResult).toFixed(2)
+        setBalance(formattedBalance)
       } catch (error) {
         console.error('Error fetching balance:', error)
       }

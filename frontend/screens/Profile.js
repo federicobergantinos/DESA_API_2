@@ -26,6 +26,60 @@ export default function Profile() {
   const navigation = useNavigation()
   const [userId, setUserId] = useState(null)
   const [userInfo, setUserInfo] = useState(null)
+  const menuCategories = [
+    {
+      title: 'Cuenta',
+      data: [
+        {
+          title: 'Estado de Cuenta',
+          icon: 'file-text',
+          navigateTo: 'BankStatement',
+        },
+        // ...otros elementos relacionados con la cuenta
+      ],
+    },
+    {
+      title: 'Atención al Cliente',
+      data: [
+        { title: 'Ayuda', icon: 'help-circle', navigateTo: 'Help' },
+        {
+          title: 'Soporte Técnico',
+          icon: 'tool',
+          navigateTo: 'TechnicalSupport',
+        },
+        // ...otros elementos relacionados con la atención al cliente
+      ],
+    },
+    // ...otras categorías si las hay
+  ]
+
+  const renderMenuCategory = (category, key) => {
+    return (
+      <View key={key} style={styles.menuCategoryContainer}>
+        <Text style={styles.menuCategoryTitle}>{category.title}</Text>
+        {category.data.map((option, index) => renderMenuOption(option, index))}
+      </View>
+    )
+  }
+
+  const renderMenuOption = (option, index) => {
+    return (
+      <TouchableOpacity
+        key={index}
+        style={styles.menuOption}
+        onPress={() => navigation.navigate(option.navigateTo)}
+      >
+        <Icon
+          name={option.icon}
+          family="Feather"
+          size={20}
+          color={walletTheme.COLORS.VIOLET}
+          style={styles.menuIcon}
+        />
+        <Text style={styles.menuText}>{option.title}</Text>
+      </TouchableOpacity>
+    )
+  }
 
   const handleImagePicked = async () => {
     try {
@@ -98,7 +152,7 @@ export default function Profile() {
                     style={styles.avatar}
                   />
                 )}
-                <View style={styles.parent}>
+                {/* <View style={styles.parent}>
                   <TouchableOpacity
                     style={styles.container}
                     onPress={handleImagePicked}
@@ -106,7 +160,7 @@ export default function Profile() {
                     <Icon name="camera" family="Feather" size={20} />
                   </TouchableOpacity>
                   <Text> </Text>
-                </View>
+                </View> */}
               </Block>
               <Block style={styles.info}>
                 <Block middle style={styles.nameInfo}>
@@ -115,20 +169,29 @@ export default function Profile() {
                     size={24}
                     color="#32325D"
                   >
-                    {userInfo
-                      ? `${userInfo.name} ${userInfo.surname}`
-                      : 'Cargando...'}
+                    {userInfo ? userInfo.name : 'Cargando...'}
+                  </Text>
+                  <Text
+                    style={{ fontFamily: 'open-sans-regular' }}
+                    size={24}
+                    color="#32325D"
+                  >
+                    {userInfo ? userInfo.surname : ''}
                   </Text>
                 </Block>
                 <Block
                   middle
                   row
                   space="evenly"
-                  style={{ marginTop: 5, paddingBottom: 24 }}
+                  style={{ marginTop: 5, paddingBottom: 10 }}
                 ></Block>
+                {menuCategories.map((category, key) =>
+                  renderMenuCategory(category, key)
+                )}
+
+                <View style={{ height: 50 }} />
               </Block>
             </Block>
-            <Block style={{ marginBottom: 25 }} />
           </ScrollView>
         </ImageBackground>
       </Block>
@@ -143,7 +206,7 @@ const styles = StyleSheet.create({
   },
   profileBackground: {
     width: width,
-    height: height / 1.5,
+    height: height,
     top: height / 10,
   },
   parent: {
@@ -154,8 +217,7 @@ const styles = StyleSheet.create({
     padding: theme.SIZES.BASE,
     marginHorizontal: theme.SIZES.BASE,
     marginTop: 100,
-    borderTopLeftRadius: 6,
-    borderTopRightRadius: 6,
+    borderRadius: 6,
     backgroundColor: theme.COLORS.WHITE,
     shadowColor: 'black',
     backgroundColor: '#FFF',
@@ -165,7 +227,7 @@ const styles = StyleSheet.create({
     zIndex: 2,
   },
   info: {
-    paddingHorizontal: 40,
+    paddingHorizontal: 20,
   },
   avatarContainer: {
     position: 'relative',
@@ -186,7 +248,7 @@ const styles = StyleSheet.create({
   },
 
   nameInfo: {
-    marginTop: 5,
+    marginTop: 10,
   },
   divider: {
     width: '90%',
@@ -220,7 +282,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 100,
-    marginTop: -30,
+    marginTop: -20,
     marginLeft: 80,
     width: 40,
     height: 40,
@@ -250,5 +312,39 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 4,
     borderColor: 'rgba(0, 0, 0, 0.1)',
+  },
+  menuOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    marginHorizontal: 0,
+    backgroundColor: walletTheme.COLORS.WHITE,
+    marginTop: theme.SIZES.BASE,
+    borderRadius: theme.SIZES.RADIUS,
+    shadowColor: walletTheme.COLORS.BLACK,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    shadowOpacity: 0.1,
+    elevation: 2,
+  },
+  menuIcon: {
+    marginRight: 15,
+    color: walletTheme.COLORS.BLACK,
+  },
+  menuText: {
+    fontFamily: 'open-sans-regular',
+    fontSize: 16,
+    color: walletTheme.COLORS.BLACK,
+  },
+  menuCategoryContainer: {
+    // Otros estilos que necesites, como márgenes y sombras
+    marginTop: theme.SIZES.BASE / 2,
+    borderRadius: theme.SIZES.RADIUS,
+    paddingVertical: theme.SIZES.BASE / 2,
+  },
+  menuCategoryTitle: {
+    fontSize: 15,
+    color: walletTheme.COLORS.BLACK,
   },
 })
