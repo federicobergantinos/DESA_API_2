@@ -15,11 +15,12 @@ const createAccount = async (accountData) => {
   }
 }
 
-const isValidAccount = async (accountNumber) => {
-  const existingAccount = await Account.findOne({
+const findAccountByAccountNumber = async (accountNumber) => {
+  const account = await Account.findOne({
     where: { accountNumber: accountNumber },
+    include: [{ model: User, as: 'user' }],
   })
-  return existingAccount !== null
+  return account
 }
 
 const findAccountById = async (accountId) => {
@@ -46,7 +47,7 @@ const findAccountByUserId = async (userId) => {
 
 module.exports = {
   createAccount,
-  isValidAccount,
+  findAccountByAccountNumber,
   findAccountById,
   findAccountByUserId,
 }

@@ -16,10 +16,10 @@ const create = async (req, res) => {
 
     return sendResponse(res, 201, {
       id: transactionId,
-      message: 'Receta creada con éxito',
+      message: 'Transaccion creada con éxito',
     })
   } catch (error) {
-    logger.error(`Error en la creación de la receta: ${error}`)
+    logger.error(`Error en la creación de la transaccion: ${error}`)
     return sendResponse(res, error.code || 500, {
       msg: error.message || 'Ha ocurrido una excepción',
     })
@@ -64,10 +64,6 @@ const getById = async (req, res) => {
 const calculateAccountBalance = async (req, res) => {
   try {
     const accountNumber = req.query.accountNumber
-    if (!Number.isInteger(Number(accountNumber))) {
-      throw new Error('Invalid Account Number')
-    }
-
     const page = parseInt(req.query.page) || 0 // Asegúrate de proporcionar un valor por defecto
     const limit = parseInt(req.query.limit) || 20 // Límite de ítems por página
     const offset = page * limit

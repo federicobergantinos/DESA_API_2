@@ -5,8 +5,8 @@ import { TransactionDTO } from './TransactionDTO'
 import { ContactDTO, ContactsDTO } from './ContactDTO'
 import { AccountDTO, AccountSummaryDTO } from './AccountDTO'
 
-const api = axios.create({ baseURL: "https://www.wallet-elb.federicobergantinos.com/" });
-// const api = axios.create({ baseURL: 'http://192.168.1.112:8080' })
+// const api = axios.create({ baseURL: "https://www.wallet-elb.federicobergantinos.com/" });
+const api = axios.create({ baseURL: 'http://192.168.1.114:8080' })
 const transactionBaseUrl = '/v1/transactions'
 const usersBaseUrl = '/v1/users'
 const contactsBaseUrl = '/v1/contacts'
