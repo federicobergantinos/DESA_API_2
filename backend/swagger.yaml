@@ -1,0 +1,529 @@
+openapi: 3.0.0
+info:
+  title: API de Servicios de Usuario
+  description: Esta es una API para manejar usuarios, cuentas, transacciones, y autenticaciones.
+  version: '1.0.0'
+servers:
+  - url: https://www.wallet-elb.federicobergantinos.com/
+paths:
+  /accounts/create:
+    post:
+      summary: Crea una nueva cuenta
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountRequest'
+      responses:
+        '201':
+          description: Cuenta creada con éxito
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountResponse'
+        '500':
+          description: Error interno del servidor
+
+  /accounts/:
+    get:
+      summary: Obtiene cuentas por ID de usuario
+      parameters:
+        - in: query
+          name: userId
+          schema:
+            type: integer
+          required: true
+      responses:
+        '200':
+          description: Lista de cuentas obtenidas con éxito
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AccountDetails'
+        '404':
+          description: No se encontraron cuentas para el ID de usuario proporcionado
+
+  /accounts/{accountId}:
+    get:
+      summary: Obtiene una cuenta por su ID
+      parameters:
+        - in: path
+          name: accountId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Detalles de la cuenta obtenida con éxito
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountDetails'
+        '500':
+          description: Error interno del servidor
+
+  /auth/:
+    post:
+      summary: Autentica un usuario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthRequest'
+      responses:
+        '200':
+          description: Autenticación exitosa
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          description: Credenciales inválidas
+
+  /auth/refresh:
+    put:
+      summary: Refresca el token de autenticación
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refreshToken:
+                  type: string
+      responses:
+        '200':
+          description: Token refrescado con éxito
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '500':
+          description: Error interno del servidor
+
+  /auth/deleteCredential:
+    delete:
+      summary: Elimina las credenciales de autenticación
+      responses:
+        '204':
+          description: Credenciales eliminadas con éxito
+
+  /contacts/create:
+    post:
+      summary: Crea un nuevo contacto
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContactRequest'
+      responses:
+        '201':
+          description: Contacto creado con éxito
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContactResponse'
+
+  /contacts/search:
+    get:
+      summary: Busca contactos por términos de búsqueda
+      parameters:
+        - in: query
+          name: searchTerm
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: userId
+          schema:
+            type: integer
+          required: true
+      responses:
+        '200':
+          description: Lista de contactos encontrados
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ContactResponse'
+
+  /contacts/:
+    post:
+      summary: Crea un nuevo contacto
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContactRequest'
+      responses:
+        '201':
+          description: Contacto creado con éxito
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContactResponse'
+        '500':
+          description: Error interno del servidor
+
+    get:
+      summary: Obtiene todos los contactos de un usuario
+      parameters:
+        - in: query
+          name: userId
+          schema:
+            type: integer
+          required: true
+      responses:
+        '200':
+          description: Lista de contactos obtenida con éxito
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ContactDetails'
+
+  /contacts/{contactId}:
+    get:
+      summary: Obtiene un contacto por ID
+      parameters:
+        - in: path
+          name: contactId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Detalles del contacto obtenido con éxito
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContactDetails'
+
+    put:
+      summary: Actualiza un contacto
+      parameters:
+        - in: path
+          name: contactId
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContactUpdateRequest'
+      responses:
+        '200':
+          description: Contacto actualizado con éxito
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContactResponse'
+
+    delete:
+      summary: Elimina un contacto
+      parameters:
+        - in: path
+          name: contactId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Contacto eliminado con éxito
+
+  /transactions/create:
+    post:
+      summary: Creates a new transaction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransactionRequest'
+      responses:
+        '201':
+          description: Transaction created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionResponse'
+        '500':
+          description: Internal server error
+
+  /transactions/:
+    get:
+      summary: Retrieves all transactions for an account number
+      parameters:
+        - in: query
+          name: accountNumber
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: List of transactions retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TransactionDetails'
+
+  /transactions/{transactionId}:
+    get:
+      summary: Retrieves a specific transaction by its ID
+      parameters:
+        - in: path
+          name: transactionId
+          schema:
+            type: integer
+          required: true
+      responses:
+        '200':
+          description: Transaction details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionDetails'
+
+  /transactions/balance:
+    get:
+      summary: Calculates the account balance based on transactions
+      parameters:
+        - in: query
+          name: accountNumber
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Account balance calculated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  balance:
+                    type: number
+
+  /users/{userId}:
+    parameters:
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: integer
+    get:
+      summary: Obtiene información de un usuario por ID
+      responses:
+        '200':
+          description: Información del usuario
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+    put:
+      summary: Edita el perfil de un usuario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+      responses:
+        '200':
+          description: Usuario actualizado con éxito
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+
+  /users/uploadImage:
+    post:
+      summary: Sube una imagen de perfil para el usuario
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                image:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Imagen subida con éxito
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  imageUrl:
+                    type: string
+
+components:
+  schemas:
+    AccountDetails:
+      type: object
+    AccountResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        message:
+          type: string
+    AccountRequest:
+      type: object
+      properties:
+        beneficiaryName:
+          type: string
+        beneficiaryAddress:
+          type: string
+        accountNumber:
+          type: string
+        accountType:
+          type: string
+        userId:
+          type: integer
+    AuthRequest:
+      type: object
+      properties:
+        token:
+          type: string
+        registerUser:
+          type: boolean
+        accountInfo:
+          type: object
+          properties:
+            beneficiaryAddress:
+              type: string
+            accountType:
+              type: string
+    AuthResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+    ContactRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        accountNumber:
+          type: string
+        accountType:
+          type: string
+        userId:
+          type: integer
+    ContactResponse:
+      type: object
+      properties:
+        contactId:
+          type: integer
+        message:
+          type: string
+    ContactDetails:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        accountNumber:
+          type: string
+        accountType:
+          type: string
+        userId:
+          type: integer
+    ContactUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        accountNumber:
+          type: string
+        accountType:
+          type: string
+    TransactionRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        amount:
+          type: number
+        currency:
+          type: string
+        status:
+          type: string
+        date:
+          type: string
+        accountNumber:
+          type: string
+    TransactionResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        message:
+          type: string
+    TransactionDetails:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        amount:
+          type: number
+        currency:
+          type: string
+        status:
+          type: string
+        date:
+          type: string
+        accountNumber:
+          type: string
+    UserRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        surname:
+          type: string
+        photoUrl:
+          type: string
+    UserResponse:
+      type: object
+      properties:
+        userId:
+          type: integer
+        name:
+          type: string
+        surname:
+          type: string
+        email:
+          type: string
+        photoUrl:
+          type: string
