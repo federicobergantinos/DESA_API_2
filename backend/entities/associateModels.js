@@ -25,8 +25,6 @@ Account.hasMany(Transaction, {
 module.exports = {
   User,
   Transaction,
-  Media,
-  Authorization,
   Account,
   Contact,
 }
