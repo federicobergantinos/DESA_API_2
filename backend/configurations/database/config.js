@@ -12,18 +12,18 @@ const logger = createLogger(__filename)
 const dbConnection = async () => {
   try {
     await sequelize.authenticate()
+    await sequelize.sync()
 
-    await sequelize.sync({ force: true })
+    const usersCount = await User.count()
+    const transactionsCount = await Transaction.count()
 
-    // Sincronizar modelos con la base de datos
-    await User.sync()
-    await Account.sync()
-    await Transaction.sync()
-    await Media.sync()
+    if (usersCount === 0) {
+      await populateUser()
+    }
 
-    // Poblar la base de datos con datos iniciales
-    await populateUser()
-    await populateTransactions()
+    if (transactionsCount === 0) {
+      await populateTransactions()
+    }
 
     logger.info('Database online')
   } catch (error) {

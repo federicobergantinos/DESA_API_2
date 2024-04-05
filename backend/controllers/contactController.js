@@ -67,7 +67,7 @@ const searchAll = async (req, res) => {
   } catch (error) {
     logger.error(`searchContact: ${error}`)
     return sendResponse(res, error.code || 500, {
-      msg: 'An exception has occurred',
+      msg: error.message || 'An exception has occurred',
     })
   }
 }

@@ -1,6 +1,5 @@
-const { Account, Transaction, User } = require('../entities/associateModels')
-const BadRequest = require('../Errors/BadRequest')
-const { isValidAccount } = require('./accountService')
+const { Transaction } = require('../entities/associateModels')
+const { findAccountByAccountNumber } = require('./accountService')
 const NotFound = require('../Errors/NotFound')
 const { Op } = require('sequelize')
 const sequelize = require('../configurations/database/sequelizeConnection')
@@ -11,9 +10,16 @@ const createTransaction = async (transactionData) => {
   const { accountNumber, name, description, amount, currency, status, date } =
     transactionData
 
-  if (!(await isValidAccount(accountNumber))) {
-    throw new BadRequest('Invalid Account')
+  const account = await findAccountByAccountNumber(accountNumber)
+  if (account !== null) {
+    throw new Error('Invalid Account')
   }
+  console.log(account)
+
+  const userName = account.user
+    ? `${account.user.name} ${account.user.surname}`.trim()
+    : 'Transferencia'
+  const transactionName = userName || 'Transferencia'
 
   try {
     // Iniciar una transacción con sequelize para garantizar atomicidad
@@ -23,6 +29,7 @@ const createTransaction = async (transactionData) => {
         {
           accountNumber,
           name,
+          name: transactionName,
           description,
           amount,
           currency,
