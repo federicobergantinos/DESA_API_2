@@ -5,8 +5,8 @@ import { TransactionDTO } from './TransactionDTO'
 import { ContactDTO, ContactsDTO } from './ContactDTO'
 import { AccountDTO, AccountSummaryDTO } from './AccountDTO'
 
-// const api = axios.create({ baseURL: "https://wallet-elb.federicobergantinos.com:443" });
-const api = axios.create({ baseURL: 'http://192.168.1.112:8080' })
+const api = axios.create({ baseURL: "https://www.wallet-elb.federicobergantinos.com/" });
+// const api = axios.create({ baseURL: 'http://192.168.1.114:8080' })
 const transactionBaseUrl = '/v1/transactions'
 const usersBaseUrl = '/v1/users'
 const contactsBaseUrl = '/v1/contacts'
@@ -102,12 +102,20 @@ const transactionsGateway = {
     if (accountNumber) {
       url += `&accountNumber=${accountNumber}`
 =======
+<<<<<<< HEAD
+    accountNumber: string
+  ): Promise<{ response: TransactionDTO; statusCode: number }> => {
+    let url = `${transactionBaseUrl}/?page=${page}&limit=10`
+    if (accountNumber) {
+      url += `&accountNumber=${accountNumber}`
+=======
     accountId: any
   ): Promise<{ response: TransactionDTO; statusCode: number }> => {
     let url = `${transactionBaseUrl}/?page=${page}&limit=10`
     if (accountId) {
       url += `&accountId=${accountId}`
 >>>>>>> master
+>>>>>>> develop
     }
 
     return requests.get(url)
@@ -119,10 +127,16 @@ const transactionsGateway = {
   ): Promise<{ response: TransactionDTO; statusCode: number }> => {
     const url = `${transactionBaseUrl}/balance?accountNumber=${accountNumber}`
 =======
+<<<<<<< HEAD
+    accountNumber: string
+  ): Promise<{ response: TransactionDTO; statusCode: number }> => {
+    const url = `${transactionBaseUrl}/balance?accountNumber=${accountNumber}`
+=======
     accountId: number
   ): Promise<{ response: TransactionDTO; statusCode: number }> => {
     const url = `${transactionBaseUrl}/balance?accountId=${accountId}`
 >>>>>>> master
+>>>>>>> develop
     return requests.get(url)
   },
 }

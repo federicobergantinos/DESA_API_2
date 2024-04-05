@@ -8,10 +8,7 @@ import {
   TextInput,
   Modal,
   Alert,
-<<<<<<< HEAD
   Button,
-=======
->>>>>>> master
   FlatList,
   TouchableOpacity,
 } from 'react-native'
@@ -20,10 +17,7 @@ import { Images, walletTheme } from '../constants'
 import Icon from '../components/Icon'
 import Input from '../components/Input'
 import CheckBox from '@react-native-community/checkbox'
-<<<<<<< HEAD
 import { useNavigation } from '@react-navigation/native'
-=======
->>>>>>> master
 import backendApi from '../api/backendGateway'
 import { useWallet } from '../navigation/WalletContext'
 
@@ -39,7 +33,6 @@ const Transfer = () => {
   const [isLoadingContacts, setIsLoadingContacts] = useState(false)
   const searchInputRef = useRef(null)
   const [localSearch, setLocalSearch] = useState('')
-<<<<<<< HEAD
   const { user, selectedAccount } = useWallet()
   const [editingContact, setEditingContact] = useState(null)
   const [shouldFocus, setShouldFocus] = useState(false)
@@ -49,13 +42,6 @@ const Transfer = () => {
   const showModal = () => setIsModalVisible(true)
   const hideModal = () => setIsModalVisible(false)
   const navigation = useNavigation()
-=======
-  const { user } = useWallet()
-  const [editingContact, setEditingContact] = useState(null)
-
-  const showModal = () => setIsModalVisible(true)
-  const hideModal = () => setIsModalVisible(false)
->>>>>>> master
 
   useEffect(() => {
     // Inicializar la búsqueda cuando el componente se monta
@@ -114,16 +100,9 @@ const Transfer = () => {
   }
 
   const AmountInputCard = () => {
-<<<<<<< HEAD
     // Manejador para actualizar el estado local mientras el usuario escribe
     const handleAmountChange = (text) => {
       setShouldFocus(true)
-=======
-    const [localAmount, setLocalAmount] = useState('')
-
-    // Manejador para actualizar el estado local mientras el usuario escribe
-    const handleAmountChange = (text) => {
->>>>>>> master
       setLocalAmount(text)
     }
 
@@ -179,7 +158,6 @@ const Transfer = () => {
   }
 
   const ContactCard = ({ contact, onEdit, onDelete }) => {
-<<<<<<< HEAD
     const selectContact = (contact) => {
       setSelectedContact(contact)
       setLocalSearch('')
@@ -209,31 +187,6 @@ const Transfer = () => {
           </View>
         </View>
       </TouchableOpacity>
-=======
-    const initial = contact.name[0].toUpperCase()
-
-    return (
-      <View style={styles.contactCard}>
-        <View style={styles.initialCircle}>
-          <Text style={styles.initialText}>{initial}</Text>
-        </View>
-        <View style={styles.contactDetails}>
-          <Text style={styles.contactName}>{contact.name}</Text>
-          <Text style={styles.contactInfo}>{contact.accountType}</Text>
-        </View>
-        <View style={styles.actionButtons}>
-          <TouchableOpacity
-            onPress={() => onEdit(contact)}
-            style={{ marginRight: 10 }}
-          >
-            <Icon name="edit" family="Feather" size={20} />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => onDelete(contact.id)}>
-            <Icon name="trash" family="Feather" size={20} />
-          </TouchableOpacity>
-        </View>
-      </View>
->>>>>>> master
     )
   }
 
@@ -347,7 +300,6 @@ const Transfer = () => {
 
   const ContactsCard = () => {
     const handleSearchChange = (text) => {
-<<<<<<< HEAD
       setShouldFocus(true)
       setLocalSearch(text)
     }
@@ -389,42 +341,6 @@ const Transfer = () => {
 
         <FlatList
           data={dataToShow}
-=======
-      setLocalSearch(text)
-    }
-
-    return (
-      <Card title="Contactos">
-        <View style={styles.contactsContainer}>
-          <Input
-            right
-            color="black"
-            autoFocus={true}
-            style={styles.search}
-            value={localSearch}
-            placeholder="Buscar contacto"
-            placeholderTextColor={'#8898AA'}
-            onChangeText={handleSearchChange}
-            ref={searchInputRef}
-            iconContent={
-              <Icon
-                size={16}
-                color={theme.COLORS.MUTED}
-                name="search-zoom-in"
-                family="WalletExtra"
-              />
-            }
-          />
-          <TouchableOpacity
-            onPress={handleAddContactButton}
-            style={styles.iconButton}
-          >
-            <Icon name="user-plus" family="Feather" size={20} />
-          </TouchableOpacity>
-        </View>
-        <FlatList
-          data={contacts}
->>>>>>> master
           keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => (
             <ContactCard
@@ -434,7 +350,6 @@ const Transfer = () => {
             />
           )}
         />
-<<<<<<< HEAD
         {selectedContact && (
           <TouchableOpacity
             onPress={() => setSelectedContact(null)}
@@ -443,13 +358,10 @@ const Transfer = () => {
             <Text style={styles.deselectButtonText}>Buscar otro contacto</Text>
           </TouchableOpacity>
         )}
-=======
->>>>>>> master
       </Card>
     )
   }
 
-<<<<<<< HEAD
   const handleConfirm = async () => {
     // Asegurar que un contacto ha sido seleccionado y el monto ha sido ingresado
     if (!selectedContact || !localAmount) {
@@ -501,8 +413,108 @@ const Transfer = () => {
     navigation.replace('Home')
   }
 
-=======
->>>>>>> master
+  const handleConfirm = async () => {
+    // Asegurar que un contacto ha sido seleccionado y el monto ha sido ingresado
+    if (!selectedContact || !localAmount) {
+      Alert.alert(
+        'Error',
+        'Debes seleccionar un contacto y especificar un monto.'
+      )
+      return
+    }
+
+    // Construir el objeto de datos de la transacción
+    console.log(selectedContact)
+    const transactionData = {
+      accountNumber: selectedContact.accountNumber,
+      name: 'Transferencia',
+      description: 'Transferencia',
+      amount: -Math.abs(parseFloat(localAmount)),
+      currency: 'USD',
+      status: 'Paid',
+      date: new Date().toISOString(),
+    }
+
+    try {
+      const response =
+        await backendApi.transactionsGateway.createTransaction(transactionData)
+      if (response.statusCode === 200 || response.statusCode === 201) {
+        Alert.alert('Éxito', 'La transferencia ha sido realizada exitosamente.')
+        // Limpieza o acciones post-transacción
+        setLocalAmount('')
+        setSelectedContact(null)
+        navigation.replace('Home')
+      } else {
+        // Manejo de otros códigos de estado HTTP
+        Alert.alert('Error', 'No se pudo realizar la transferencia.')
+      }
+    } catch (error) {
+      console.error('Error al crear la transacción:', error)
+      Alert.alert(
+        'Error',
+        'Ocurrió un error al intentar realizar la transferencia.'
+      )
+    }
+  }
+
+  const handleCancel = () => {
+    // Limpia los estados o navega a otra pantalla
+    setSelectedContact(null)
+    setLocalAmount('')
+    navigation.replace('Home')
+  }
+
+  const handleConfirm = async () => {
+    // Asegurar que un contacto ha sido seleccionado y el monto ha sido ingresado
+    if (!selectedContact || !localAmount) {
+      Alert.alert(
+        'Error',
+        'Debes seleccionar un contacto y especificar un monto.'
+      )
+      return
+    }
+
+    // Construir el objeto de datos de la transacción
+    console.log(selectedContact)
+    const transactionData = {
+      accountNumber: selectedContact.accountNumber,
+      name: 'Transferencia',
+      description: 'Transferencia',
+      amount: -Math.abs(parseFloat(localAmount)),
+      currency: 'USD',
+      status: 'Paid',
+      date: new Date().toISOString(),
+    }
+
+    try {
+      const response =
+        await backendApi.transactionsGateway.createTransaction(transactionData)
+      if (response.statusCode === 200 || response.statusCode === 201) {
+        Alert.alert('Éxito', 'La transferencia ha sido realizada exitosamente.')
+        // Limpieza o acciones post-transacción
+        setLocalAmount('')
+        setSelectedContact(null)
+        navigation.replace('Home')
+      } else {
+        // Manejo de otros códigos de estado HTTP
+        Alert.alert('Error', 'No se pudo realizar la transferencia.')
+      }
+    } catch (error) {
+      console.error('Error al crear la transacción:', error)
+      Alert.alert(
+        'Error',
+        'Ocurrió un error al intentar realizar la transferencia.'
+      )
+    }
+  }
+
+  const handleCancel = () => {
+    // Limpia los estados o navega a otra pantalla
+    setSelectedContact(null)
+    setLocalAmount('')
+    navigation.replace('Home')
+  }
+
   return (
     <Block flex style={styles.home}>
       <ImageBackground source={Images.Background} style={styles.background}>
@@ -511,7 +523,6 @@ const Transfer = () => {
             <>
               <AmountInputCard />
               <ContactsCard />
-<<<<<<< HEAD
 
               {/* Botones */}
               <View style={styles.buttonContainer}>
@@ -522,8 +533,6 @@ const Transfer = () => {
                   <Text style={styles.buttonText}>Transferir</Text>
                 </TouchableOpacity>
               </View>
-=======
->>>>>>> master
             </>
           }
         </View>
@@ -755,7 +764,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-<<<<<<< HEAD
   deselectButtonStyle: {
     backgroundColor: walletTheme.COLORS.VIOLET, // o cualquier color que prefieras
     padding: 10,
@@ -784,8 +792,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-=======
->>>>>>> master
 })
 
 export default Transfer

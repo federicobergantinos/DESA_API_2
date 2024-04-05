@@ -53,7 +53,7 @@ const Card = ({ item, horizontal, style }) => {
                   color={walletTheme.COLORS.ACTIVE}
                   bold
                 >
-                  Ver receta
+                  Ver
                 </Text>
               </Block>
             </Block>
