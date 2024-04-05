@@ -104,7 +104,7 @@ const Signup = ({ route }) => {
             <Card title="Dirección">
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <GooglePlacesAutocomplete
-                  placeholder="Ingresa tu dirección"
+                  placeholder={address == '' ? 'Ingresa tu dirección' : address}
                   onPress={(data, details = null) => {
                     console.log(data)
                     setAddress(data.description)
