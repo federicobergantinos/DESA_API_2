@@ -1,7 +1,6 @@
 // local imgs
 const Background = require('../assets/imgs/profile-screen-bg.png')
 const LoginBackground = require('../assets/imgs/login-bg.png')
-const ProfilePicture = require('../assets/imgs/profile-img.jpg')
 
 const Viewed = [
   'https://i.ibb.co/wyKZMZ6/hamburguesa-con-papas-fritas.jpg',
@@ -19,7 +18,6 @@ const Products = {
 
 export default {
   Background,
-  ProfilePicture,
   LoginBackground,
   Viewed,
   Products,
