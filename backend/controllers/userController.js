@@ -93,7 +93,7 @@ const uploadImage = async (req, res) => {
   } catch (error) {
     logger.error(`Hubo un problema al subir la imagen: ${error}`)
     return sendResponse(res, error.code || 500, {
-      msg: error.message || 'Ha ocurrido un error al actualizar la receta',
+      msg: error.message || 'Ha ocurrido un error al actualizar el usuario',
     })
   }
 }

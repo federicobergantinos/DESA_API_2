@@ -8,7 +8,6 @@ import Transaction from '../screens/Transaction'
 import Profile from '../screens/Profile'
 import React from 'react'
 import Login from '../screens/Login'
-import Search from '../screens/Search'
 import Signup from '../screens/Signup'
 import Transfer from '../screens/Transfer'
 import Others from '../screens/Others'
@@ -133,16 +132,6 @@ function HomeStack(props) {
               navigation={navigation}
               scene={scene}
             />
-          ),
-          cardStyle: { backgroundColor: '#F8F9FE' },
-        }}
-      />
-      <Stack.Screen
-        name="Search"
-        component={Search}
-        options={{
-          header: ({ navigation, scene }) => (
-            <Header title="Search" back navigation={navigation} scene={scene} />
           ),
           cardStyle: { backgroundColor: '#F8F9FE' },
         }}
