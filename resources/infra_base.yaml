@@ -69,55 +69,6 @@ Resources:
       RouteTableId: !Ref PublicRouteTable
       SubnetId: !Ref PublicSubnet2
 
-  # IAM role for task execution
-  ExecutionRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: ecs-tasks.amazonaws.com
-            Action:
-              - sts:AssumeRole
-      Policies:
-        - PolicyName: execution-policy
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - ecs:*
-                  - ecr:*
-                  - logs:CreateLogStream
-                  - logs:PutLogEvents
-                Resource: "*"
-
-  # IAM role for the task
-  TaskRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: ecs-tasks.amazonaws.com
-            Action:
-              - sts:AssumeRole
-      Policies:
-        - PolicyName: task-policy
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - ecs:*
-                  - ecr:*
-                  # - s3:*
-                Resource: "*"
-
   # CloudWatch Log Group
   LogGroup:
     Type: AWS::Logs::LogGroup
@@ -125,18 +76,7 @@ Resources:
       LogGroupName: Logs
       RetentionInDays: 14
 
-  # Security Group
-  ECSInternalCommunicationSG:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupDescription: Allow internal communication between ECS instances
-      VpcId: !Ref VPC
-      SecurityGroupIngress:
-        - IpProtocol: -1
-          FromPort: -1
-          ToPort: -1
-          SourceSecurityGroupId: !Ref ECSAlbSecurityGroup
-
+  # ECS ALB Security Group - Permite tráfico entrante desde Internet al ALB
   ECSAlbSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -152,6 +92,38 @@ Resources:
           FromPort: -1
           ToPort: -1
           CidrIp: 0.0.0.0/0
+
+  # App Security Group - Permite tráfico desde el ALB a las tareas de ECS
+  AppSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Security group for ECS tasks, allows traffic from ALB"
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 8080 # Asumiendo que tu servicio escucha en el puerto 8080
+          ToPort: 8080
+          SourceSecurityGroupId: !Ref ECSAlbSecurityGroup
+
+  # DB Security Group - Permite tráfico desde las tareas de ECS a la base de datos RDS
+  DBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Enable SQL port access from ECS tasks"
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 5432 # Puerto estándar de PostgreSQL
+          ToPort: 5432
+          SourceSecurityGroupId: !GetAtt AppSecurityGroup.GroupId
+
+  DBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: "DBSubnetGroup"
+      SubnetIds:
+        - !Ref PublicSubnet1
+        - !Ref PublicSubnet2
 
   # ACM Certificate
   # WalletSSLCertificate:
