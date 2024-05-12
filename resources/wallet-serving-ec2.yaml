@@ -1,0 +1,21 @@
+Resources:
+  # Instancia EC2
+  WalletBackendEC2:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.micro
+      ImageId: ami-0dc67873410203528
+      SecurityGroupIds:
+        - sg-010dabc2738eb5e2c
+      IamInstanceProfile: arn:aws:iam::137318283310:instance-profile/LabInstanceProfile
+      SubnetId: subnet-022459452d75c7622
+      # UserData:
+      #   Fn::Base64: !Sub |
+      #     #!/bin/bash
+      #     yum update -y
+      #     yum install -y docker
+      #     service docker start
+      #     usermod -a -G docker ec2-user
+      #     docker pull 137318283310.dkr.ecr.us-east-1.amazonaws.com/wallet-serving:latest
+      #     docker run -d -p 8080:8080 137318283310.dkr.ecr.us-east-1.amazonaws.com/wallet-serving:latest
+      KeyName: vockey
