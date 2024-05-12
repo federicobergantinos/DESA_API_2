@@ -413,6 +413,108 @@ const Transfer = () => {
     navigation.replace('Home')
   }
 
+  const handleConfirm = async () => {
+    // Asegurar que un contacto ha sido seleccionado y el monto ha sido ingresado
+    if (!selectedContact || !localAmount) {
+      Alert.alert(
+        'Error',
+        'Debes seleccionar un contacto y especificar un monto.'
+      )
+      return
+    }
+
+    // Construir el objeto de datos de la transacción
+    console.log(selectedContact)
+    const transactionData = {
+      accountNumber: selectedContact.accountNumber,
+      name: 'Transferencia',
+      description: 'Transferencia',
+      amount: -Math.abs(parseFloat(localAmount)),
+      currency: 'USD',
+      status: 'Paid',
+      date: new Date().toISOString(),
+    }
+
+    try {
+      const response =
+        await backendApi.transactionsGateway.createTransaction(transactionData)
+      if (response.statusCode === 200 || response.statusCode === 201) {
+        Alert.alert('Éxito', 'La transferencia ha sido realizada exitosamente.')
+        // Limpieza o acciones post-transacción
+        setLocalAmount('')
+        setSelectedContact(null)
+        navigation.replace('Home')
+      } else {
+        // Manejo de otros códigos de estado HTTP
+        Alert.alert('Error', 'No se pudo realizar la transferencia.')
+      }
+    } catch (error) {
+      console.error('Error al crear la transacción:', error)
+      Alert.alert(
+        'Error',
+        'Ocurrió un error al intentar realizar la transferencia.'
+      )
+    }
+  }
+
+  const handleCancel = () => {
+    // Limpia los estados o navega a otra pantalla
+    setSelectedContact(null)
+    setLocalAmount('')
+    navigation.replace('Home')
+  }
+
+  const handleConfirm = async () => {
+    // Asegurar que un contacto ha sido seleccionado y el monto ha sido ingresado
+    if (!selectedContact || !localAmount) {
+      Alert.alert(
+        'Error',
+        'Debes seleccionar un contacto y especificar un monto.'
+      )
+      return
+    }
+
+    // Construir el objeto de datos de la transacción
+    console.log(selectedContact)
+    const transactionData = {
+      accountNumber: selectedContact.accountNumber,
+      name: 'Transferencia',
+      description: 'Transferencia',
+      amount: -Math.abs(parseFloat(localAmount)),
+      currency: 'USD',
+      status: 'Paid',
+      date: new Date().toISOString(),
+    }
+
+    try {
+      const response =
+        await backendApi.transactionsGateway.createTransaction(transactionData)
+      if (response.statusCode === 200 || response.statusCode === 201) {
+        Alert.alert('Éxito', 'La transferencia ha sido realizada exitosamente.')
+        // Limpieza o acciones post-transacción
+        setLocalAmount('')
+        setSelectedContact(null)
+        navigation.replace('Home')
+      } else {
+        // Manejo de otros códigos de estado HTTP
+        Alert.alert('Error', 'No se pudo realizar la transferencia.')
+      }
+    } catch (error) {
+      console.error('Error al crear la transacción:', error)
+      Alert.alert(
+        'Error',
+        'Ocurrió un error al intentar realizar la transferencia.'
+      )
+    }
+  }
+
+  const handleCancel = () => {
+    // Limpia los estados o navega a otra pantalla
+    setSelectedContact(null)
+    setLocalAmount('')
+    navigation.replace('Home')
+  }
+
   return (
     <Block flex style={styles.home}>
       <ImageBackground source={Images.Background} style={styles.background}>
