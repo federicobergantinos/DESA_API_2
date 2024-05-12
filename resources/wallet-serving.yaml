@@ -35,7 +35,7 @@ Resources:
             - Name: POSTGRES_PASSWORD
               Value: base1234
             - Name: POSTGRES_HOST
-              Value: wallet-serving-db-dbinstance-bsjoymycy4gi.ci6gprfovemt.us-east-1.rds.amazonaws.com
+              Value: wallet-serving-db-dbinstance-jg79hftmmnfg.ci6gprfovemt.us-east-1.rds.amazonaws.com
             - Name: POSTGRES_PORT
               Value: 5432
             - Name: AWS_S3_BUCKET_NAME
@@ -121,3 +121,13 @@ Resources:
       Protocol: HTTPS
       Certificates:
         - CertificateArn: arn:aws:acm:us-east-1:137318283310:certificate/cf6356d6-bc02-485e-8f76-a15e9fd9a5b4
+
+  WalletVpcLink:
+    DependsOn:
+      - WalletALB
+    Type: AWS::ApiGateway::VpcLink
+    Properties:
+      Name: WalletVpcLink
+      Description: VPC Link for connecting API Gateway to ALB
+      TargetArns:
+        - !GetAtt WalletALB.LoadBalancerArn

@@ -6,9 +6,10 @@ Resources:
       AllocatedStorage: "20"
       DBInstanceClass: db.t3.micro
       Engine: postgres
-      EngineVersion: "15.4"
+      EngineVersion: "16.1"
       MasterUsername: postgres
       MasterUserPassword: base1234
+      PubliclyAccessible: true
       VPCSecurityGroups:
         - sg-0e2d422e107980541
       DBSubnetGroupName: infrabase-dbsubnetgroup-kwwzdyhdu0gt
