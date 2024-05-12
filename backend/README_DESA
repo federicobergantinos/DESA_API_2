@@ -1,0 +1,20 @@
+# Para correr localmente la app
+
+## 1er Paso
+
+Verificar que la base de datos este funcionando localmente. Sino ejecutar este comando
+
+`docker run --name daidb -e POSTGRES_PASSWORD=base1234 -e POSTGRES_DB=daidb -p 5432:5432 -d postgres`
+
+## 2do Paso
+
+- Al igual que instancias de node o react native, es necesario instalar los paquetes usando `npm install`
+- Se requieren setear variables de environment para poder levantar el backend, ejecutando el comando ` source export_env.sh `
+- Para ejecutar el backend, se debe ejecutar el comando `npm run dev` desde dentro de la carpeta de backend, una vez activa a ddbb sino va a a dar error. Cabe aclarar que este comando ya esta configurado para verificar los cambios y actualizar la instancia funcionando.
+
+## 3er Paso
+
+- Al igual que instancias de node o react native, es necesario instalar los paquetes usando `npm install`
+- Para ejecutar el backend, se debe ejecutar el comando `` desde dentro de la carpeta de frontend, tener en cuenta que el front esta configurado para expo pero yo recomiendo probarlo directamente en un telefono android, para poder hacer uso
+- Para iniciar el front, se ejecuta el comando `npx react-native start` y finalmente se selecciona el sistema operativo, para ello se sugiere hacerlo con Android
+- El comando `npx expo prebuild` y `npx react-native run-android --mode=release --verbose` es para hacer una exportación modo realease (version final) del apk para poder probarlo de forma independiente en el telefono o emulador. Primero se requiere ejecutar el prebuild y luego el modo release
