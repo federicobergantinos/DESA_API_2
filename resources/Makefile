@@ -69,31 +69,25 @@ ecr:
 
 # AWS Cloudformation
 cloudformation-create-stack-infra:
-	bash create_stack.sh InfraBase
+	aws cloudformation create-stack --stack-name InfraBase --template-body file://../resources/infra_base.yaml --capabilities CAPABILITY_IAM --region $(AWS_REGION)
 
 cloudformation-delete-stack-infra:
 	aws cloudformation delete-stack --stack-name InfraBase --region $(AWS_REGION)
 	
 cloudformation-create-stack-service:
-	bash create_stack.sh $(PROJECT)
+	aws cloudformation create-stack --stack-name $(PROJECT) --template-body file://../resources/service.yaml --capabilities CAPABILITY_IAM --region $(AWS_REGION)
 
 cloudformation-delete-stack-service:
 	aws cloudformation delete-stack --stack-name $(PROJECT) --region $(AWS_REGION)
 
 cloudformation-create-stack-db:
-	bash create_stack.sh $(PROJECT)-db
-	
+	aws cloudformation create-stack --stack-name $(PROJECT)-db --template-body file://../resources/db.yaml --capabilities CAPABILITY_IAM --region $(AWS_REGION)
+
 cloudformation-delete-stack-db:
 	aws cloudformation delete-stack --stack-name $(PROJECT)-db --region $(AWS_REGION)
-
-cloudformation-create-stack-ec2:
-	bash create_stack.sh $(PROJECT)-ec2
-	
-cloudformation-delete-stack-ec2:
-	aws cloudformation delete-stack --stack-name $(PROJECT)-ec2 --region $(AWS_REGION)
 		
 
 .PHONY: docker-build docker-run docker-stop docker-rm docker-rmi docker-clean docker-rebuild docker-shell docker-compose-up docker-compose-down docker-run-wallet
 .PHONY: ecr-create-repo ecr-login ecr-tag-image ecr-push-image ecr 
-.PHONY: cloudformation-create-stack cloudformation-delete-stack cloudformation-create-stack-service cloudformation-delete-stack-service cloudformation-create-stack-db cloudformation-delete-stack-db cloudformation-create-stack-ec2 cloudformation-delete-stack-ec2
+.PHONY: cloudformation-create-stack cloudformation-delete-stack cloudformation-create-stack-service cloudformation-delete-stack-service cloudformation-create-stack-db cloudformation-delete-stack-db
 .PHONY: assume-role
