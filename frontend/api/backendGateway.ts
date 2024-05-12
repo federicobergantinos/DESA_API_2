@@ -1,12 +1,12 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { createAuthDTO, Credentials } from './authDTO'
+import { CreateAuthDTO, Credentials } from './authDTO'
 import { TransactionDTO } from './TransactionDTO'
 import { ContactDTO, ContactsDTO } from './ContactDTO'
 import { AccountDTO, AccountSummaryDTO } from './AccountDTO'
 
-const api = axios.create({ baseURL: "https://www.wallet-elb.federicobergantinos.com/" });
-// const api = axios.create({ baseURL: 'http://192.168.1.114:8080' })
+// const api = axios.create({ baseURL: "https://www.wallet-elb.federicobergantinos.com/" });
+const api = axios.create({ baseURL: 'http://192.168.1.114:8080' })
 const transactionBaseUrl = '/v1/transactions'
 const usersBaseUrl = '/v1/users'
 const contactsBaseUrl = '/v1/contacts'
@@ -65,7 +65,7 @@ const requests = {
 }
 const authUser = {
   authenticate: (
-    auth: createAuthDTO
+    auth: CreateAuthDTO
   ): Promise<{ response: any; statusCode: number }> =>
     requests.post('/v1/auth', auth),
   refresh: (
