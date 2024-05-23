@@ -1,13 +1,20 @@
-import React, { useContext, useEffect, useState } from 'react'
-import { TouchableOpacity, StyleSheet, Dimensions, Share } from 'react-native'
+import React, { useContext, useState } from 'react'
+import {
+  TouchableOpacity,
+  StyleSheet,
+  Dimensions,
+  Share,
+  Text,
+  Image,
+  View,
+} from 'react-native'
 import { Block, NavBar, theme } from 'galio-framework'
-import { CommonActions, useNavigation } from '@react-navigation/native' // Importa useNavigation de '@react-navigation/native'
+import { CommonActions, useNavigation } from '@react-navigation/native'
 
 import Icon from './Icon'
 import walletTheme from '../constants/Theme'
 import WalletContext from '../navigation/WalletContext'
 import AccountSelector from '../components/AccountSelector'
-import AsyncStorage from '@react-native-async-storage/async-storage'
 
 const { height, width } = Dimensions.get('window')
 
@@ -65,28 +72,11 @@ const Header = ({
     )
   }
 
-  const ProfileButton = ({ isWhite, style }) => {
-    const navigation = useNavigation()
-    return (
-      <TouchableOpacity
-        style={[styles.button, style]}
-        onPress={() => navigation.navigate('Profile')}
-      >
-        <Icon
-          family="Feather"
-          size={20}
-          name="user"
-          color={walletTheme.COLORS[isWhite ? 'WHITE' : 'ICON']}
-        />
-      </TouchableOpacity>
-    )
-  }
-
   const SettingsButton = ({ isWhite, style }) => {
     const navigation = useNavigation()
     return (
       <TouchableOpacity
-        style={[styles.button, style]}
+        style={[styles.settingsButton, style]}
         onPress={() => navigation.navigate('Settings')}
       >
         <Icon
@@ -101,25 +91,61 @@ const Header = ({
 
   const SwitchAccountButton = ({ style }) => (
     <TouchableOpacity
-      style={[styles.button, style]}
+      style={[styles.switchButton, style]}
       onPress={() => setIsAccountSelectorVisible(true)}
     >
-      <Icon
-        family="AntDesign"
-        size={20}
-        name="swap"
-        color={walletTheme.COLORS[white ? 'WHITE' : 'ICON']}
-      />
+      <Text style={styles.switchButtonText}>Billeteras</Text>
     </TouchableOpacity>
   )
 
   const renderLeft = () => {
-    if (title === 'Transaccion') {
-      return () => navigation.replace('Home')
+    if (title === 'Home') {
+      return (
+        <View style={styles.leftContainer}>
+          {renderUserProfile()}
+          <Text style={styles.titleText}>{'Hola ' + user.name + '!'}</Text>
+        </View>
+      )
     } else {
-      return back
-        ? () => navigation.dispatch(CommonActions.goBack())
-        : () => navigation.navigate('Home')
+      return (
+        <TouchableOpacity onPress={renderLeftAction}>
+          <Icon
+            name={back ? 'chevron-left' : 'home'}
+            family="Feather"
+            size={25}
+            color={
+              iconColor ||
+              (white ? walletTheme.COLORS.WHITE : walletTheme.COLORS.ICON)
+            }
+            style={{ marginTop: 2 }}
+          />
+        </TouchableOpacity>
+      )
+    }
+  }
+
+  const renderLeftAction = () => {
+    if (title === 'Transaccion') {
+      navigation.replace('Home')
+    } else {
+      back
+        ? navigation.dispatch(CommonActions.goBack())
+        : navigation.navigate('Home')
+    }
+  }
+
+  const renderUserProfile = () => {
+    if (user.photoUrl) {
+      return (
+        <Image source={{ uri: user.photoUrl }} style={styles.profileImage} />
+      )
+    } else {
+      const initial = user.name.charAt(0).toUpperCase()
+      return (
+        <View style={styles.profilePlaceholder}>
+          <Text style={styles.profilePlaceholderText}>{initial}</Text>
+        </View>
+      )
     }
   }
 
@@ -137,9 +163,6 @@ const Header = ({
             <SwitchAccountButton key="account-switch-button" isWhite={white} />
           )
           components.push(
-            <ProfileButton key="profile-button" isWhite={white} />
-          )
-          components.push(
             <SettingsButton key="settings-button" isWhite={white} />
           )
           break
@@ -151,6 +174,16 @@ const Header = ({
     }
 
     return components
+  }
+
+  const determineTitle = () => {
+    if (title === 'Home') {
+      return ''
+    } else if (title === 'Transaccion') {
+      return ''
+    } else {
+      return title
+    }
   }
 
   const noShadow = ['Search', 'Perfil', 'Home'].includes(title)
@@ -166,28 +199,13 @@ const Header = ({
     <Block style={headerStyles}>
       <NavBar
         back={false}
-        title={title !== 'Transaccion' ? title : ''}
+        title={determineTitle()}
         style={navbarStyles}
         transparent={transparent}
         right={renderRight()}
-        rightStyle={{
-          alignItems: 'center',
-          marginRight: title == 'Home' ? 50 : 0,
-        }}
-        left={
-          <Icon
-            name={back ? 'chevron-left' : 'home'}
-            family="Feather"
-            size={25}
-            onPress={renderLeft()}
-            color={
-              iconColor ||
-              (white ? walletTheme.COLORS.WHITE : walletTheme.COLORS.ICON)
-            }
-            style={{ marginTop: 2 }}
-          />
-        }
-        leftStyle={{ flex: 0.35 }}
+        left={renderLeft()}
+        leftStyle={{ flex: 0 }}
+        rightStyle={{ flex: 0 }}
         titleStyle={[
           styles.title,
           { color: walletTheme.COLORS[white ? 'WHITE' : 'HEADER'] },
@@ -210,6 +228,24 @@ const styles = StyleSheet.create({
   button: {
     padding: 12,
     position: 'relative',
+  },
+  switchButton: {
+    backgroundColor: walletTheme.COLORS.VIOLET,
+    borderRadius: 20,
+    paddingVertical: 8,
+    marginRight: 10,
+    paddingHorizontal: 16,
+  },
+  switchButtonText: {
+    color: walletTheme.COLORS.WHITE,
+    fontSize: 14,
+    width: 60,
+  },
+  settingsButton: {
+    backgroundColor: walletTheme.COLORS.VIOLET,
+    borderRadius: 20,
+    paddingVertical: 8,
+    paddingHorizontal: 8,
   },
   title: {
     width: '100%',
@@ -237,6 +273,35 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 3,
     borderColor: walletTheme.COLORS.BORDER,
+  },
+  profileImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 10,
+  },
+  profilePlaceholder: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: walletTheme.COLORS.VIOLET,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  profilePlaceholderText: {
+    color: walletTheme.COLORS.WHITE,
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  leftContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  titleText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: walletTheme.COLORS.WHITE,
   },
 })
 
