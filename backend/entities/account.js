@@ -24,6 +24,10 @@ const Account = sequelize.define('accounts', {
     type: DataTypes.STRING,
     allowNull: false,
   },
+  accountCurrency: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
   userId: {
     type: DataTypes.INTEGER,
     allowNull: false,
