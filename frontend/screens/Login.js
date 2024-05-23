@@ -180,16 +180,16 @@ const Login = () => {
                           }}
                         >
                           <Image
-                            source={require('../assets/imgs/g_icon.png')}
+                            source={require('../assets/imgs/x_icon.png')}
                             style={{
-                              height: 30,
-                              width: 30,
+                              height: 17,
+                              width: 17,
                               marginTop: 2,
                               marginRight: 5,
                             }}
                           />
                           <Text style={styles.socialTextButtons}>
-                            Continue with Google
+                            Continue with X
                           </Text>
                         </Block>
                       </Button>
