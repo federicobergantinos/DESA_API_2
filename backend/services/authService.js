@@ -11,8 +11,8 @@ const createAuthTokens = (user) => {
   const payload = { id: user.id, email: user.email }
   const accessOptions = { expiresIn: '1h' }
   const refreshOptions = { expiresIn: '30d' }
-  const accessToken = jwt.sign(payload, process.env.CODE, accessOptions)
-  const refreshToken = jwt.sign(payload, process.env.CODE, refreshOptions)
+  const accessToken = jwt.sign(payload, "superSecret", accessOptions)
+  const refreshToken = jwt.sign(payload, "superSecret", refreshOptions)
   saveInDb(accessToken, refreshToken, user.id)
   return { refreshToken, accessToken }
 }

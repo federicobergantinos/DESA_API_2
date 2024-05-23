@@ -67,9 +67,12 @@ const Login = () => {
   const authenticate = async () => {
     try {
       setIsLoading(true)
-      const userInfo = await GoogleSignin.signIn()
-      const { idToken, user } = userInfo
+      let userInfo = await GoogleSignin.signIn();
+      
+      const { idToken, user } = userInfo;
+      user.surname = user.surname ? user.surname : '';
 
+      console.log("IDTOKEN", idToken);
       const { response, statusCode } = await backendApi.authUser.authenticate({
         token: idToken,
       })

@@ -64,7 +64,7 @@ const getAccountsByUserId = async (req, res) => {
       // Devolver la lista de objetos.
       return sendResponse(res, 200, accountDetails)
     } else {
-      return es
+      return res
         .status(404)
         .json({ msg: 'No accounts found for the given user ID' })
     }

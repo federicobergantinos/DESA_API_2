@@ -36,13 +36,15 @@ const authService = {
       await AsyncStorage.setItem('refresh', refreshToken)
       await AsyncStorage.setItem('userId', JSON.stringify(userId))
       // Ahora, hacemos el request para obtener los datos del usuario por ID
+      //const statusCode = 200;
       const { response: userData, statusCode: userStatusCode } =
         await backendApi.usersGateway.getUser(userId)
-
+        
       // Aseguramos que la solicitud fue exitosa
       if (userStatusCode === 200) {
+        console.log("ENTERED 200");
         const { response: accountData, statusCode: accountStatusCode } =
-          await backendApi.accountGateway.getAccountByUserId(userId)
+          await backendApi.accountGateway.getAccountByUserId(1) //userId
         if (accountStatusCode === 200) {
           updateUserAndAccount(userData.user, accountData[0])
           navigation.replace('Home')

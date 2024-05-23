@@ -5,9 +5,9 @@ const logger = createLogger(__filename)
 
 const AWS = require('aws-sdk')
 AWS.config.update({
-  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  region: process.env.AWS_REGION,
+  accessKeyId: undefined,
+  secretAccessKey: undefined,
+  region: "us-east-1",
 })
 const s3 = new AWS.S3()
 
@@ -26,7 +26,7 @@ const uploadBase64ImageToS3 = async (base64Image, filename) => {
     base64Image.match(/^data:(image\/\w+);base64,/)?.[1] || 'image/jpeg'
 
   const params = {
-    Bucket: process.env.AWS_S3_BUCKET_NAME,
+    Bucket: "dis-desa-web-dev",
     Key: `${Date.now()}_${filename}`,
     Body: buffer,
     ContentType: contentType,

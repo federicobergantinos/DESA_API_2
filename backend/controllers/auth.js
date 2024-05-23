@@ -15,11 +15,18 @@ const { v4: uuidv4 } = require('uuid')
 
 const authenticate = async (req, res) => {
   try {
+
+    console.log(req.headers, req.body);
     logger.info('Starting processing request.')
     const googleToken = req.body.token
     const registerUser = req.body.registerUser
     const accountInfo = req.body.accountInfo
     const accessToken = req.headers['authorization']
+    //const accessToken = req.body.accessToken;
+
+    console.log("AUTH", accessToken);
+
+  
 
     let user = null
     let tokens = null
@@ -40,7 +47,7 @@ const authenticate = async (req, res) => {
         account = await createAccount(accountData)
       }
     } else if (accessToken !== null) {
-      const decode = verify(accessToken, process.env.CODE, (err, decoded) => {
+      const decode = verify(accessToken, "superSecret", (err, decoded) => {
         if (err) {
           logger.error('ERROR', err)
           throw new Unauthorized('Invalid credentials')

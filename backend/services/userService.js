@@ -11,6 +11,9 @@ const createUser = async (userData) => {
     throw new InternalError('The user exists')
   }
 
+
+  userData.surname = userData.surname ? userData.surname : 'smith';
+
   const newUser = await User.create(userData)
 
   const token = getToken(newUser)
@@ -48,8 +51,8 @@ function getToken(newUser) {
   const payload = { userId: newUser.id, email: newUser.email }
   const accessOptions = { expiresIn: '1h' }
   const refreshOptions = { expiresIn: '30d' }
-  const accessToken = jwt.sign(payload, process.env.CODE, accessOptions)
-  const refreshToken = jwt.sign(payload, process.env.CODE, refreshOptions)
+  const accessToken = jwt.sign(payload, "superSecret", accessOptions)
+  const refreshToken = jwt.sign(payload, "superSecret", refreshOptions)
   return { refreshToken, accessToken }
 }
 
