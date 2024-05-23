@@ -43,6 +43,7 @@ const AccountSelector = ({ isVisible, onClose, onSelectAccount }) => {
     >
       <View style={styles.centeredView}>
         <View style={styles.modalView}>
+          <Text style={styles.modalTitle}>Selecciona tu billetera</Text>
           <FlatList
             data={accounts}
             keyExtractor={(item) => item.accountId.toString()}
@@ -55,7 +56,7 @@ const AccountSelector = ({ isVisible, onClose, onSelectAccount }) => {
                 style={styles.accountListItem}
               >
                 <Text style={styles.accountListItemText}>
-                  {item.accountNumber} ({item.accountType})
+                  Billetera de {item.accountType} ({item.accountCurrency})
                 </Text>
               </TouchableOpacity>
             )}
@@ -71,14 +72,13 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 20,
+    backgroundColor: 'rgba(0,0,0,0.5)',
   },
   modalView: {
     width: width * 0.8,
-    margin: 20,
     backgroundColor: 'white',
     borderRadius: 20,
-    padding: 35,
+    padding: 20,
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: {
@@ -89,12 +89,24 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 5,
   },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 15,
+    textAlign: 'center',
+    color: '#4F3C75',
+  },
   accountListItem: {
-    padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#cccccc',
+    backgroundColor: '#4F3C75',
+    borderRadius: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    marginVertical: 5,
+    width: '100%',
+    alignItems: 'center',
   },
   accountListItemText: {
+    color: 'white',
     fontSize: 16,
   },
 })

@@ -58,6 +58,7 @@ const getAccountsByUserId = async (req, res) => {
         accountId: account.id,
         accountNumber: account.accountNumber,
         accountType: account.accountType,
+        accountCurrency: account.accountCurrency,
         // Puedes agregar más campos aquí según sea necesario.
       }))
 
