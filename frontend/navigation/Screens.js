@@ -10,9 +10,12 @@ import React from 'react'
 import Login from '../screens/Login'
 import Signup from '../screens/Signup'
 import Transfer from '../screens/Transfer'
-import Others from '../screens/Others'
 import AccountDetails from '../screens/AccountDetails'
-import Analytics from '../screens/Analytics'
+import BuyCrypto from '../screens/BuyCrypto'
+import SellCrypto from '../screens/SellCrypto'
+import MissionsStore from '../screens/MissionsStore'
+import Missions from '../screens/Missions'
+import Benefits from '../screens/Benefits'
 // settings
 import Settings from '../screens/Settings'
 import { createStackNavigator } from '@react-navigation/stack'
@@ -69,15 +72,83 @@ function HomeStack(props) {
         }}
       />
       <Stack.Screen
-        name="Analytics"
-        component={Analytics}
+        name="Missions"
+        component={Missions}
         options={{
           header: ({ navigation, scene }) => (
             <Header
               transparent
               white
               back
-              title="Analytics"
+              title="Misiones"
+              navigation={navigation}
+              scene={scene}
+            />
+          ),
+          cardStyle: { backgroundColor: '#F8F9FE' },
+        }}
+      />
+      <Stack.Screen
+        name="Benefits"
+        component={Benefits}
+        options={{
+          header: ({ navigation, scene }) => (
+            <Header
+              transparent
+              white
+              back
+              title="Beneficios"
+              navigation={navigation}
+              scene={scene}
+            />
+          ),
+          cardStyle: { backgroundColor: '#F8F9FE' },
+        }}
+      />
+      <Stack.Screen
+        name="MissionsStore"
+        component={MissionsStore}
+        options={{
+          header: ({ navigation, scene }) => (
+            <Header
+              transparent
+              white
+              back
+              title="Store"
+              navigation={navigation}
+              scene={scene}
+            />
+          ),
+          cardStyle: { backgroundColor: '#F8F9FE' },
+        }}
+      />
+      <Stack.Screen
+        name="BuyCrypto"
+        component={BuyCrypto}
+        options={{
+          header: ({ navigation, scene }) => (
+            <Header
+              transparent
+              white
+              back
+              title="Comprar"
+              navigation={navigation}
+              scene={scene}
+            />
+          ),
+          cardStyle: { backgroundColor: '#F8F9FE' },
+        }}
+      />
+      <Stack.Screen
+        name="SellCrypto"
+        component={SellCrypto}
+        options={{
+          header: ({ navigation, scene }) => (
+            <Header
+              transparent
+              white
+              back
+              title="Vender"
               navigation={navigation}
               scene={scene}
             />
@@ -95,23 +166,6 @@ function HomeStack(props) {
               white
               back
               title="Transferencias"
-              navigation={navigation}
-              scene={scene}
-            />
-          ),
-          cardStyle: { backgroundColor: '#F8F9FE' },
-        }}
-      />
-      <Stack.Screen
-        name="Others"
-        component={Others}
-        options={{
-          header: ({ navigation, scene }) => (
-            <Header
-              transparent
-              white
-              back
-              title="Otros"
               navigation={navigation}
               scene={scene}
             />
