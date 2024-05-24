@@ -1,4 +1,5 @@
 const Account = require('../entities/account')
+const User = require('../entities/user')
 const NotFound = require('../Errors/NotFound')
 const createLogger = require('../configurations/Logger')
 const logger = createLogger(__filename)
@@ -17,7 +18,7 @@ const createAccount = async (accountData) => {
 
 const findAccountByAccountNumber = async (accountNumber) => {
   const account = await Account.findOne({
-    where: { accountNumber: '000123456789' },
+    where: { accountNumber: accountNumber },
     include: [{ model: User, as: 'user' }],
   })
   return account

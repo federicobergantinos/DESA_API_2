@@ -208,7 +208,7 @@ const Signup = ({ route }) => {
               setIsModalVisible(false)
             }}
             query={{
-              key: 'API_KEY',
+              key: 'AIzaSyAZD3DtG2EtBZrau7jzlCxvU2E7TuzGGXA',
               language: 'es',
             }}
             styles={{
