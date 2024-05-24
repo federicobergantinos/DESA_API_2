@@ -55,6 +55,23 @@ function HomeStack(props) {
         }}
       />
       <Stack.Screen
+        name="Benefits"
+        component={Benefits}
+        options={{
+          header: ({ navigation, scene }) => (
+            <Header
+              transparent
+              white
+              back
+              title="Beneficios"
+              navigation={navigation}
+              scene={scene}
+            />
+          ),
+          cardStyle: { backgroundColor: '#F8F9FE' },
+        }}
+      />
+      <Stack.Screen
         name="Transaction"
         component={Transaction}
         options={{
@@ -81,23 +98,6 @@ function HomeStack(props) {
               white
               back
               title="Misiones"
-              navigation={navigation}
-              scene={scene}
-            />
-          ),
-          cardStyle: { backgroundColor: '#F8F9FE' },
-        }}
-      />
-      <Stack.Screen
-        name="Benefits"
-        component={Benefits}
-        options={{
-          header: ({ navigation, scene }) => (
-            <Header
-              transparent
-              white
-              back
-              title="Beneficios"
               navigation={navigation}
               scene={scene}
             />

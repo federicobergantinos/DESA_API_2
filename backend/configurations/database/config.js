@@ -4,8 +4,14 @@ const {
   Transaction,
   Media,
   Account,
+  Contact,
+  Mission, // Asegúrate de importar el modelo Mission
 } = require('../../entities/associateModels')
-const { populateTransactions, populateUser } = require('./initialData')
+const {
+  populateTransactions,
+  populateUser,
+  populateMissions,
+} = require('./initialData') // Agrega populateMissions
 const createLogger = require('../Logger')
 const logger = createLogger(__filename)
 
@@ -16,6 +22,7 @@ const dbConnection = async () => {
 
     const usersCount = await User.count()
     const transactionsCount = await Transaction.count()
+    const missionsCount = await Mission.count() // Cuenta las misiones
 
     if (usersCount === 0) {
       await populateUser()
@@ -23,6 +30,10 @@ const dbConnection = async () => {
 
     if (transactionsCount === 0) {
       await populateTransactions()
+    }
+
+    if (missionsCount === 0) {
+      await populateMissions()
     }
 
     logger.info('Database online')
