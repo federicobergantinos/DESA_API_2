@@ -11,7 +11,7 @@ import { theme, Block } from 'galio-framework'
 import { Images, walletTheme } from '../constants'
 const { width, height } = Dimensions.get('screen')
 
-const Analytics = () => {
+const Buy = () => {
   // Creating separate cards for each detail
   const Card = ({ title, children }) => (
     <View style={styles.detailCard}>
@@ -30,16 +30,16 @@ const Analytics = () => {
         >
           {
             <>
-              {/* Analytics1 */}
-              <Card title="Analytics1">
-                <Text style={styles.title}>Analytics1</Text>
-                <Text style={styles.description}>Analytics1</Text>
+              {/* Buy1 */}
+              <Card title="Buy1">
+                <Text style={styles.title}>Buy1</Text>
+                <Text style={styles.description}>Buy1</Text>
               </Card>
 
-              {/* Analytics2 */}
-              <Card title="Analytics2">
-                <Text style={styles.title}>Analytics2</Text>
-                <Text style={styles.description}>Analytics2</Text>
+              {/* Buy2 */}
+              <Card title="Buy2">
+                <Text style={styles.title}>Buy2</Text>
+                <Text style={styles.description}>Buy2</Text>
               </Card>
             </>
           }
@@ -88,4 +88,4 @@ const styles = StyleSheet.create({
   },
 })
 
-export default Analytics
+export default Buy

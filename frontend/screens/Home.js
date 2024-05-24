@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useContext } from 'react'
 import {
   FlatList,
   View,
   ImageBackground,
   TouchableOpacity,
+  Linking,
   RefreshControl,
 } from 'react-native'
 import { Block, Text } from 'galio-framework'
@@ -14,10 +15,12 @@ import {
   styles,
 } from './Home/index.js'
 import Icon from '../components/Icon'
+import WalletContext from '../navigation/WalletContext'
 
 const Home = ({ navigation }) => {
   const [showBalance, setShowBalance] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
+  const { selectedAccount } = useContext(WalletContext)
   const toggleBalanceVisibility = () => setShowBalance(!showBalance)
 
   const onRefresh = () => {
@@ -43,7 +46,19 @@ const Home = ({ navigation }) => {
     )
   }
 
+  const handleOpenURL = async () => {
+    const url = 'https://x.com/'
+    const supported = await Linking.canOpenURL(url)
+
+    if (supported) {
+      await Linking.openURL(url)
+    } else {
+      console.log(`Don't know how to open this URL: ${url}`)
+    }
+  }
+
   const renderButtons = () => {
+    const isXCN = selectedAccount.accountCurrency === 'XCN'
     return (
       <View style={styles.buttonsRow}>
         <ActionButton
@@ -63,27 +78,68 @@ const Home = ({ navigation }) => {
           }}
         />
         <ActionButton
-          icon="barschart"
-          family="AntDesign"
-          title="Analytics"
+          icon={isXCN ? 'attach-money' : 'attach-money'}
+          family="MaterialIcons"
+          title={isXCN ? 'Vender' : 'Comprar'}
           onPress={() => {
-            navigation.navigate('Analytics')
+            navigation.navigate(isXCN ? 'SellCrypto' : 'BuyCrypto')
           }}
         />
         <ActionButton
-          icon="receipt"
-          family="FontAwesome5"
-          title="Otros"
+          icon="twitter"
+          family="AntDesign"
+          title="Twitter"
           onPress={() => {
-            navigation.navigate('Others')
+            handleOpenURL()
           }}
         />
       </View>
     )
   }
 
-  updateState = (newState) => {
-    this.setState(newState)
+  const AccessBenefits = () => {
+    return (
+      <View style={styles.benefitsContainer}>
+        <Text style={styles.benefitsTitle}>Accede a más beneficios</Text>
+        <TouchableOpacity
+          style={styles.benefitsButton}
+          onPress={() => {
+            navigation.navigate('Benefits')
+          }}
+        >
+          <Text style={styles.benefitsButtonText}>Utilizar XCoin</Text>
+        </TouchableOpacity>
+      </View>
+    )
+  }
+
+  const TotalXWC = () => {
+    return (
+      <View style={styles.totalXWCContainer}>
+        <View style={styles.totalXWCRow}>
+          <Text style={styles.totalXWCTitle}>Tienes un total:</Text>
+          <Text style={styles.totalXWCAmount}>400 XWC</Text>
+        </View>
+        <View style={styles.totalXWCButtons}>
+          <TouchableOpacity
+            style={styles.totalXWCButton}
+            onPress={() => {
+              navigation.navigate('Missions')
+            }}
+          >
+            <Text style={styles.totalXWCButtonText}>Obtener más XWC</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.totalXWCButton}
+            onPress={() => {
+              navigation.navigate('MissionsStore')
+            }}
+          >
+            <Text style={styles.totalXWCButtonText}>Canjear XWC</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    )
   }
 
   const sections = [
@@ -98,6 +154,12 @@ const Home = ({ navigation }) => {
       ),
     },
     { key: 'buttons', render: renderButtons },
+    ...(selectedAccount.accountCurrency === 'XCN'
+      ? [
+          { key: 'accessBenefits', render: AccessBenefits },
+          { key: 'totalXWC', render: TotalXWC },
+        ]
+      : []),
     {
       key: 'transactionsDetail',
       render: () => (
@@ -131,6 +193,10 @@ const Home = ({ navigation }) => {
                   )
                 case 'buttons':
                   return renderButtons()
+                case 'accessBenefits':
+                  return AccessBenefits()
+                case 'totalXWC':
+                  return TotalXWC()
                 case 'transactionsDetail':
                   return (
                     <RenderTransactionsDetail
