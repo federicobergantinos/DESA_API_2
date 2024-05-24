@@ -9,10 +9,12 @@ const logger = createLogger(__filename)
 
 const create = async (req, res) => {
   try {
+    console.log(req.body)
     const transactionData = {
       ...req.body,
     }
     const transactionId = await createTransaction(transactionData)
+    console.log(transactionId)
 
     return sendResponse(res, 201, {
       id: transactionId,

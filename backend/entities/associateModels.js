@@ -4,6 +4,7 @@ const Media = require('./media')
 const Authorization = require('./auth')
 const Account = require('./account')
 const Contact = require('./contact')
+const Mission = require('./mission') // Importa el nuevo modelo de Mission
 
 // Relaciones
 Authorization.belongsTo(User, { as: 'user', foreignKey: 'userId' })
@@ -11,6 +12,9 @@ User.hasMany(Account, { as: 'account', foreignKey: 'userId' }) // Un usuario pue
 Account.belongsTo(User, { as: 'user', foreignKey: 'userId' }) // Una cuenta pertenece a un usuario
 User.hasMany(Contact, { as: 'contact', foreignKey: 'userId' }) // Un usuario puede tener varios contactos
 Contact.belongsTo(User, { as: 'user', foreignKey: 'userId' }) // Un contacto pertenece a un usuario
+
+User.hasMany(Mission, { as: 'missions', foreignKey: 'userId' }) // Un usuario puede tener varias misiones
+Mission.belongsTo(User, { as: 'user', foreignKey: 'userId' }) // Una misión pertenece a un usuario
 
 // Opcional, dependiendo de cómo quieras acceder a los datos relacionados
 Transaction.belongsTo(Account, {
@@ -27,4 +31,5 @@ module.exports = {
   Transaction,
   Account,
   Contact,
+  Mission,
 }

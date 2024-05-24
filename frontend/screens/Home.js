@@ -86,9 +86,9 @@ const Home = ({ navigation }) => {
           }}
         />
         <ActionButton
-          icon="twitter"
-          family="AntDesign"
-          title="Twitter"
+          icon="x-twitter"
+          family="WalletExtra"
+          title="Ingresa"
           onPress={() => {
             handleOpenURL()
           }}
