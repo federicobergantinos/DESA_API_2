@@ -40,14 +40,14 @@ const MissionsStore = () => {
     >
       <Text style={styles.exchangeCardText}>{xwc + ' XWC'}</Text>
       <Text style={styles.exchangeCardText}>{'='}</Text>
-      <Text style={styles.exchangeCardText}>{xcoin + ' Xcoin'}</Text>
+      <Text style={styles.exchangeCardText}>{xcoin + ' XCN'}</Text>
     </TouchableOpacity>
   )
 
   const handleExchange = (xwc, xcoin) => {
     Alert.alert(
       'Confirmar Transacción',
-      `¿Estás seguro de que deseas intercambiar ${xwc} XWC por ${xcoin} Xcoin?`,
+      `¿Estás seguro de que deseas intercambiar ${xwc} XWC por ${xcoin} XCN?`,
       [
         {
           text: 'Cancelar',
@@ -57,7 +57,7 @@ const MissionsStore = () => {
           text: 'Aceptar',
           onPress: () => {
             // Aquí puedes manejar la lógica de intercambio
-            console.log(`Intercambiando ${xwc} XWC por ${xcoin} Xcoin`)
+            console.log(`Intercambiando ${xwc} XWC por ${xcoin} XCN`)
           },
         },
       ],
@@ -81,7 +81,7 @@ const MissionsStore = () => {
               </Card>
 
               <MiddleText>
-                Canjea tus XWC por Xcoin para tener en tu cuenta y acceder a
+                Canjea tus XWC por XCN para tener en tu cuenta y acceder a
                 beneficios increibles
               </MiddleText>
 
