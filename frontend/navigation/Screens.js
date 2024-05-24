@@ -16,6 +16,7 @@ import SellCrypto from '../screens/SellCrypto'
 import MissionsStore from '../screens/MissionsStore'
 import Missions from '../screens/Missions'
 import Benefits from '../screens/Benefits'
+import FAQs from '../screens/FAQs'
 // settings
 import Settings from '../screens/Settings'
 import { createStackNavigator } from '@react-navigation/stack'
@@ -39,6 +40,23 @@ function HomeStack(props) {
         }}
       />
       <Stack.Screen
+        name="Signup"
+        component={Signup}
+        options={{
+          header: ({ navigation, scene }) => (
+            <Header
+              transparent
+              white
+              back
+              title="Registro"
+              navigation={navigation}
+              scene={scene}
+            />
+          ),
+          cardStyle: { backgroundColor: '#F8F9FE' },
+        }}
+      />
+      <Stack.Screen
         name="Home"
         component={Home}
         options={{
@@ -47,6 +65,23 @@ function HomeStack(props) {
               transparent
               white
               title="Home"
+              navigation={navigation}
+              scene={scene}
+            />
+          ),
+          cardStyle: { backgroundColor: '#F8F9FE' },
+        }}
+      />
+      <Stack.Screen
+        name="Benefits"
+        component={Benefits}
+        options={{
+          header: ({ navigation, scene }) => (
+            <Header
+              transparent
+              white
+              back
+              title="Beneficios"
               navigation={navigation}
               scene={scene}
             />
@@ -81,23 +116,6 @@ function HomeStack(props) {
               white
               back
               title="Misiones"
-              navigation={navigation}
-              scene={scene}
-            />
-          ),
-          cardStyle: { backgroundColor: '#F8F9FE' },
-        }}
-      />
-      <Stack.Screen
-        name="Benefits"
-        component={Benefits}
-        options={{
-          header: ({ navigation, scene }) => (
-            <Header
-              transparent
-              white
-              back
-              title="Beneficios"
               navigation={navigation}
               scene={scene}
             />
@@ -174,23 +192,6 @@ function HomeStack(props) {
         }}
       />
       <Stack.Screen
-        name="Signup"
-        component={Signup}
-        options={{
-          header: ({ navigation, scene }) => (
-            <Header
-              transparent
-              white
-              back
-              title="Registro"
-              navigation={navigation}
-              scene={scene}
-            />
-          ),
-          cardStyle: { backgroundColor: '#F8F9FE' },
-        }}
-      />
-      <Stack.Screen
         name="AccountDetails"
         component={AccountDetails}
         options={{
@@ -213,7 +214,25 @@ function HomeStack(props) {
             <Header
               transparent
               back
+              white
               title="Perfil"
+              navigation={navigation}
+              scene={scene}
+            />
+          ),
+          cardStyle: { backgroundColor: '#FFFFFF' },
+        }}
+      />
+      <Stack.Screen
+        name="FAQs"
+        component={FAQs}
+        options={{
+          header: ({ navigation, scene }) => (
+            <Header
+              transparent
+              back
+              white
+              title="FAQs"
               navigation={navigation}
               scene={scene}
             />
