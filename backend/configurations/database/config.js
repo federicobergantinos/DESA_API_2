@@ -18,7 +18,8 @@ const logger = createLogger(__filename)
 const dbConnection = async () => {
   try {
     await sequelize.authenticate()
-    await sequelize.sync({ force: true })
+    await sequelize.sync()
+    // await sequelize.sync({ force: true })
 
     const usersCount = await User.count()
     const transactionsCount = await Transaction.count()

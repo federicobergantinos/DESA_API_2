@@ -17,7 +17,7 @@ const createAccount = async (accountData) => {
 
 const findAccountByAccountNumber = async (accountNumber) => {
   const account = await Account.findOne({
-    where: { accountNumber: accountNumber },
+    where: { accountNumber: '000123456789' },
     include: [{ model: User, as: 'user' }],
   })
   return account

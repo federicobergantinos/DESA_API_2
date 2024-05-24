@@ -40,6 +40,23 @@ function HomeStack(props) {
         }}
       />
       <Stack.Screen
+        name="Signup"
+        component={Signup}
+        options={{
+          header: ({ navigation, scene }) => (
+            <Header
+              transparent
+              white
+              back
+              title="Registro"
+              navigation={navigation}
+              scene={scene}
+            />
+          ),
+          cardStyle: { backgroundColor: '#F8F9FE' },
+        }}
+      />
+      <Stack.Screen
         name="Home"
         component={Home}
         options={{
@@ -167,23 +184,6 @@ function HomeStack(props) {
               white
               back
               title="Transferencias"
-              navigation={navigation}
-              scene={scene}
-            />
-          ),
-          cardStyle: { backgroundColor: '#F8F9FE' },
-        }}
-      />
-      <Stack.Screen
-        name="Signup"
-        component={Signup}
-        options={{
-          header: ({ navigation, scene }) => (
-            <Header
-              transparent
-              white
-              back
-              title="Registro"
               navigation={navigation}
               scene={scene}
             />
