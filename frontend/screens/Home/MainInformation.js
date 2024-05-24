@@ -28,8 +28,9 @@ const RenderMainInformation = ({
 
         // Fetch USD value if the currency is XCN
         if (selectedAccount.accountCurrency === 'XCN') {
-          const { response: usdResult, usdStatusCode } =
-            await backendApi.transactionsGateway.convertToUSD(formattedBalance)
+          // const { response: usdResult, usdStatusCode } =
+          //   await backendApi.transactionsGateway.convertToUSD(formattedBalance)
+          const usdResult = 0.0
           setUsdValue(parseFloat(usdResult).toFixed(2))
         }
       } catch (error) {
