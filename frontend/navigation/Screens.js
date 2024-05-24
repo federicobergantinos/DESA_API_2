@@ -16,6 +16,7 @@ import SellCrypto from '../screens/SellCrypto'
 import MissionsStore from '../screens/MissionsStore'
 import Missions from '../screens/Missions'
 import Benefits from '../screens/Benefits'
+import FAQs from '../screens/FAQs'
 // settings
 import Settings from '../screens/Settings'
 import { createStackNavigator } from '@react-navigation/stack'
@@ -213,7 +214,25 @@ function HomeStack(props) {
             <Header
               transparent
               back
+              white
               title="Perfil"
+              navigation={navigation}
+              scene={scene}
+            />
+          ),
+          cardStyle: { backgroundColor: '#FFFFFF' },
+        }}
+      />
+      <Stack.Screen
+        name="FAQs"
+        component={FAQs}
+        options={{
+          header: ({ navigation, scene }) => (
+            <Header
+              transparent
+              back
+              white
+              title="FAQs"
               navigation={navigation}
               scene={scene}
             />
