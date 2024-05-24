@@ -13,6 +13,7 @@ const RenderMainInformation = ({
   refreshing,
 }) => {
   const [balance, setBalance] = useState(0)
+  const [usdValue, setUsdValue] = useState(0)
   const { user, selectedAccount } = useContext(WalletContext)
 
   useEffect(() => {
@@ -24,6 +25,13 @@ const RenderMainInformation = ({
           )
         const formattedBalance = parseFloat(balanceResult).toFixed(2)
         setBalance(formattedBalance)
+
+        // Fetch USD value if the currency is XCN
+        if (selectedAccount.accountCurrency === 'XCN') {
+          const { response: usdResult, usdStatusCode } =
+            await backendApi.transactionsGateway.convertToUSD(formattedBalance)
+          setUsdValue(parseFloat(usdResult).toFixed(2))
+        }
       } catch (error) {
         console.error('Error fetching balance:', error)
       }
@@ -32,6 +40,7 @@ const RenderMainInformation = ({
     // Si refreshing es true, reinicia los estados relevantes antes de obtener los datos
     if (refreshing) {
       setBalance(0) // Reinicia el balance
+      setUsdValue(0) // Reinicia el valor en USD
     }
 
     fetchBalance()
@@ -47,8 +56,13 @@ const RenderMainInformation = ({
         Balance | Cuenta: ...{lastFourDigits}
       </Text>
       <Text style={styles.amountText}>
-        {showBalance ? `${balance} USD` : '***'}
+        {showBalance ? `${balance} ${selectedAccount.accountCurrency}` : '***'}
       </Text>
+      {selectedAccount.accountCurrency === 'XCN' && (
+        <Text style={styles.usdValueText}>
+          ≈ {showBalance ? `${usdValue} USD` : '***'}
+        </Text>
+      )}
       <TouchableOpacity
         onPress={toggleBalanceVisibility}
         style={styles.visibilityIcon}
