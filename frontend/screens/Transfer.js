@@ -419,8 +419,8 @@ const Transfer = () => {
         <View style={{ width: width, ...styles.scrollViewContent }}>
           {
             <>
-              <AmountInputCard />
               <ContactsCard />
+              <AmountInputCard />
 
               {/* Botones */}
               <View style={styles.buttonContainer}>

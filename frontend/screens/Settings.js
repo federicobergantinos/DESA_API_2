@@ -134,7 +134,7 @@ export function Settings() {
               <Text style={styles.vincularText}>Vincular con X</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={editProfile} style={styles.saveButton}>
-              <Text style={styles.saveButtonText}>Save</Text>
+              <Text style={styles.saveButtonText}>Guardar</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>

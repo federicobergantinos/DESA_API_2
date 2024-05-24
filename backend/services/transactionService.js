@@ -14,7 +14,6 @@ const createTransaction = async (transactionData) => {
   if (account !== null) {
     throw new Error('Invalid Account')
   }
-  console.log(account)
 
   const userName = account.user
     ? `${account.user.name} ${account.user.surname}`.trim()
