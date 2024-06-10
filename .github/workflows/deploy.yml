@@ -1,6 +1,9 @@
 name: Deploy to AWS ECS
 
 on:
+  pull_request:
+    branches:
+      - develop
   issue_comment:
     types: [created]
 
@@ -9,41 +12,37 @@ jobs:
     if: |
       github.event.issue.pull_request &&
       contains(github.event.comment.body, 'DEPLOY') &&
-      startsWith(github.event.issue.pull_request.base.ref, 'develop')
+      github.event.issue.pull_request.base.ref == 'develop'
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+      - name: Add SSH Key
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v1
-
-      - name: Log in to Amazon ECR
-        id: ecr-login
-        uses: aws-actions/amazon-ecr-login@v1
-
-      - name: Build, tag, and push Docker image
+      - name: Trigger Deployment on EC2
         env:
+          EC2_USER: ec2-user
+          EC2_HOST: ${{ secrets.EC2_HOST }}
           AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
           PROJECT: wallet-serving
         run: |
-          docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 \
-            -t ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ env.PROJECT }}:latest \
-            ../backend/ --push
+          ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST 'bash -s' <<'EOF'
+            # Install Git
+            sudo yum update -y
+            sudo yum install -y git
 
-      - name: Update ECS service with new image
-        env:
-          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-          PROJECT: wallet-serving
-          CLUSTER_NAME: InfraBase-ECSCluster-f3Ia4koRrIVC
-          SERVICE_NAME: wallet-serving-WalletECSService-gTpShkuCX8c2
-        run: |
-          aws ecs update-service --cluster $CLUSTER_NAME \
-            --service $SERVICE_NAME \
-            --force-new-deployment
+            # Clone the repository
+            cd DESA_API_2/ || exit 1
+            git pull origin develop
+
+            # Build and run the Docker image
+            cd DESA_API_2/backend
+            docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$PROJECT:latest . --push
+            docker run --env-file .env --name $PROJECT-container -it --rm -p 8080:8080 $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$PROJECT:latest
+          EOF
