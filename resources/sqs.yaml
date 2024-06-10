@@ -1,0 +1,116 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Template para crear colas de SQS en AWS con acceso público
+
+Resources:
+  CoreBancarioQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: core_bancario_queue
+      VisibilityTimeout: 30
+
+  CryptoQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: crypto_queue
+      VisibilityTimeout: 30
+
+  InHouseQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: inhouse_queue
+      VisibilityTimeout: 30
+
+  WalletServiceQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: wallet_service_queue
+      VisibilityTimeout: 30
+
+  CoreBancarioQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues:
+        - !Ref CoreBancarioQueue
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal: "*"
+            Action:
+              - "SQS:SendMessage"
+              - "SQS:ReceiveMessage"
+              - "SQS:DeleteMessage"
+              - "SQS:GetQueueUrl"
+              - "SQS:GetQueueAttributes"
+            Resource: !GetAtt CoreBancarioQueue.Arn
+
+  CryptoQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues:
+        - !Ref CryptoQueue
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal: "*"
+            Action:
+              - "SQS:SendMessage"
+              - "SQS:ReceiveMessage"
+              - "SQS:DeleteMessage"
+              - "SQS:GetQueueUrl"
+              - "SQS:GetQueueAttributes"
+            Resource: !GetAtt CryptoQueue.Arn
+
+  InHouseQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues:
+        - !Ref InHouseQueue
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal: "*"
+            Action:
+              - "SQS:SendMessage"
+              - "SQS:ReceiveMessage"
+              - "SQS:DeleteMessage"
+              - "SQS:GetQueueUrl"
+              - "SQS:GetQueueAttributes"
+            Resource: !GetAtt InHouseQueue.Arn
+
+  WalletServiceQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues:
+        - !Ref WalletServiceQueue
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal: "*"
+            Action:
+              - "SQS:SendMessage"
+              - "SQS:ReceiveMessage"
+              - "SQS:DeleteMessage"
+              - "SQS:GetQueueUrl"
+              - "SQS:GetQueueAttributes"
+            Resource: !GetAtt WalletServiceQueue.Arn
+
+Outputs:
+  CoreBancarioQueueUrl:
+    Description: URL de la cola Core Bancario
+    Value: !Ref CoreBancarioQueue
+
+  CryptoQueueUrl:
+    Description: URL de la cola Crypto
+    Value: !Ref CryptoQueue
+
+  InHouseQueueUrl:
+    Description: URL de la cola Inhouse
+    Value: !Ref InHouseQueue
+
+  WalletServiceQueueUrl:
+    Description: URL de la cola Wallet Service
+    Value: !Ref WalletServiceQueue

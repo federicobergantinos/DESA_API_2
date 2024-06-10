@@ -77,7 +77,7 @@ const Header = ({
     return (
       <TouchableOpacity
         style={[styles.settingsButton, style]}
-        onPress={() => navigation.navigate('Settings')}
+        onPress={() => navigation.navigate('Profile')}
       >
         <Icon
           family="Feather"
@@ -186,7 +186,7 @@ const Header = ({
     }
   }
 
-  const noShadow = ['Search', 'Perfil', 'Home'].includes(title)
+  const noShadow = ['Search', 'Home'].includes(title)
 
   const headerStyles = [
     !noShadow ? styles.shadow : null,

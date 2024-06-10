@@ -11,10 +11,10 @@ const createTransaction = async (transactionData) => {
     transactionData
 
   const account = await findAccountByAccountNumber(accountNumber)
-  if (account !== null) {
+
+  if (account === null) {
     throw new Error('Invalid Account')
   }
-  console.log(account)
 
   const userName = account.user
     ? `${account.user.name} ${account.user.surname}`.trim()

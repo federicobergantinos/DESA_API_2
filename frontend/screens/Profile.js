@@ -1,350 +1,125 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import {
+  View,
+  ImageBackground,
+  Text,
   StyleSheet,
   Dimensions,
   ScrollView,
-  Image,
-  ImageBackground,
-  Platform,
   TouchableOpacity,
-  View,
 } from 'react-native'
-import { Block, Text, theme } from 'galio-framework'
-import { Button, Header } from '../components'
+import { theme, Block } from 'galio-framework'
 import { Images, walletTheme } from '../constants'
-import { HeaderHeight } from '../constants/utils'
-import { openImagePickerAsync } from '../components/ImagePicker.js'
-import { useNavigation } from '@react-navigation/native'
-import backendApi from '../api/backendGateway'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import Icon from '../components/Icon'
+import { GoogleSignin } from '@react-native-google-signin/google-signin'
+import backendGateway from '../api/backendGateway'
+import Icon from 'react-native-vector-icons/FontAwesome' // Importa el ícono que necesitas
 
 const { width, height } = Dimensions.get('screen')
-const thumbMeasure = (width - 48 - 32) / 3
 
-export default function Profile() {
-  const navigation = useNavigation()
-  const [userId, setUserId] = useState(null)
-  const [userInfo, setUserInfo] = useState(null)
-  const menuCategories = [
-    {
-      title: 'Cuenta',
-      data: [
-        {
-          title: 'Estado de Cuenta',
-          icon: 'file-text',
-          navigateTo: 'BankStatement',
-        },
-        // ...otros elementos relacionados con la cuenta
-      ],
-    },
-    {
-      title: 'Atención al Cliente',
-      data: [
-        { title: 'Ayuda', icon: 'help-circle', navigateTo: 'Help' },
-        {
-          title: 'Soporte Técnico',
-          icon: 'tool',
-          navigateTo: 'TechnicalSupport',
-        },
-        // ...otros elementos relacionados con la atención al cliente
-      ],
-    },
-    // ...otras categorías si las hay
-  ]
+const ConfiguracionGeneral = ({ navigation }) => {
+  // Creating separate cards for each detail
+  const Card = ({ title, iconName, iconColor, onPress }) => (
+    <TouchableOpacity style={styles.detailCard} onPress={onPress}>
+      <Icon name={iconName} size={20} color={iconColor} />
+      <Text style={styles.cardTitle}>{title}</Text>
+    </TouchableOpacity>
+  )
 
-  const renderMenuCategory = (category, key) => {
-    return (
-      <View key={key} style={styles.menuCategoryContainer}>
-        <Text style={styles.menuCategoryTitle}>{category.title}</Text>
-        {category.data.map((option, index) => renderMenuOption(option, index))}
-      </View>
-    )
+  const logOut = async () => {
+    await AsyncStorage.clear()
+    await GoogleSignin.signOut()
+    navigation.navigate('Login')
   }
 
-  const renderMenuOption = (option, index) => {
-    return (
-      <TouchableOpacity
-        key={index}
-        style={styles.menuOption}
-        onPress={() => navigation.navigate(option.navigateTo)}
-      >
-        <Icon
-          name={option.icon}
-          family="Feather"
-          size={20}
-          color={walletTheme.COLORS.VIOLET}
-          style={styles.menuIcon}
-        />
-        <Text style={styles.menuText}>{option.title}</Text>
-      </TouchableOpacity>
-    )
+  const deleteAccount = async () => {
+    await AsyncStorage.clear()
+    // await backendGateway.authUser.deleteCredential()
+    navigation.navigate('Login')
   }
-
-  const handleImagePicked = async () => {
-    try {
-      const newImage = await openImagePickerAsync()
-      if (newImage) {
-        try {
-          const response = await backendApi.transactionsGateway.uploadImage({
-            image: newImage.base64,
-          })
-          if (response.statusCode === 200) {
-            const imageUrl = response.response.images
-            // Actualizar el perfil del usuario en el backend
-            const userData = { photoUrl: imageUrl }
-            const updateResponse = await backendApi.usersGateway.editProfile(
-              userId,
-              userData
-            )
-            if (updateResponse.statusCode === 200) {
-              // Actualizar el estado local y la UI
-              setUserInfo({ ...userInfo, photoUrl: imageUrl })
-              alert('Foto del perfil actualizada con éxito.')
-            } else {
-              console.error('Error al actualizar el perfil del usuario.')
-              alert('No se pudo actualizar la foto del perfil.')
-            }
-          }
-        } catch (error) {
-          console.error('Error al subir la imagen:', error)
-          alert('No se pudo subir la imagen.')
-        }
-      }
-    } catch (error) {
-      console.error('Error al seleccionar la imagen:', error)
-      alert('No se pudo seleccionar la imagen.')
-    }
-  }
-
-  useEffect(() => {
-    const init = async () => {
-      try {
-        const storedUserId = await AsyncStorage.getItem('userId')
-        const { response, statusCode } =
-          await backendApi.usersGateway.getUser(storedUserId)
-        setUserId(storedUserId) // Almacenar userId en el estado
-        setUserInfo(response.user) // Almacenar userId en el estado
-      } catch (error) {
-        console.error('Error inicializando el perfil:', error)
-      }
-    }
-
-    init()
-  }, [])
 
   return (
-    <Block flex style={styles.profile}>
-      <Block flex>
-        <ImageBackground
-          source={Images.Background}
-          imageStyle={styles.profileBackground}
+    <Block flex style={styles.home}>
+      <ImageBackground source={Images.Background} style={styles.background}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          style={{ width }}
+          contentContainerStyle={styles.scrollViewContent}
         >
-          <ScrollView
-            showsVerticalScrollIndicator={false}
-            style={{ width, marginTop: '25%' }}
-          >
-            <Block flex style={styles.profileCard}>
-              <Block middle style={styles.avatarContainer}>
-                {userInfo && (
-                  <Image
-                    source={{ uri: userInfo.photoUrl }}
-                    style={styles.avatar}
-                  />
-                )}
-                {/* <View style={styles.parent}>
-                  <TouchableOpacity
-                    style={styles.container}
-                    onPress={handleImagePicked}
-                  >
-                    <Icon name="camera" family="Feather" size={20} />
-                  </TouchableOpacity>
-                  <Text> </Text>
-                </View> */}
-              </Block>
-              <Block style={styles.info}>
-                <Block middle style={styles.nameInfo}>
-                  <Text
-                    style={{ fontFamily: 'open-sans-regular' }}
-                    size={24}
-                    color="#32325D"
-                  >
-                    {userInfo ? userInfo.name : 'Cargando...'}
-                  </Text>
-                  <Text
-                    style={{ fontFamily: 'open-sans-regular' }}
-                    size={24}
-                    color="#32325D"
-                  >
-                    {userInfo ? userInfo.surname : ''}
-                  </Text>
-                </Block>
-                <Block
-                  middle
-                  row
-                  space="evenly"
-                  style={{ marginTop: 5, paddingBottom: 10 }}
-                ></Block>
-                {menuCategories.map((category, key) =>
-                  renderMenuCategory(category, key)
-                )}
-
-                <View style={{ height: 50 }} />
-              </Block>
-            </Block>
-          </ScrollView>
-        </ImageBackground>
-      </Block>
+          <Card
+            title="Ajustes de Cuenta"
+            iconName="user-circle"
+            iconColor={theme.COLORS.SECONDARY}
+            onPress={() => navigation.navigate('Settings')}
+          />
+          <Card
+            title="Ayuda"
+            iconName="question-circle"
+            iconColor={theme.COLORS.SECONDARY}
+            onPress={() => navigation.navigate('FAQs')}
+          />
+          <Card
+            title="Sign Out"
+            iconName="sign-out"
+            iconColor={theme.COLORS.WARNING}
+            onPress={() => logOut()}
+          />
+          <Card
+            title="Desactivate Account"
+            iconName="trash"
+            iconColor={theme.COLORS.PRIMARY}
+            onPress={() => logOut()}
+          />
+        </ScrollView>
+      </ImageBackground>
     </Block>
   )
 }
 
 const styles = StyleSheet.create({
-  profile: {
-    marginTop: Platform.OS === 'android' ? -HeaderHeight : 0,
-    flex: 1,
+  home: {
+    marginTop: 0,
   },
-  profileBackground: {
+  background: {
     width: width,
-    height: height,
-    top: height / 10,
+    height: height * 1.1,
+    marginTop: -100,
   },
-  parent: {
+  detailCard: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-  },
-  profileCard: {
+    alignItems: 'center',
+    backgroundColor: theme.COLORS.WHITE,
     padding: theme.SIZES.BASE,
     marginHorizontal: theme.SIZES.BASE,
-    marginTop: 100,
-    borderRadius: 6,
-    backgroundColor: theme.COLORS.WHITE,
-    shadowColor: 'black',
-    backgroundColor: '#FFF',
-    shadowOffset: { width: 0, height: 0 },
-    shadowRadius: 8,
-    shadowOpacity: 0.2,
-    zIndex: 2,
-  },
-  info: {
-    paddingHorizontal: 20,
-  },
-  avatarContainer: {
-    position: 'relative',
-    marginTop: -80,
-  },
-  avatar: {
-    width: 124,
-    height: 124,
-    borderRadius: 62,
-    borderWidth: 0,
-  },
-  avatarInterno: {
-    width: 248,
-    height: 248,
-    borderRadius: 62,
-    borderWidth: 0,
-    top: 200,
-  },
-
-  nameInfo: {
-    marginTop: 10,
-  },
-  divider: {
-    width: '90%',
-    borderWidth: 1,
-    borderColor: '#E9ECEF',
-  },
-  thumb: {
-    width: thumbMeasure,
-    height: thumbMeasure,
-    borderRadius: 4,
-    marginBottom: 4,
-    marginRight: 4,
-  },
-  // Asegúrate de que el bloque que contiene las miniaturas tenga `flexWrap: 'wrap'`
-  favoritesContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'flex-start', // Ajusta esto para cambiar la alineación si es necesario
-    // Otros estilos que puedas necesitar para este contenedor
-  },
-  favoritesContainerModal: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    width: thumbMeasure,
-    margin: theme.SIZES.BASE / 4,
-    justifyContent: 'flex-end', // Ajusta esto para cambiar la alineación si es necesario
-    // Otros estilos que puedas necesitar para este contenedor
-  },
-  container: {
-    backgroundColor: '#E8E8E8',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 100,
-    marginTop: -20,
-    marginLeft: 80,
-    width: 40,
-    height: 40,
-  },
-  containerInterno: {
-    backgroundColor: '#E8E8E8',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 8,
-    width: 140,
-    height: 45,
-    top: 220,
-  },
-  editarPerfilPopup: {
-    backgroundColor: '#000000aa',
-    flex: 1,
-  },
-  editarPerfilPopupInterno: {
-    backgroundColor: '000000aa',
-    alignItems: 'center',
-  },
-  modalContent: {
-    backgroundColor: 'white',
-    padding: 10,
-    width: width * 0.9,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 4,
-    borderColor: 'rgba(0, 0, 0, 0.1)',
-  },
-  menuOption: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 15,
-    paddingHorizontal: 20,
-    marginHorizontal: 0,
-    backgroundColor: walletTheme.COLORS.WHITE,
     marginTop: theme.SIZES.BASE,
-    borderRadius: theme.SIZES.RADIUS,
-    shadowColor: walletTheme.COLORS.BLACK,
+    borderRadius: theme.SIZES.BASE / 2,
+    shadowColor: 'black',
     shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
+    shadowRadius: 6,
     shadowOpacity: 0.1,
     elevation: 2,
   },
-  menuIcon: {
-    marginRight: 15,
-    color: walletTheme.COLORS.BLACK,
-  },
-  menuText: {
-    fontFamily: 'open-sans-regular',
+  cardTitle: {
     fontSize: 16,
-    color: walletTheme.COLORS.BLACK,
+    marginLeft: theme.SIZES.BASE,
   },
-  menuCategoryContainer: {
-    // Otros estilos que necesites, como márgenes y sombras
-    marginTop: theme.SIZES.BASE / 2,
-    borderRadius: theme.SIZES.RADIUS,
-    paddingVertical: theme.SIZES.BASE / 2,
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: theme.SIZES.BASE,
+    backgroundColor: theme.COLORS.PRIMARY,
   },
-  menuCategoryTitle: {
-    fontSize: 15,
-    color: walletTheme.COLORS.BLACK,
+  backButton: {
+    marginRight: theme.SIZES.BASE,
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: theme.COLORS.WHITE,
+  },
+  scrollViewContent: {
+    paddingTop: 100,
   },
 })
+
+export default ConfiguracionGeneral
