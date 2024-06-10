@@ -34,7 +34,7 @@ jobs:
           PROJECT: wallet-serving
         run: |
           docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 \
-            -t ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ env.PROJECT }}:latest \
+            -t ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.PROJECT }}:latest \
             ../backend/ --push
 
       - name: Update ECS service with new image
