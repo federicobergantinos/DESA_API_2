@@ -2,7 +2,6 @@ name: Deploy to AWS ECS
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
     branches:
       - develop
 
@@ -11,7 +10,7 @@ on:
 
 jobs:
   build-and-deploy:
-    if: github.event.issue.pull_request && contains(github.event.comment.body, 'DEPLOY')
+    if: github.event.issue.pull_request.html_url && contains(github.event.comment.body, 'DEPLOY')
     runs-on: ubuntu-latest
 
     steps:
