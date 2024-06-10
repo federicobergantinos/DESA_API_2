@@ -2,13 +2,13 @@
 PROJECT=wallet-serving
 IMAGE_NAME=$(PROJECT)-image
 CONTAINER_NAME=$(PROJECT)-container
-AWS_ACCOUNT_ID=137318283310
+AWS_ACCOUNT_ID=877306037129
 AWS_REGION=us-east-1
 
 
 # IAM ROles
 assume-role:
-	aws sts assume-role --role-arn "arn:aws:iam::137318283310:role/LabRole" --role-session-name AWSCLI-Session
+	aws sts assume-role --role-arn "arn:aws:iam::${AWS_ACCOUNT_ID}:role/LabRole" --role-session-name AWSCLI-Session
 
 # Docker
 docker-build:
@@ -68,26 +68,44 @@ ecr:
 	make docker-build && make ecr-login && make ecr-tag-image && make ecr-push-image
 
 # AWS Cloudformation
-cloudformation-create-stack-infra:
+cf-create-stack-infra:
 	aws cloudformation create-stack --stack-name InfraBase --template-body file://../resources/infra_base.yaml --capabilities CAPABILITY_IAM --region $(AWS_REGION)
 
-cloudformation-delete-stack-infra:
+cf-delete-stack-infra:
 	aws cloudformation delete-stack --stack-name InfraBase --region $(AWS_REGION)
 	
-cloudformation-create-stack-service:
+cf-create-stack-service:
 	aws cloudformation create-stack --stack-name $(PROJECT) --template-body file://../resources/service.yaml --capabilities CAPABILITY_IAM --region $(AWS_REGION)
 
-cloudformation-delete-stack-service:
+cf-delete-stack-service:
 	aws cloudformation delete-stack --stack-name $(PROJECT) --region $(AWS_REGION)
 
-cloudformation-create-stack-db:
+cf-create-stack-db:
 	aws cloudformation create-stack --stack-name $(PROJECT)-db --template-body file://../resources/db.yaml --capabilities CAPABILITY_IAM --region $(AWS_REGION)
 
-cloudformation-delete-stack-db:
+cf-delete-stack-db:
 	aws cloudformation delete-stack --stack-name $(PROJECT)-db --region $(AWS_REGION)
+
+cf-create-stack-sqs:
+	aws cloudformation create-stack --stack-name $(PROJECT)-sqs --template-body file://../resources/sqs.yaml --capabilities CAPABILITY_IAM --region $(AWS_REGION)
+
+cf-delete-stack-sqs:
+	aws cloudformation delete-stack --stack-name $(PROJECT)-sqs --region $(AWS_REGION)
+	
+cf-create-stack-s3:
+	aws cloudformation create-stack --stack-name $(PROJECT)-s3 --template-body file://../resources/s3.yaml --capabilities CAPABILITY_IAM --region $(AWS_REGION)
+
+cf-delete-stack-s3:
+	aws cloudformation delete-stack --stack-name $(PROJECT)-s3 --region $(AWS_REGION)
 		
+cf-create-stack-codepipeline:
+	aws cloudformation create-stack --stack-name $(PROJECT)-codepipeline --template-body file://../resources/codepipeline.yaml --capabilities CAPABILITY_IAM --region $(AWS_REGION)
+
+cf-delete-stack-codepipeline:
+	aws cloudformation delete-stack --stack-name $(PROJECT)-codepipeline --region $(AWS_REGION)
+	
 
 .PHONY: docker-build docker-run docker-stop docker-rm docker-rmi docker-clean docker-rebuild docker-shell docker-compose-up docker-compose-down docker-run-wallet
 .PHONY: ecr-create-repo ecr-login ecr-tag-image ecr-push-image ecr 
-.PHONY: cloudformation-create-stack cloudformation-delete-stack cloudformation-create-stack-service cloudformation-delete-stack-service cloudformation-create-stack-db cloudformation-delete-stack-db
+.PHONY: cf-create-stack cf-delete-stack cf-create-stack-service cf-delete-stack-service cf-create-stack-db cf-delete-stack-db cf-create-stack-sqs cf-delete-stack-sqs cf-create-stack-s3 cf-delete-stack-s3 cf-create-stack-codepipeline cf-delete-stack-codepipeline
 .PHONY: assume-role
