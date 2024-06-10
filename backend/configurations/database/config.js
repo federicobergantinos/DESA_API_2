@@ -18,8 +18,8 @@ const logger = createLogger(__filename)
 const dbConnection = async () => {
   try {
     await sequelize.authenticate()
-    await sequelize.sync()
-    // await sequelize.sync({ force: true })
+    // await sequelize.sync()
+    await sequelize.sync({ force: true })
 
     const usersCount = await User.count()
     const transactionsCount = await Transaction.count()
@@ -39,7 +39,11 @@ const dbConnection = async () => {
 
     logger.info('Database online')
   } catch (error) {
-    logger.error('There is an error starting database', error)
+    logger.error('There is an error starting database', {
+      message: error.message,
+      stack: error.stack,
+      original: error.original,
+    })
     throw new Error('There is an error starting database')
   }
 }
