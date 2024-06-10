@@ -11,8 +11,7 @@ jobs:
   build-and-deploy:
     if: |
       github.event.pull_request &&
-      github.event.pull_request.base.ref == 'develop' &&
-      contains(github.event.pull_request.comment.body, 'DEPLOY')
+      github.event.pull_request.base.ref == 'develop'
     runs-on: ubuntu-latest
 
     steps:
