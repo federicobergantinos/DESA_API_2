@@ -1,6 +1,9 @@
-name: CICD \ Deploy to AWS ECS
+name: Deploy to AWS ECS
 
 on:
+  pull_request:
+    branches:
+      - develop
   issue_comment:
     types: [created]
 
@@ -9,7 +12,7 @@ jobs:
     if: |
       github.event.issue.pull_request &&
       contains(github.event.comment.body, 'DEPLOY') &&
-      startsWith(github.event.issue.pull_request.base.ref, 'develop')
+      github.event.issue.pull_request.base.ref == 'develop'
     runs-on: ubuntu-latest
 
     steps:
