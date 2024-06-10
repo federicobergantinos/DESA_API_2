@@ -1,0 +1,45 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources:
+  # CodeDeploy Application
+  CodeDeployApplication:
+    Type: AWS::CodeDeploy::Application
+    Properties:
+      ApplicationName: WalletApplication
+      ComputePlatform: ECS
+
+  # CodeDeploy Deployment Group
+  CodeDeployDeploymentGroup:
+    Type: AWS::CodeDeploy::DeploymentGroup
+    Properties:
+      ApplicationName: !Ref CodeDeployApplication
+      ServiceRoleArn: arn:aws:iam::877306037129:role/LabRole
+      DeploymentGroupName: WalletDeploymentGroup
+      DeploymentConfigName: CodeDeployDefault.ECSAllAtOnce
+      AutoRollbackConfiguration:
+        Enabled: True
+        Events:
+          - DEPLOYMENT_FAILURE
+      DeploymentStyle:
+        DeploymentType: BLUE_GREEN
+        DeploymentOption: WITH_TRAFFIC_CONTROL
+      BlueGreenDeploymentConfiguration:
+        TerminateBlueInstancesOnDeploymentSuccess:
+          Action: TERMINATE
+          TerminationWaitTimeInMinutes: 5
+        DeploymentReadyOption:
+          ActionOnTimeout: CONTINUE_DEPLOYMENT
+          WaitTimeInMinutes: 0
+      LoadBalancerInfo:
+        TargetGroupPairInfoList:
+          - TargetGroups:
+              - Name: arn:aws:elasticloadbalancing:us-east-1:877306037129:targetgroup/wallet-Walle-OWSUS5HWJQ2F/18cce91cd23e4861
+              - Name: arn:aws:elasticloadbalancing:us-east-1:877306037129:targetgroup/wallet-Walle-UOZ67OHTZLM5/d8f670d14209c695
+            ProdTrafficRoute:
+              ListenerArns:
+                - arn:aws:elasticloadbalancing:us-east-1:877306037129:listener/app/WalletALB/3126cfc6654b75a4/088948ec4bff7c7f
+            TestTrafficRoute:
+              ListenerArns:
+                - arn:aws:elasticloadbalancing:us-east-1:877306037129:listener/app/WalletALB/3126cfc6654b75a4/69e41f2bb2c63bda
+      ECSServices:
+        - ClusterName: InfraBase-ECSCluster-f3Ia4koRrIVC
+          ServiceName: wallet-serving-WalletECSService-gTpShkuCX8c2

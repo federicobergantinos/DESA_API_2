@@ -1,0 +1,6 @@
+[
+    {
+        "name": "wallet-app",
+        "imageUri": "877306037129.dkr.ecr.us-east-1.amazonaws.com/wallet-serving:latest"
+    }
+]
