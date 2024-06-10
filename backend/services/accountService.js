@@ -1,4 +1,5 @@
 const Account = require('../entities/account')
+const User = require('../entities/user')
 const NotFound = require('../Errors/NotFound')
 const createLogger = require('../configurations/Logger')
 const logger = createLogger(__filename)

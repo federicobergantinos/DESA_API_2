@@ -114,14 +114,16 @@ const populateUser = async () => {
 
   try {
     for (const userData of usersData) {
-      const user = await User.findOrCreate({
-        where: { email: userData.email },
-        defaults: userData,
+      const { name, surname, email, photoUrl } = userData
+      
+      const [user, created] = await User.findOrCreate({
+        where: { email },
+        defaults: { name, surname, photoUrl },
       })
 
-      if (user && user[0]) {
+      if (user && created) {
         for (const accountData of userData.accounts) {
-          await Account.create({ ...accountData, userId: user[0].id })
+          await Account.create({ ...accountData, userId: user.id })
         }
       }
     }
