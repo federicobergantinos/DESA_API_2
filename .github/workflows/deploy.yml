@@ -10,8 +10,7 @@ on:
 jobs:
   build-and-deploy:
     if: |
-      github.event.issue.pull_request &&
-      contains(github.event.comment.body, 'DEPLOY') 
+      github.event.issue.pull_request
     runs-on: ubuntu-latest
 
     steps:
