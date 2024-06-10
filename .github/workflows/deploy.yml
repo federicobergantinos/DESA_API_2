@@ -1,19 +1,17 @@
 name: Deploy to AWS ECS v2
 
 on:
-  pull_request_review:
-    types: [submitted]
-    branches: [develop]
-
-  workflow_dispatch:
-
-name: build-and-deploy
+  pull_request:
+    branches:
+      - develop
+  issue_comment:
+    types: [created, edited]
 
 jobs:
   build-and-deploy:
     if: |
       github.event.pull_request &&
-      github.event.pull_request.base.ref == 'develop' 
+      github.event.pull_request.base.ref == 'develop'
     runs-on: ubuntu-latest
 
     steps:
