@@ -5,11 +5,11 @@ on:
     branches:
       - develop
   issue_comment:
-    types: [created]
+    types: [created, edited]
 
 jobs:
   build-and-deploy:
-    if: startsWith(github.event.pull_request.base.ref, 'develop') && contains(github.event.comment, 'DEPLOY')
+    if: startsWith(github.event.pull_request.base.ref, 'develop') && contains(github.event.comment.body, 'DEPLOY')
     runs-on: ubuntu-latest
 
     steps:
