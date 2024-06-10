@@ -1,4 +1,4 @@
-name: CICD - Deploy to AWS ECS
+name: Deploy to AWS ECS
 
 on:
   issue_comment:
