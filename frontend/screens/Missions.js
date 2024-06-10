@@ -37,7 +37,7 @@ const Missions = () => {
     <View style={styles.exchangeCardWrapper}>
       <Text style={styles.exchangeCardText}>{xwc + ' XWC'}</Text>
       <Text style={styles.exchangeCardText}>{'='}</Text>
-      <Text style={styles.exchangeCardText}>{xcoin + ' Xcoin'}</Text>
+      <Text style={styles.exchangeCardText}>{xcoin + ' XCN'}</Text>
     </View>
   )
 
