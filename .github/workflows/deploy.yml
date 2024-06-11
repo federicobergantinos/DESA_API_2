@@ -1,11 +1,12 @@
 name: Deploy to AWS ECS
 
 on:
-  pull_request:
-    branches:
-      - develop
   issue_comment:
     types: [created]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
 
 jobs:
   build-and-deploy:
