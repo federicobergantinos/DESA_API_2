@@ -1,4 +1,4 @@
-name: pull request comment
+name: pull request comment 1
 on:
   issue_comment:
     types: [created, edited, deleted]
