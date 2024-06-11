@@ -18,6 +18,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
+      - name: Debug SSH Key
+        run: |
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r'
+
       - name: Set up SSH key
         run: |
           mkdir -p ~/.ssh
