@@ -1,4 +1,4 @@
-name: Deploy to AWS ECS
+name: Deploy to AWS ECS v1
 
 on:
   pull_request:
@@ -87,9 +87,7 @@ jobs:
             docker buildx build --platform linux/amd64 -t $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$PROJECT:latest . --push
 
             # Trigger CodeDeploy Deployment
-            aws deploy create-deployment \
-              --application-name WalletApplication \
-              --deployment-group-name WalletDeploymentGroup \
-              --revision revisionType=AppSpecContent,appSpecContent="{\"content\":\"version:0.0\nresources:\n  - serviceName: wallet-serving-WalletECSService-gTpShkuCX8c2\n    clusterName: InfraBase-ECSCluster-f3Ia4koRrIVC\n    loadBalancerInfo:\n      targetGroupPairInfo:\n        prodTrafficRoute:\n          listenerArns:\n            - arn:aws:elasticloadbalancing:$AWS_REGION:$AWS_ACCOUNT_ID:listener/app/WalletALB/3126cfc6654b75a4/088948ec4bff7c7f\n        testTrafficRoute:\n          listenerArns:\n            - arn:aws:elasticloadbalancing:$AWS_REGION:$AWS_ACCOUNT_ID:listener/app/WalletALB/3126cfc6654b75a4/69e41f2bb2c63bda\n        targetGroups:\n          - name: arn:aws:elasticloadbalancing:$AWS_REGION:$AWS_ACCOUNT_ID:targetgroup/wallet-Walle-OWSUS5HWJQ2F/18cce91cd23e4861\n          - name: arn:aws:elasticloadbalancing:$AWS_REGION:$AWS_ACCOUNT_ID:targetgroup/wallet-Walle-UOZ67OHTZLM5/d8f670d14209c695\"}" \
-              --description "New deployment for wallet-serving-WalletECSService-gTpShkuCX8c2"
+            response=$(aws ecs register-task-definition --cli-input-json file://task-def.json)
+            task_definition_arn=$(echo $response | jq -r '.taskDefinition.taskDefinitionArn')
+            aws ecs update-service --cluster $CLUSTER_NAME --service $SERVICE_NAME --task-definition $task_definition_arn
           EOF
