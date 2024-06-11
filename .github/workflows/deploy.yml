@@ -9,7 +9,7 @@ on:
 
 jobs:
   build-and-deploy:
-    if: github.event.pull_request && contains(github.event.comment.body, '/deploy')
+    if: github.issue.pull_request && contains(github.event.comment.body, '/deploy')
     runs-on: ubuntu-latest
 
     steps:
