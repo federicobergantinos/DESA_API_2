@@ -1,23 +1,22 @@
-name: Deploy to AWS ECS
+name: Deploy to AWS ECS v2
 
 on:
+  pull_request:
+    branches:
+      - develop
   issue_comment:
     types: [created, edited]
 
 jobs:
   build-and-deploy:
-    if: github.event.issue.pull_request && contains(github.event.comment.body, '/deploy')
+    if: |
+      github.event.pull_request &&
+      github.event.pull_request.base.ref == 'develop'
     runs-on: ubuntu-latest
 
     steps:
-      - name: Get PR branch
-        uses: xt0rted/pull-request-comment-branch@v1
-        id: comment-branch
-
-      - name: Checkout PR branch
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ steps.comment-branch.outputs.head_ref }}
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
       - name: Set up SSH key
         run: |
@@ -117,3 +116,4 @@ jobs:
               repo: context.repo.repo,
               body: body
             })
+
