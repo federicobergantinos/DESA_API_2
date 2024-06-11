@@ -23,6 +23,14 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
+      - name: Print Environment Variables
+        run: |
+          echo "EC2_USER=${{ env.EC2_USER }}"
+          echo "EC2_HOST=${{ secrets.EC2_HOST }}"
+          echo "AWS_ACCOUNT_ID=${{ secrets.AWS_ACCOUNT_ID }}"
+          echo "AWS_REGION=${{ secrets.AWS_REGION }}"
+          echo "PROJECT=${{ env.PROJECT }}"
+
       - name: Trigger Deployment on EC2
         env:
           EC2_USER: ec2-user
