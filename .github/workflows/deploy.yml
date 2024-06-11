@@ -12,7 +12,7 @@ jobs:
     if: |
       github.event.pull_request &&
       github.event.pull_request.base.ref == 'develop' &&
-      contains(${{ github.event.issue.pull_request }}, '/deploy')
+      contains(github.event.issue.pull_request, '/deploy')
     runs-on: ubuntu-latest
 
     steps:
