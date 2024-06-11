@@ -43,6 +43,18 @@ jobs:
           AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
           PROJECT: wallet-serving
+          CODE: superSecret
+          POSTGRES_DB: daidb
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          NODE_ENV: production
+          POSTGRES_HOST: wallet-serving-db-dbinstance-jg79hftmmnfg.ci6gprfovemt.us-east-1.rds.amazonaws.com
+          POSTGRES_PORT: 5432
+          AWS_S3_BUCKET_NAME: wallet-desa-api-2
+          AWS_DEFAULT_REGION: us-east-1
+          INHOUSE_QUEUE_URL: https://sqs.us-east-1.amazonaws.com/137318283310/inhouse_queue
+          CORE_BANCARIO_QUEUE_URL: https://sqs.us-east-1.amazonaws.com/137318283310/core_bancario_queue
+          CRYPTO_QUEUE_URL: https://sqs.us-east-1.amazonaws.com/137318283310/crypto_queue
         run: |
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa $EC2_USER@$EC2_HOST <<EOF
             export EC2_USER=${EC2_USER}
@@ -50,12 +62,30 @@ jobs:
             export AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID}
             export AWS_REGION=${AWS_REGION}
             export PROJECT=${PROJECT}
+            export CODE=${CODE}
+            export POSTGRES_DB=${POSTGRES_DB}
+            export POSTGRES_USER=${POSTGRES_USER}
+            export POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+            export NODE_ENV=${NODE_ENV}
+            export POSTGRES_HOST=${POSTGRES_HOST}
+            export POSTGRES_HOST=${POSTGRES_HOST}
+            export POSTGRES_PORT=${POSTGRES_PORT}
+            export AWS_S3_BUCKET_NAME=${AWS_S3_BUCKET_NAME}
+            export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
+            export INHOUSE_QUEUE_URL=${INHOUSE_QUEUE_URL}
+            export CORE_BANCARIO_QUEUE_URL=${CORE_BANCARIO_QUEUE_URL}
+            export CRYPTO_QUEUE_URL=${CRYPTO_QUEUE_URL}
 
             cd DESA_API_2/ || exit 1
             git pull origin develop
 
-            # Build and run the Docker image
+            # Log in to Amazon ECR
+            aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+
+            # Build and push the Docker image
             cd backend
-            aws ecr get-login-password --region $(AWS_REGION) | docker login --username AWS --password-stdin $(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com
             docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$PROJECT:latest . --push
+
+            # Update the ECS service
+            aws ecs update-service --cluster InfraBase-ECSCluster-f3Ia4koRrIVC --service wallet-serving-WalletECSService-gTpShkuCX8c2 --force-new-deployment
           EOF
