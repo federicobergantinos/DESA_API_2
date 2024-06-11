@@ -86,8 +86,10 @@ jobs:
             cd backend
             docker buildx build --platform linux/amd64 -t $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$PROJECT:latest . --push
 
-            # Trigger CodeDeploy Deployment
+            # Register the new task definition
             response=$(aws ecs register-task-definition --cli-input-json file://task-def.json)
             task_definition_arn=$(echo $response | jq -r '.taskDefinition.taskDefinitionArn')
+
+            # Use the taskDefinitionArn to update the ECS service
             aws ecs update-service --cluster InfraBase-ECSCluster-f3Ia4koRrIVC --service wallet-serving-WalletECSService-n4bFK1XXE4XD --task-definition $task_definition_arn
           EOF
