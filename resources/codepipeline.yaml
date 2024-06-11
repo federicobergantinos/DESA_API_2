@@ -42,4 +42,4 @@ Resources:
                 - arn:aws:elasticloadbalancing:us-east-1:877306037129:listener/app/WalletALB/3126cfc6654b75a4/69e41f2bb2c63bda
       ECSServices:
         - ClusterName: InfraBase-ECSCluster-f3Ia4koRrIVC
-          ServiceName: wallet-serving-WalletECSService-gTpShkuCX8c2
+          ServiceName: wallet-serving-WalletECSService-n4bFK1XXE4XD
