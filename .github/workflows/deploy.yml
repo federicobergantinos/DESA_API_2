@@ -1,102 +1,17 @@
-name: Deploy to AWS ECS v3
-
+name: pull request comment
 on:
-  pull_request:
-    branches:
-      - develop
   issue_comment:
-    types: [created, edited]
-
+    types: [created, edited, deleted]
 jobs:
-  build-and-deploy:
-    if: |
-      github.event.pull_request &&
-      github.event.pull_request.base.ref == 'develop' &&
-      contains(${{ github.event.issue.pull_request }}, '/deploy')
-    runs-on: ubuntu-latest
-
+  job01:
+    if: contains(github.event.comment.html_url, '/pull/') # check if the comments come from pull request, exclude those from issue.
+    runs-on: [ubuntu-latest]
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Set up SSH key
+      - name: say hello
+        if: contains(github.event.comment.body, '/support') # check the comment if it contains the keywords
         run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-
-      - name: Add SSH Key to ssh-agent
+          echo say hello
+      - name: test
+        if: contains(github.event.comment.body, '/test') # check the comment if it contains the keywords
         run: |
-          eval $(ssh-agent -s)
-          ssh-add ~/.ssh/id_rsa
-
-      - name: Test SSH Connection
-        env:
-          EC2_USER: ec2-user
-          EC2_HOST: ${{ secrets.EC2_HOST }}
-        run: |
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa $EC2_USER@$EC2_HOST echo "SSH connection successful"
-
-      - name: Trigger Deployment on EC2
-        env:
-          EC2_USER: ec2-user
-          EC2_HOST: ${{ secrets.EC2_HOST }}
-          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-          PROJECT: wallet-serving
-          CODE: superSecret
-          POSTGRES_DB: daidb
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-          NODE_ENV: production
-          POSTGRES_HOST: wallet-serving-db-dbinstance-jg79hftmmnfg.ci6gprfovemt.us-east-1.rds.amazonaws.com
-          POSTGRES_PORT: 5432
-          AWS_S3_BUCKET_NAME: wallet-desa-api-2
-          AWS_DEFAULT_REGION: us-east-1
-          INHOUSE_QUEUE_URL: https://sqs.us-east-1.amazonaws.com/137318283310/inhouse_queue
-          CORE_BANCARIO_QUEUE_URL: https://sqs.us-east-1.amazonaws.com/137318283310/core_bancario_queue
-          CRYPTO_QUEUE_URL: https://sqs.us-east-1.amazonaws.com/137318283310/crypto_queue
-        run: |
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa $EC2_USER@$EC2_HOST <<EOF
-            export EC2_USER=${EC2_USER}
-            export EC2_HOST=${EC2_HOST}
-            export AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID}
-            export AWS_REGION=${AWS_REGION}
-            export PROJECT=${PROJECT}
-            export CODE=${CODE}
-            export POSTGRES_DB=${POSTGRES_DB}
-            export POSTGRES_USER=${POSTGRES_USER}
-            export POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-            export NODE_ENV=${NODE_ENV}
-            export POSTGRES_HOST=${POSTGRES_HOST}
-            export POSTGRES_HOST=${POSTGRES_HOST}
-            export POSTGRES_PORT=${POSTGRES_PORT}
-            export AWS_S3_BUCKET_NAME=${AWS_S3_BUCKET_NAME}
-            export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
-            export INHOUSE_QUEUE_URL=${INHOUSE_QUEUE_URL}
-            export CORE_BANCARIO_QUEUE_URL=${CORE_BANCARIO_QUEUE_URL}
-            export CRYPTO_QUEUE_URL=${CRYPTO_QUEUE_URL}
-
-            cd DESA_API_2/ || exit 1
-            git pull origin develop
-            cd backend
-
-            # Log in to Amazon ECR
-            aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
-
-            # Build and push the Docker image
-            docker buildx build --platform linux/amd64 -t $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$PROJECT:latest . --push
-
-            # Register the new task definition
-            if [ -f "task-def.json" ]; then
-              echo "Registrando la definición de tarea..."
-              response=\$(aws ecs register-task-definition --cli-input-json file://task-def.json)
-              task_definition_arn=\$(echo \$response | jq -r '.taskDefinition.taskDefinitionArn')
-
-              # Use the taskDefinitionArn to update the ECS service
-              aws ecs update-service --cluster InfraBase-ECSCluster-f3Ia4koRrIVC --service wallet-serving-WalletECSService-n4bFK1XXE4XD --task-definition "\$task_definition_arn"
-            else
-              echo "Archivo task-def.json no encontrado en el directorio backend."
-              exit 1
-            fi
-          EOF
+          echo test
