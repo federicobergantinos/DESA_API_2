@@ -56,5 +56,6 @@ jobs:
 
             # Build and run the Docker image
             cd backend
+            aws ecr get-login-password --region $(AWS_REGION) | docker login --username AWS --password-stdin $(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com
             docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$PROJECT:latest . --push
           EOF
