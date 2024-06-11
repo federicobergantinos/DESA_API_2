@@ -14,7 +14,7 @@ permissions:
 jobs:
   build-and-deploy:
     if: |
-      contains(github.event.comment.html_url, '/pull/') && contains(github.event.comment.body, '/deploy')
+      contains(github.event.comment.html_url, '/pull/') && contains(git .hub.event.comment.body, '/deploy')
     runs-on: ubuntu-latest
     steps:
       - name: Notify deployment start
