@@ -1,4 +1,4 @@
-name: Deploy to AWS ECS v6
+name: Deploy to AWS ECS v7
 
 on:
   pull_request:
