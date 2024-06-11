@@ -87,6 +87,7 @@ jobs:
             docker buildx build --platform linux/amd64 -t $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$PROJECT:latest . --push
 
             # Register the new task definition
+            pwd 
             response=$(aws ecs register-task-definition --cli-input-json file://task-def.json)
             echo "Register Task Definition Response: $response"  # Imprimir la respuesta completa
             task_definition_arn=$(echo $response | jq -r '.taskDefinition.taskDefinitionArn')
