@@ -84,15 +84,23 @@ jobs:
             aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
 
             # Build and push the Docker image
-            # docker buildx build --platform linux/amd64 -t $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$PROJECT:latest . --push
+            docker buildx build --platform linux/amd64 -t $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$PROJECT:latest . --push
 
-            # Register the new task definition
-            aws ecs register-task-definition --cli-input-json file://task-def.json
-            response=$(aws ecs register-task-definition --cli-input-json file://task-def.json)
-            echo "Register Task Definition Response: $response"  # Imprimir la respuesta completa
-            task_definition_arn=$(echo $response | jq -r '.taskDefinition.taskDefinitionArn')
-            echo "Task Definition ARN: $task_definition_arn"  # Imprimir el ARN de la definición de la tarea
+            # Registrar la nueva definición de tarea y guardar la respuesta en un archivo temporal
+            echo "Registrando la definición de tarea..."
+            aws ecs register-task-definition --cli-input-json file://backend/task-def.json > response.json
 
-            # Use the taskDefinitionArn to update the ECS service
-            aws ecs update-service --cluster InfraBase-ECSCluster-f3Ia4koRrIVC --service wallet-serving-WalletECSService-n4bFK1XXE4XD --task-definition $task_definition_arn
+            # Imprimir la respuesta para depuración
+            echo "Respuesta de la definición de tarea:"
+            cat response.json
+
+            # Extraer el ARN de la definición de tarea
+            task_definition_arn=$(jq -r '.taskDefinition.taskDefinitionArn' response.json)
+
+            # Verificar el ARN de la definición de tarea
+            echo "ARN de la definición de tarea:"
+            echo "$task_definition_arn"
+
+            # Actualizar el servicio ECS con la nueva definición de tarea
+            aws ecs update-service --cluster InfraBase-ECSCluster-f3Ia4koRrIVC --service wallet-serving-WalletECSService-n4bFK1XXE4XD --task-definition "$task_definition_arn"
           EOF
