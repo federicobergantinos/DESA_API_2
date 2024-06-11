@@ -31,13 +31,12 @@ jobs:
           AWS_REGION: ${{ secrets.AWS_REGION }}
           PROJECT: wallet-serving
         run: |
-          echo "EC2_USER=$EC2_USER"
-          echo "EC2_HOST=$EC2_HOST"
-          echo "AWS_ACCOUNT_ID=$AWS_ACCOUNT_ID"
-          echo "AWS_REGION=$AWS_REGION"
-          echo "PROJECT=$PROJECT"
-
           ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST 'bash -s' <<'EOF'
+            echo "EC2_USER=$EC2_USER"
+            echo "EC2_HOST=$EC2_HOST"
+            echo "AWS_ACCOUNT_ID=$AWS_ACCOUNT_ID"
+            echo "AWS_REGION=$AWS_REGION"
+            echo "PROJECT=$PROJECT"
             cd DESA_API_2/ || exit 1
             git pull origin develop
 
