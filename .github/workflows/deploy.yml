@@ -7,7 +7,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    if: ${{ github.event.issue.pull_request && github.event.comment.body == '/deploy' }}
+    # if: ${{ github.event.issue.pull_request && github.event.comment.body == '/deploy' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
