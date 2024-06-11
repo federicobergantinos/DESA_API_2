@@ -89,5 +89,5 @@ jobs:
             # Trigger CodeDeploy Deployment
             response=$(aws ecs register-task-definition --cli-input-json file://task-def.json)
             task_definition_arn=$(echo $response | jq -r '.taskDefinition.taskDefinitionArn')
-            aws ecs update-service --cluster $CLUSTER_NAME --service $SERVICE_NAME --task-definition $task_definition_arn
+            aws ecs update-service --cluster InfraBase-ECSCluster-f3Ia4koRrIVC --service wallet-serving-WalletECSService-n4bFK1XXE4XD --task-definition $task_definition_arn
           EOF
