@@ -90,9 +90,7 @@ jobs:
             if [ -f "task-def.json" ]; then
               echo "Registrando la definición de tarea..."
               response=\$(aws ecs register-task-definition --cli-input-json file://task-def.json)
-              echo "Respuesta de la definición de tarea: \$response"
               task_definition_arn=\$(echo \$response | jq -r '.taskDefinition.taskDefinitionArn')
-              echo "ARN de la definición de tarea: \$task_definition_arn"
 
               # Use the taskDefinitionArn to update the ECS service
               aws ecs update-service --cluster InfraBase-ECSCluster-f3Ia4koRrIVC --service wallet-serving-WalletECSService-n4bFK1XXE4XD --task-definition "\$task_definition_arn"
