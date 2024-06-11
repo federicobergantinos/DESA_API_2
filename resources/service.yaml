@@ -79,8 +79,8 @@ Resources:
             - subnet-0f9b9d231c33ead7d
           SecurityGroups:
             - sg-05e56045a333f903b
-      DeploymentController:
-        Type: CODE_DEPLOY
+      # DeploymentController:
+      #   Type: CODE_DEPLOY
 
   # ALB
   WalletALB:
