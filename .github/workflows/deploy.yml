@@ -28,7 +28,7 @@ jobs:
           EC2_USER: ec2-user
           EC2_HOST: ${{ secrets.EC2_HOST }}
         run: |
-          ssh -o StrictHostKeyChecking=no -i /home/ec2-user/.ssh $EC2_USER@$EC2_HOST echo "SSH connection successful"
+          ssh -o StrictHostKeyChecking=no -i /home/ec2-user/.ssh/id_rsa $EC2_USER@$EC2_HOST echo "SSH connection successful"
 
       - name: Trigger Deployment on EC2
         env:
@@ -38,7 +38,7 @@ jobs:
           AWS_REGION: ${{ secrets.AWS_REGION }}
           PROJECT: wallet-serving
         run: |
-          ssh -o StrictHostKeyChecking=no -i /home/ec2-user/.ssh $EC2_USER@$EC2_HOST <<EOF
+          ssh -o StrictHostKeyChecking=no -i /home/ec2-user/.ssh/id_rsa $EC2_USER@$EC2_HOST <<EOF
             export EC2_USER=${EC2_USER}
             export EC2_HOST=${EC2_HOST}
             export AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID}
