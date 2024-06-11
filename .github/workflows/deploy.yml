@@ -1,9 +1,6 @@
 name: Deploy to AWS ECS
 
 on:
-  pull_request:
-    branches:
-      - develop
   issue_comment:
     types: [created, edited]
 
