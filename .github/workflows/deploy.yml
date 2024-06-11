@@ -23,6 +23,14 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
+      - name: Test SSH Connection
+        env:
+          EC2_USER: ec2-user
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+        run: |
+          ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST echo "SSH connection successful"
+
+
       - name: Trigger Deployment on EC2
         env:
           EC2_USER: ec2-user
@@ -37,12 +45,6 @@ jobs:
             export AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID}
             export AWS_REGION=${AWS_REGION}
             export PROJECT=${PROJECT}
-
-            echo "EC2_USER=\$EC2_USER"
-            echo "EC2_HOST=\$EC2_HOST"
-            echo "AWS_ACCOUNT_ID=\$AWS_ACCOUNT_ID"
-            echo "AWS_REGION=\$AWS_REGION"
-            echo "PROJECT=\$PROJECT"
             
             cd DESA_API_2/ || exit 1
             git pull origin develop
