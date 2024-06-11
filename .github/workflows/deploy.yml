@@ -78,12 +78,12 @@ jobs:
 
             cd DESA_API_2/ || exit 1
             git pull origin develop
+            cd backend
 
             # Log in to Amazon ECR
             aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
 
             # Build and push the Docker image
-            cd backend
             docker buildx build --platform linux/amd64 -t $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$PROJECT:latest . --push
 
             # Register the new task definition
