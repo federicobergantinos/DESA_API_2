@@ -14,20 +14,9 @@ permissions:
   pull-requests: write
 
 jobs:
-  prepare-deploy:
-    if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'
-    runs-on: ubuntu-latest
-    outputs:
-      pr_number: ${{ steps.get-pr-number.outputs.pr_number }}
-    steps:
-      - name: Extract PR Number
-        id: get-pr-number
-        run: |
-          echo "::set-output name=pr_number::${{ github.event.workflow_run.head_branch }}"
-
   build-and-deploy:
-    needs: prepare-deploy
-    if: github.event_name == 'issue_comment' && contains(github.event.comment.body, '/deploy')
+    if: |
+      contains(github.event.comment.html_url, '/pull/') && contains(github.event.comment.body, '/deploy')
     runs-on: ubuntu-latest
     steps:
       - name: Set up GitHub token
@@ -45,6 +34,12 @@ jobs:
             core.setOutput("head_ref", pr.head.ref);
             core.setOutput("base_ref", pr.base.ref);
             core.setOutput("number", pr.number);
+
+      - name: Print GitHub context
+        uses: actions/github-script@v6
+        with:
+          script: |
+            console.log(JSON.stringify(github, null, 2))
 
       - name: Notify deployment start
         uses: actions/github-script@v6
