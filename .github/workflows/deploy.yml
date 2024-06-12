@@ -58,6 +58,7 @@ jobs:
         env:
           EC2_USER: ec2-user
           EC2_HOST: ${{ secrets.EC2_HOST }}
+          ORIGIN_BRANCH: ${{ github.event.pull_request.head.ref }}
           AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
           PROJECT: wallet-serving
@@ -92,6 +93,7 @@ jobs:
             export INHOUSE_QUEUE_URL=${INHOUSE_QUEUE_URL}
             export CORE_BANCARIO_QUEUE_URL=${CORE_BANCARIO_QUEUE_URL}
             export CRYPTO_QUEUE_URL=${CRYPTO_QUEUE_URL}
+            export ORIGIN_BRANCH=${ORIGIN_BRANCH}
 
             cd DESA_API_2/ || exit 1
 
@@ -107,8 +109,8 @@ jobs:
             fi
 
             git fetch origin
-            git checkout \${{ github.event.pull_request.head.ref }}
-            git pull origin \${{ github.event.pull_request.head.ref }}
+            git checkout \$ORIGIN_BRANCH
+            git pull origin \$ORIGIN_BRANCH
 
             cd backend
 
