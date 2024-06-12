@@ -1,8 +1,12 @@
 name: Unit tests & Integration tests
 
 on:
-  issue_comment:
-    types: [created, edited]
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    branches:
+      - master
+      - develop
 
 permissions:
   issues: write
