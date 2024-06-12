@@ -14,8 +14,20 @@ permissions:
   pull-requests: write
 
 jobs:
+  prepare-deploy:
+    if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    outputs:
+      pr_number: ${{ steps.get-pr-number.outputs.pr_number }}
+    steps:
+      - name: Extract PR Number
+        id: get-pr-number
+        run: |
+          echo "::set-output name=pr_number::${{ github.event.workflow_run.head_branch }}"
+
   build-and-deploy:
-    if: ${{ github.event.workflow_run.conclusion == 'success' && contains(github.event.comment.body, '/deploy') }}
+    needs: prepare-deploy
+    if: github.event_name == 'issue_comment' && contains(github.event.comment.body, '/deploy')
     runs-on: ubuntu-latest
     steps:
       - name: Set up GitHub token
