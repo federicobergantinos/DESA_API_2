@@ -35,14 +35,6 @@ jobs:
             core.setOutput("base_ref", pr.base.ref);
             core.setOutput("number", pr.number);
 
-      - name: Print PR details
-        run: |
-          echo "Pull Request Number: ${{ steps.get-pr-details.outputs.number }}"
-          echo "Head Branch: ${{ steps.get-pr-details.outputs.head_ref }}"
-          echo "Base Branch: ${{ steps.get-pr-details.outputs.base_ref }}"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Notify deployment start
         uses: actions/github-script@v6
         env:
@@ -81,7 +73,6 @@ jobs:
         env:
           EC2_USER: ec2-user
           EC2_HOST: ${{ secrets.EC2_HOST }}
-          ORIGIN_BRANCH: ${{ github.event.pull_request.head.ref }}
           AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
           PROJECT: wallet-serving
@@ -133,8 +124,8 @@ jobs:
             fi
 
             git fetch origin
-            git checkout \${{ github.event.pull_request.head.ref }}
-            git pull origin \${{ github.event.pull_request.head.ref }}
+            git checkout \${{ steps.get-pr-details.outputs.head_ref }}
+            git pull origin \${{ steps.get-pr-details.outputs.head_ref }}
 
             cd backend
 
