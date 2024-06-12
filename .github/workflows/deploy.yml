@@ -19,12 +19,6 @@ jobs:
     env:
       GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
     steps:
-      - name: Set up GitHub token
-        id: get-pr-details
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Checkout code
         uses: actions/checkout@v2
 
@@ -44,12 +38,6 @@ jobs:
     env:
       GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
     steps:
-      - name: Set up GitHub token
-        id: get-pr-details
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Checkout code
         uses: actions/checkout@v2
 
@@ -86,11 +74,11 @@ jobs:
             core.setOutput("base_ref", pr.base.ref);
             core.setOutput("number", pr.number);
 
-      - name: Print GitHub context
-        uses: actions/github-script@v6
-        with:
-          script: |
-            console.log(JSON.stringify(context, null, 2))
+      # - name: Print GitHub context
+      #   uses: actions/github-script@v6
+      #   with:
+      #     script: |
+      #       console.log(JSON.stringify(context, null, 2))
 
       - name: Notify deployment start
         uses: actions/github-script@v6
