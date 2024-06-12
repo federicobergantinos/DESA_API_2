@@ -15,15 +15,15 @@ jobs:
       unit_tests_passed: ${{ steps.check.outputs.unit_tests_passed }}
     steps:
       - name: Checkout code
-        env:
-          GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
         uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.MY_GITHUB_TOKEN }}
 
       - name: Trigger unit tests workflow
         id: trigger
         uses: actions/github-script@v6
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
         with:
           script: |
             const response = await github.actions.createWorkflowDispatch({
@@ -38,7 +38,7 @@ jobs:
         id: check
         uses: actions/github-script@v6
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
         with:
           script: |
             const { owner, repo } = context.repo;
@@ -78,7 +78,7 @@ jobs:
         id: get-pr-details
         uses: actions/github-script@v6
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.MY_GITHUB_TOKEN }}
           script: |
             const prNumber = context.issue.number;
             const { data: pr } = await github.rest.pulls.get({
