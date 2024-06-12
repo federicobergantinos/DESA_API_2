@@ -1,4 +1,4 @@
-name: Deploy to AWS ECS
+name: Deploy to AWS ECS v2
 
 on:
   issue_comment:
