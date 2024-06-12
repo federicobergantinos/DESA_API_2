@@ -95,6 +95,7 @@ jobs:
             export CRYPTO_QUEUE_URL=${CRYPTO_QUEUE_URL}
             export ORIGIN_BRANCH=${ORIGIN_BRANCH}
 
+            echo $ORIGIN_BRANCH
             cd DESA_API_2/ || exit 1
 
             # Verifica la existencia de Dockerfile y task-def.json
