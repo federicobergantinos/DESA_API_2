@@ -14,6 +14,44 @@ permissions:
   pull-requests: write
 
 jobs:
+  unit-tests-backend:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "14"
+
+      - name: Install dependencies
+        run: cd backend && npm install
+
+      - name: Run backend unit tests
+        run: cd backend && npm run test
+
+  unit-tests-frontend:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "14"
+
+      - name: Install dependencies
+        run: cd frontend && npm install
+
+      - name: Run frontend unit tests
+        run: cd frontend && npm run test
+
   build-and-deploy:
     if: |
       contains(github.event.comment.html_url, '/pull/') && contains(github.event.comment.body, '/deploy')
@@ -56,20 +94,6 @@ jobs:
               repo: context.repo.repo,
               body: body
             });
-
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: "14"
-
-      - name: Run backend unit tests
-        run: cd backend && npm install && npm run test
-
-      - name: Run frontend unit tests
-        run: cd frontend && npm install && npm run test
 
       - name: Set up SSH key
         run: |
