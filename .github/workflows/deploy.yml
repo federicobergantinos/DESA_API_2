@@ -20,24 +20,28 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Set up GitHub token
-        uses: actions/github-script@v6
         id: get-pr-details
+        uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const prNumber = context.issue.number;
-            const { data: pr } = await github.pulls.get({
+            const { data: pr } = await github.rest.pulls.get({
               owner: context.repo.owner,
               repo: context.repo.repo,
               pull_number: prNumber,
             });
-            return pr;
+            return {
+              head_ref: pr.head.ref,
+              base_ref: pr.base.ref,
+              number: pr.number,
+            };
 
       - name: Print PR details
         run: |
           echo "Pull Request Number: ${{ steps.get-pr-details.outputs.number }}"
-          echo "Head Branch: ${{ steps.get-pr-details.outputs.head.ref }}"
-          echo "Base Branch: ${{ steps.get-pr-details.outputs.base.ref }}"
+          echo "Head Branch: ${{ steps.get-pr-details.outputs.head_ref }}"
+          echo "Base Branch: ${{ steps.get-pr-details.outputs.base_ref }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
