@@ -1,6 +1,11 @@
 name: Deploy to AWS ECS v2
 
 on:
+  workflow_run:
+    workflows: ["Unit tests"]
+    types:
+      - completed
+
   issue_comment:
     types: [created, edited]
 
@@ -11,6 +16,7 @@ permissions:
 jobs:
   build-and-deploy:
     if: |
+      github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' &&
       contains(github.event.comment.html_url, '/pull/') && contains(github.event.comment.body, '/deploy')
     runs-on: ubuntu-latest
     steps:
