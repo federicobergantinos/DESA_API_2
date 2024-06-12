@@ -57,6 +57,20 @@ jobs:
               body: body
             });
 
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "14"
+
+      - name: Run backend unit tests
+        run: cd backend && npm install && npm run test
+
+      - name: Run frontend unit tests
+        run: cd frontend && npm install && npm run test
+
       - name: Set up SSH key
         run: |
           mkdir -p ~/.ssh
