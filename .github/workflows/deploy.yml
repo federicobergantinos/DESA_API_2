@@ -16,7 +16,8 @@ permissions:
 jobs:
   build-and-deploy:
     if: |
-      contains(github.event.comment.html_url, '/pull/') && contains(github.event.comment.body, '/deploy')
+      # contains(github.event.comment.html_url, '/pull/') && contains(github.event.comment.body, '/deploy')
+      contains(github.event.comment.html_url, '/pull/')
     runs-on: ubuntu-latest
     steps:
       - name: Check Condition
