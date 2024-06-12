@@ -15,6 +15,8 @@ jobs:
       unit_tests_passed: ${{ steps.check.outputs.unit_tests_passed }}
     steps:
       - name: Checkout code
+        env:
+          GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
         uses: actions/checkout@v2
 
       - name: Trigger unit tests workflow
