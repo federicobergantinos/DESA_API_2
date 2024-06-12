@@ -1,11 +1,6 @@
 name: Deploy to AWS ECS
 
 on:
-  workflow_run:
-    workflows: ["Unit tests"]
-    types:
-      - completed
-
   issue_comment:
     types: [created, edited]
 
@@ -14,49 +9,68 @@ permissions:
   pull-requests: write
 
 jobs:
-  unit-tests-backend:
+  trigger-unit-tests:
     runs-on: ubuntu-latest
-    env:
-      GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
+    outputs:
+      unit_tests_passed: ${{ steps.check.outputs.unit_tests_passed }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
+      - name: Trigger unit tests workflow
+        id: trigger
+        uses: actions/github-script@v6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          node-version: "14"
+          script: |
+            const response = await github.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'unit-tests.yml',  // Cambia esto por el nombre de tu workflow de pruebas unitarias
+              ref: context.payload.issue.pull_request.head.ref
+            });
+            console.log(response);
 
-      - name: Install dependencies
-        run: cd backend && npm install
-
-      - name: Run backend unit tests
-        run: cd backend && npm run test
-
-  unit-tests-frontend:
-    runs-on: ubuntu-latest
-    env:
-      GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
+      - name: Wait for unit tests to complete
+        id: check
+        uses: actions/github-script@v6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          node-version: "14"
-
-      - name: Install dependencies
-        run: cd frontend && npm install
-
-      - name: Run frontend unit tests
-        run: cd frontend && npm run test
+          script: |
+            const { owner, repo } = context.repo;
+            const workflow_id = 'unit-tests.yml';  // Cambia esto por el nombre de tu workflow de pruebas unitarias
+            const ref = context.payload.issue.pull_request.head.ref;
+            let unit_tests_passed = false;
+            let max_attempts = 30;
+            let attempt = 0;
+            while (attempt < max_attempts) {
+              const runs = await github.actions.listWorkflowRuns({
+                owner,
+                repo,
+                workflow_id,
+                branch: ref,
+                status: 'completed'
+              });
+              const latestRun = runs.data.workflow_runs[0];
+              if (latestRun && latestRun.conclusion === 'success') {
+                unit_tests_passed = true;
+                break;
+              } else if (latestRun && latestRun.conclusion === 'failure') {
+                unit_tests_passed = false;
+                break;
+              }
+              await new Promise(resolve => setTimeout(resolve, 20000)); // Esperar 20 segundos antes de reintentar
+              attempt++;
+            }
+            return { unit_tests_passed: unit_tests_passed ? 'true' : 'false' };
 
   build-and-deploy:
     if: |
-      contains(github.event.comment.html_url, '/pull/') && contains(github.event.comment.body, '/deploy')
+      contains(github.event.comment.html_url, '/pull/') && contains(github.event.comment.body, '/deploy') && needs.trigger-unit-tests.outputs.unit_tests_passed == 'true'
     runs-on: ubuntu-latest
-    needs: [unit-tests-frontend, unit-tests-backend]
+    needs: [trigger-unit-tests]
     steps:
       - name: Set up GitHub token
         id: get-pr-details
