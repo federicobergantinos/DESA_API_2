@@ -31,11 +31,9 @@ jobs:
               repo: context.repo.repo,
               pull_number: prNumber,
             });
-            return {
-              head_ref: pr.head.ref,
-              base_ref: pr.base.ref,
-              number: pr.number,
-            };
+            core.setOutput("head_ref", pr.head.ref);
+            core.setOutput("base_ref", pr.base.ref);
+            core.setOutput("number", pr.number);
 
       - name: Print PR details
         run: |
