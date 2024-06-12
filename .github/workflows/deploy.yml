@@ -19,6 +19,12 @@ jobs:
     env:
       GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
     steps:
+      - name: Set up GitHub token
+        id: get-pr-details
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Checkout code
         uses: actions/checkout@v2
 
@@ -38,6 +44,12 @@ jobs:
     env:
       GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
     steps:
+      - name: Set up GitHub token
+        id: get-pr-details
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Checkout code
         uses: actions/checkout@v2
 
