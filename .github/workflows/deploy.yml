@@ -88,7 +88,7 @@ jobs:
             export CRYPTO_QUEUE_URL=${CRYPTO_QUEUE_URL}
 
             cd DESA_API_2/ || exit 1
-            git pull origin develop
+            git pull origin \${{ github.event.pull_request.head.ref }}
             cd backend
 
             # Log in to Amazon ECR
@@ -102,6 +102,9 @@ jobs:
               echo "Registrando la definición de tarea..."
               response=\$(aws ecs register-task-definition --cli-input-json file://task-def.json)
               task_definition_arn=\$(echo \$response | jq -r '.taskDefinition.taskDefinitionArn')
+
+              # Save previous task definition ARN for rollback
+              echo "PREVIOUS_TASK_DEFINITION_ARN=\$(aws ecs describe-services --cluster InfraBase-ECSCluster-f3Ia4koRrIVC --services wallet-serving-WalletECSService-n4bFK1XXE4XD | jq -r '.services[0].taskDefinition')" > previous_task_definition.txt
 
               # Use the taskDefinitionArn to update the ECS service
               aws ecs update-service --cluster InfraBase-ECSCluster-f3Ia4koRrIVC --service wallet-serving-WalletECSService-n4bFK1XXE4XD --task-definition "\$task_definition_arn"
@@ -150,3 +153,14 @@ jobs:
 
       - name: Run backend integration tests
         run: cd backend && npm run test:integration
+
+      - name: Rollback on failure
+        if: failure()
+        env:
+          EC2_USER: ec2-user
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+        run: |
+          previous_task_definition_arn=$(cat previous_task_definition.txt | grep PREVIOUS_TASK_DEFINITION_ARN | cut -d '=' -f 2)
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa $EC2_USER@$EC2_HOST <<EOF
+            aws ecs update-service --cluster InfraBase-ECSCluster-f3Ia4koRrIVC --service wallet-serving-WalletECSService-n4bFK1XXE4XD --task-definition "\$previous_task_definition_arn"
+          EOF
