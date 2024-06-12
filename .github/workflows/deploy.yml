@@ -1,6 +1,11 @@
-name: Deploy to AWS ECS
+name: Deploy to AWS ECS v2
 
 on:
+  workflow_run:
+    workflows: ["Unit tests"]
+    types:
+      - completed
+
   issue_comment:
     types: [created, edited]
 
@@ -11,6 +16,7 @@ permissions:
 jobs:
   build-and-deploy:
     if: |
+      github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' &&
       contains(github.event.comment.html_url, '/pull/') && contains(github.event.comment.body, '/deploy')
     runs-on: ubuntu-latest
     steps:
@@ -52,6 +58,7 @@ jobs:
         env:
           EC2_USER: ec2-user
           EC2_HOST: ${{ secrets.EC2_HOST }}
+          ORIGIN_BRANCH: ${{ github.event.pull_request.head.ref }}
           AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
           PROJECT: wallet-serving
@@ -86,9 +93,26 @@ jobs:
             export INHOUSE_QUEUE_URL=${INHOUSE_QUEUE_URL}
             export CORE_BANCARIO_QUEUE_URL=${CORE_BANCARIO_QUEUE_URL}
             export CRYPTO_QUEUE_URL=${CRYPTO_QUEUE_URL}
+            export ORIGIN_BRANCH=${ORIGIN_BRANCH}
 
+            echo $ORIGIN_BRANCH
             cd DESA_API_2/ || exit 1
-            git pull origin \${{ github.event.pull_request.head.ref }}
+
+            # Verifica la existencia de Dockerfile y task-def.json
+            if [ ! -f "backend/Dockerfile" ]; then
+              echo "ERROR: Dockerfile no encontrado en el directorio backend."
+              exit 1
+            fi
+
+            if [ ! -f "backend/task-def.json" ]; then
+              echo "ERROR: Archivo task-def.json no encontrado en el directorio backend."
+              exit 1
+            fi
+
+            git fetch origin
+            git checkout \$ORIGIN_BRANCH
+            git pull origin \$ORIGIN_BRANCH
+
             cd backend
 
             # Log in to Amazon ECR
