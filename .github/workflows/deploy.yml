@@ -1,4 +1,4 @@
-name: Deploy to AWS ECS
+name: CICD Wallet
 
 on:
   issue_comment:
