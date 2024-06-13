@@ -262,7 +262,6 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa $EC2_USER@$EC2_HOST <<EOF
             cd DESA_API_2/backend
-            ls
             echo $(cat previous_task_definition.txt | grep PREVIOUS_TASK_DEFINITION_ARN)
             previous_task_definition_arn=$(cat previous_task_definition.txt | grep PREVIOUS_TASK_DEFINITION_ARN | cut -d '=' -f 2)
             echo $previous_task_definition_arn
