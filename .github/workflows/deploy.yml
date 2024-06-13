@@ -234,20 +234,20 @@ jobs:
         run: npm run test:integration
 
       - name: Set up SSH key
-        if: failure()
+        # if: failure()
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
       - name: Add SSH Key to ssh-agent
-        if: failure()
+        # if: failure()
         run: |
           eval $(ssh-agent -s)
           ssh-add ~/.ssh/id_rsa
 
       - name: Test SSH Connection
-        if: failure()
+        # if: failure()
         env:
           EC2_USER: ec2-user
           EC2_HOST: ${{ secrets.EC2_HOST }}
@@ -262,5 +262,6 @@ jobs:
         run: |
           previous_task_definition_arn=$(cat previous_task_definition.txt | grep PREVIOUS_TASK_DEFINITION_ARN | cut -d '=' -f 2)
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa $EC2_USER@$EC2_HOST <<EOF
+            echo $previous_task_definition_arn
             aws ecs update-service --cluster InfraBase-ECSCluster-f3Ia4koRrIVC --service wallet-serving-WalletECSService-n4bFK1XXE4XD --task-definition "\$previous_task_definition_arn"
           EOF
