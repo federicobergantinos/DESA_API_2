@@ -231,23 +231,20 @@ jobs:
         run: cd backend && npm install
 
       - name: Run backend integration tests
-        run: npm run test:integration
+        run: cd backend && npm run integration
 
       - name: Set up SSH key
-        # if: failure()
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
       - name: Add SSH Key to ssh-agent
-        # if: failure()
         run: |
           eval $(ssh-agent -s)
           ssh-add ~/.ssh/id_rsa
 
       - name: Test SSH Connection
-        # if: failure()
         env:
           EC2_USER: ec2-user
           EC2_HOST: ${{ secrets.EC2_HOST }}
@@ -255,7 +252,6 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa $EC2_USER@$EC2_HOST echo "SSH connection successful"
 
       - name: Rollback on failure
-        if: failure()
         env:
           EC2_USER: ec2-user
           EC2_HOST: ${{ secrets.EC2_HOST }}
