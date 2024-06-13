@@ -36,7 +36,7 @@ jobs:
           echo "Checking the status of unit tests..."
           for i in {1..30}; do
             sleep 20
-            STATUS=$(gh run list --workflow=unit-tests.yml --branch=${{ github.head_ref }} --json conclusion -q '.[0].conclusion')
+            STATUS=$(gh run list --workflow=tests.yml --branch=${{ github.head_ref }} --json conclusion -q '.[0].conclusion')
             if [ "$STATUS" == "success" ]; then
               echo "Unit tests passed"
               echo "unit_tests_passed=true" >> $GITHUB_ENV
