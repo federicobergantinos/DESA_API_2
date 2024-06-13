@@ -21,52 +21,32 @@ jobs:
 
       - name: Trigger unit tests workflow
         id: trigger
-        uses: actions/github-script@v6
-        env:
-          GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
+        uses: peter-evans/repository-dispatch@v2
         with:
-          script: |
-            const response = await github.actions.createWorkflowDispatch({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              workflow_id: 'unit-tests.yml',  // Cambia esto por el nombre de tu workflow de pruebas unitarias
-              ref: context.payload.issue.pull_request.head.ref
-            });
-            console.log(response);
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          event-type: unit-tests
+          client-payload: '{"ref": "${{ github.head_ref }}"}'
 
       - name: Wait for unit tests to complete
         id: check
-        uses: actions/github-script@v6
-        env:
-          GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
-        with:
-          script: |
-            const { owner, repo } = context.repo;
-            const workflow_id = 'unit-tests.yml';  // Cambia esto por el nombre de tu workflow de pruebas unitarias
-            const ref = context.payload.issue.pull_request.head.ref;
-            let unit_tests_passed = false;
-            let max_attempts = 30;
-            let attempt = 0;
-            while (attempt < max_attempts) {
-              const runs = await github.actions.listWorkflowRuns({
-                owner,
-                repo,
-                workflow_id,
-                branch: ref,
-                status: 'completed'
-              });
-              const latestRun = runs.data.workflow_runs[0];
-              if (latestRun && latestRun.conclusion === 'success') {
-                unit_tests_passed = true;
-                break;
-              } else if (latestRun && latestRun.conclusion === 'failure') {
-                unit_tests_passed = false;
-                break;
-              }
-              await new Promise(resolve => setTimeout(resolve, 20000)); // Esperar 20 segundos antes de reintentar
-              attempt++;
-            }
-            return { unit_tests_passed: unit_tests_passed ? 'true' : 'false' };
+        run: |
+          echo "Checking the status of unit tests..."
+          for i in {1..30}; do
+            sleep 20
+            STATUS=$(gh run list --workflow=unit-tests.yml --branch=${{ github.head_ref }} --json conclusion -q '.[0].conclusion')
+            if [ "$STATUS" == "success" ]; then
+              echo "Unit tests passed"
+              echo "unit_tests_passed=true" >> $GITHUB_ENV
+              exit 0
+            elif [ "$STATUS" == "failure" ]; then
+              echo "Unit tests failed"
+              echo "unit_tests_passed=false" >> $GITHUB_ENV
+              exit 1
+            fi
+          done
+          echo "Unit tests did not complete in time"
+          exit 1
 
   build-and-deploy:
     if: |
