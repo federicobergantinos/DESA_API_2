@@ -10,6 +10,8 @@ permissions:
 
 jobs:
   trigger-unit-tests:
+    if: |
+      contains(github.event.comment.body, '/deploy')
     runs-on: ubuntu-latest
     outputs:
       unit_tests_passed: ${{ steps.check.outputs.unit_tests_passed }}
@@ -52,7 +54,7 @@ jobs:
 
   build-and-deploy:
     if: |
-      contains(github.event.comment.html_url, '/pull/') && contains(github.event.comment.body, '/deploy') && needs.trigger-unit-tests.outputs.unit_tests_passed == 'true'
+      needs.trigger-unit-tests.outputs.unit_tests_passed == 'true'
     runs-on: ubuntu-latest
     needs: [trigger-unit-tests]
     steps:
