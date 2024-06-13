@@ -40,25 +40,23 @@ jobs:
           for i in {1..30}; do
             sleep 20
             STATUS=$(gh run list --workflow=tests.yml --branch=${{ github.head_ref }} --json conclusion -q '.[0].conclusion')
-            echo $STATUS
             if [ "$STATUS" == "success" ]; then
               echo "Unit tests passed"
-              echo "unit_tests_passed=true" >> $GITHUB_ENV
               echo "unit_tests_passed=true" >> $GITHUB_OUTPUT
               exit 0
             elif [ "$STATUS" == "failure" ]; then
               echo "Unit tests failed"
-              echo "unit_tests_passed=false" >> $GITHUB_ENV
               echo "unit_tests_passed=false" >> $GITHUB_OUTPUT
               exit 1
             fi
           done
           echo "Unit tests did not complete in time"
+          echo "unit_tests_passed=false" >> $GITHUB_OUTPUT
           exit 1
 
   build-and-deploy:
-    if: |
-      needs.trigger-unit-tests.outputs.unit_tests_passed != 'true'
+    # if: |
+    #   needs.trigger-unit-tests.outputs.unit_tests_passed == 'true'
     runs-on: ubuntu-latest
     needs: [trigger-unit-tests]
     steps:
@@ -122,88 +120,88 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa $EC2_USER@$EC2_HOST echo "SSH connection successful"
 
-      - name: Trigger Deployment on EC2
-        env:
-          EC2_USER: ec2-user
-          EC2_HOST: ${{ secrets.EC2_HOST }}
-          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-          PROJECT: wallet-serving
-          CODE: superSecret
-          POSTGRES_DB: daidb
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-          NODE_ENV: production
-          POSTGRES_HOST: wallet-serving-db-dbinstance-jg79hftmmnfg.ci6gprfovemt.us-east-1.rds.amazonaws.com
-          POSTGRES_PORT: 5432
-          AWS_S3_BUCKET_NAME: wallet-desa-api-2
-          AWS_DEFAULT_REGION: us-east-1
-          INHOUSE_QUEUE_URL: https://sqs.us-east-1.amazonaws.com/137318283310/inhouse_queue
-          CORE_BANCARIO_QUEUE_URL: https://sqs.us-east-1.amazonaws.com/137318283310/core_bancario_queue
-          CRYPTO_QUEUE_URL: https://sqs.us-east-1.amazonaws.com/137318283310/crypto_queue
-        run: |
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa $EC2_USER@$EC2_HOST <<EOF
-            export EC2_USER=${EC2_USER}
-            export EC2_HOST=${EC2_HOST}
-            export AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID}
-            export AWS_REGION=${AWS_REGION}
-            export PROJECT=${PROJECT}
-            export CODE=${CODE}
-            export POSTGRES_DB=${POSTGRES_DB}
-            export POSTGRES_USER=${POSTGRES_USER}
-            export POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-            export NODE_ENV=${NODE_ENV}
-            export POSTGRES_HOST=${POSTGRES_HOST}
-            export POSTGRES_PORT=${POSTGRES_PORT}
-            export AWS_S3_BUCKET_NAME=${AWS_S3_BUCKET_NAME}
-            export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
-            export INHOUSE_QUEUE_URL=${INHOUSE_QUEUE_URL}
-            export CORE_BANCARIO_QUEUE_URL=${CORE_BANCARIO_QUEUE_URL}
-            export CRYPTO_QUEUE_URL=${CRYPTO_QUEUE_URL}
-            export ORIGIN_BRANCH=${ORIGIN_BRANCH}
+      # - name: Trigger Deployment on EC2
+      #   env:
+      #     EC2_USER: ec2-user
+      #     EC2_HOST: ${{ secrets.EC2_HOST }}
+      #     AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+      #     AWS_REGION: ${{ secrets.AWS_REGION }}
+      #     PROJECT: wallet-serving
+      #     CODE: superSecret
+      #     POSTGRES_DB: daidb
+      #     POSTGRES_USER: postgres
+      #     POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+      #     NODE_ENV: production
+      #     POSTGRES_HOST: wallet-serving-db-dbinstance-jg79hftmmnfg.ci6gprfovemt.us-east-1.rds.amazonaws.com
+      #     POSTGRES_PORT: 5432
+      #     AWS_S3_BUCKET_NAME: wallet-desa-api-2
+      #     AWS_DEFAULT_REGION: us-east-1
+      #     INHOUSE_QUEUE_URL: https://sqs.us-east-1.amazonaws.com/137318283310/inhouse_queue
+      #     CORE_BANCARIO_QUEUE_URL: https://sqs.us-east-1.amazonaws.com/137318283310/core_bancario_queue
+      #     CRYPTO_QUEUE_URL: https://sqs.us-east-1.amazonaws.com/137318283310/crypto_queue
+      #   run: |
+      #     ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa $EC2_USER@$EC2_HOST <<EOF
+      #       export EC2_USER=${EC2_USER}
+      #       export EC2_HOST=${EC2_HOST}
+      #       export AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID}
+      #       export AWS_REGION=${AWS_REGION}
+      #       export PROJECT=${PROJECT}
+      #       export CODE=${CODE}
+      #       export POSTGRES_DB=${POSTGRES_DB}
+      #       export POSTGRES_USER=${POSTGRES_USER}
+      #       export POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      #       export NODE_ENV=${NODE_ENV}
+      #       export POSTGRES_HOST=${POSTGRES_HOST}
+      #       export POSTGRES_PORT=${POSTGRES_PORT}
+      #       export AWS_S3_BUCKET_NAME=${AWS_S3_BUCKET_NAME}
+      #       export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
+      #       export INHOUSE_QUEUE_URL=${INHOUSE_QUEUE_URL}
+      #       export CORE_BANCARIO_QUEUE_URL=${CORE_BANCARIO_QUEUE_URL}
+      #       export CRYPTO_QUEUE_URL=${CRYPTO_QUEUE_URL}
+      #       export ORIGIN_BRANCH=${ORIGIN_BRANCH}
 
-            echo $ORIGIN_BRANCH
-            cd DESA_API_2/ || exit 1
+      #       echo $ORIGIN_BRANCH
+      #       cd DESA_API_2/ || exit 1
 
-            # Verifica la existencia de Dockerfile y task-def.json
-            if [ ! -f "backend/Dockerfile" ]; then
-              echo "ERROR: Dockerfile no encontrado en el directorio backend."
-              exit 1
-            fi
+      #       # Verifica la existencia de Dockerfile y task-def.json
+      #       if [ ! -f "backend/Dockerfile" ]; then
+      #         echo "ERROR: Dockerfile no encontrado en el directorio backend."
+      #         exit 1
+      #       fi
 
-            if [ ! -f "backend/task-def.json" ]; then
-              echo "ERROR: Archivo task-def.json no encontrado en el directorio backend."
-              exit 1
-            fi
+      #       if [ ! -f "backend/task-def.json" ]; then
+      #         echo "ERROR: Archivo task-def.json no encontrado en el directorio backend."
+      #         exit 1
+      #       fi
 
-            git fetch origin
-            git checkout \${{ steps.get-pr-details.outputs.head_ref }}
-            git pull origin \${{ steps.get-pr-details.outputs.head_ref }}
+      #       git fetch origin
+      #       git checkout \${{ steps.get-pr-details.outputs.head_ref }}
+      #       git pull origin \${{ steps.get-pr-details.outputs.head_ref }}
 
-            cd backend
+      #       cd backend
 
-            # Log in to Amazon ECR
-            aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+      #       # Log in to Amazon ECR
+      #       aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
 
-            # Build and push the Docker image
-            docker buildx build --platform linux/amd64 -t $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$PROJECT:latest . --push
+      #       # Build and push the Docker image
+      #       docker buildx build --platform linux/amd64 -t $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$PROJECT:latest . --push
 
-            # Register the new task definition
-            if [ -f "task-def.json" ]; then
-              echo "Registrando la definición de tarea..."
-              response=\$(aws ecs register-task-definition --cli-input-json file://task-def.json)
-              task_definition_arn=\$(echo \$response | jq -r '.taskDefinition.taskDefinitionArn')
+      #       # Register the new task definition
+      #       if [ -f "task-def.json" ]; then
+      #         echo "Registrando la definición de tarea..."
+      #         response=\$(aws ecs register-task-definition --cli-input-json file://task-def.json)
+      #         task_definition_arn=\$(echo \$response | jq -r '.taskDefinition.taskDefinitionArn')
 
-              # Save previous task definition ARN for rollback
-              echo "PREVIOUS_TASK_DEFINITION_ARN=\$(aws ecs describe-services --cluster InfraBase-ECSCluster-f3Ia4koRrIVC --services wallet-serving-WalletECSService-n4bFK1XXE4XD | jq -r '.services[0].taskDefinition')" > previous_task_definition.txt
+      #         # Save previous task definition ARN for rollback
+      #         echo "PREVIOUS_TASK_DEFINITION_ARN=\$(aws ecs describe-services --cluster InfraBase-ECSCluster-f3Ia4koRrIVC --services wallet-serving-WalletECSService-n4bFK1XXE4XD | jq -r '.services[0].taskDefinition')" > previous_task_definition.txt
 
-              # Use the taskDefinitionArn to update the ECS service
-              aws ecs update-service --cluster InfraBase-ECSCluster-f3Ia4koRrIVC --service wallet-serving-WalletECSService-n4bFK1XXE4XD --task-definition "\$task_definition_arn"
-            else
-              echo "Archivo task-def.json no encontrado en el directorio backend."
-              exit 1
-            fi
-          EOF
+      #         # Use the taskDefinitionArn to update the ECS service
+      #         aws ecs update-service --cluster InfraBase-ECSCluster-f3Ia4koRrIVC --service wallet-serving-WalletECSService-n4bFK1XXE4XD --task-definition "\$task_definition_arn"
+      #       else
+      #         echo "Archivo task-def.json no encontrado en el directorio backend."
+      #         exit 1
+      #       fi
+      #     EOF
 
       - name: Add comment to PR
         uses: actions/github-script@v6
