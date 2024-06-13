@@ -23,7 +23,7 @@ jobs:
         id: trigger
         uses: peter-evans/repository-dispatch@v2
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.MY_GITHUB_TOKEN }}
           repository: ${{ github.repository }}
           event-type: unit-tests
           client-payload: '{"ref": "${{ github.head_ref }}"}'
