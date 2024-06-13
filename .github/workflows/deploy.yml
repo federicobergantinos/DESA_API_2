@@ -234,20 +234,17 @@ jobs:
         run: cd backend && npm run integration
 
       - name: Set up SSH key
-        if: failure()
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
       - name: Add SSH Key to ssh-agent
-        if: failure()
         run: |
           eval $(ssh-agent -s)
           ssh-add ~/.ssh/id_rsa
 
       - name: Test SSH Connection
-        if: failure()
         env:
           EC2_USER: ec2-user
           EC2_HOST: ${{ secrets.EC2_HOST }}
@@ -262,9 +259,12 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa $EC2_USER@$EC2_HOST <<EOF
             cd DESA_API_2/backend
-            ls
-            echo $(cat previous_task_definition.txt | grep PREVIOUS_TASK_DEFINITION_ARN)
-            previous_task_definition_arn=$(cat previous_task_definition.txt | grep PREVIOUS_TASK_DEFINITION_ARN | cut -d '=' -f 2)
-            echo $previous_task_definition_arn
-            aws ecs update-service --cluster InfraBase-ECSCluster-f3Ia4koRrIVC --service wallet-serving-WalletECSService-n4bFK1XXE4XD --task-definition "\$previous_task_definition_arn"
+            if [ -f "previous_task_definition.txt" ]; then
+              previous_task_definition_arn=$(cat previous_task_definition.txt | grep PREVIOUS_TASK_DEFINITION_ARN | cut -d '=' -f 2)
+              echo $previous_task_definition_arn
+              aws ecs update-service --cluster InfraBase-ECSCluster-f3Ia4koRrIVC --service wallet-serving-WalletECSService-n4bFK1XXE4XD --task-definition "\$previous_task_definition_arn"
+            else
+              echo "ERROR: Archivo previous_task_definition.txt no encontrado."
+              exit 1
+            fi
           EOF
