@@ -7,6 +7,7 @@ on:
 permissions:
   issues: write
   pull-requests: write
+  contents: write
 
 jobs:
   trigger-unit-tests:
@@ -39,13 +40,16 @@ jobs:
           for i in {1..30}; do
             sleep 20
             STATUS=$(gh run list --workflow=tests.yml --branch=${{ github.head_ref }} --json conclusion -q '.[0].conclusion')
+            echo $STATUS
             if [ "$STATUS" == "success" ]; then
               echo "Unit tests passed"
               echo "unit_tests_passed=true" >> $GITHUB_ENV
+              echo "unit_tests_passed=true" >> $GITHUB_OUTPUT
               exit 0
             elif [ "$STATUS" == "failure" ]; then
               echo "Unit tests failed"
               echo "unit_tests_passed=false" >> $GITHUB_ENV
+              echo "unit_tests_passed=false" >> $GITHUB_OUTPUT
               exit 1
             fi
           done
