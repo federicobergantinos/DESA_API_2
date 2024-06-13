@@ -30,6 +30,8 @@ jobs:
 
       - name: Wait for unit tests to complete
         id: check
+        env:
+          GH_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
         run: |
           echo "Checking the status of unit tests..."
           for i in {1..30}; do
