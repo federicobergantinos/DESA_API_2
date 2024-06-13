@@ -262,9 +262,11 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa $EC2_USER@$EC2_HOST <<EOF
             cd DESA_API_2/backend
+            echo "Archivos en el directorio actual:"
+            ls -l
             if [ -f "previous_task_definition.txt" ]; then
-              previous_task_definition_arn=$(cat previous_task_definition.txt | grep PREVIOUS_TASK_DEFINITION_ARN | cut -d '=' -f 2)
-              echo $previous_task_definition_arn
+              previous_task_definition_arn=\$(grep 'PREVIOUS_TASK_DEFINITION_ARN' previous_task_definition.txt | cut -d '=' -f 2)
+              echo \$previous_task_definition_arn
               aws ecs update-service --cluster InfraBase-ECSCluster-f3Ia4koRrIVC --service wallet-serving-WalletECSService-n4bFK1XXE4XD --task-definition "\$previous_task_definition_arn"
             else
               echo "ERROR: Archivo previous_task_definition.txt no encontrado."
