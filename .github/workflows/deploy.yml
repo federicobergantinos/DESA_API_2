@@ -10,55 +10,55 @@ permissions:
   contents: write
 
 jobs:
-  # trigger-unit-tests:
-  #   if: |
-  #     contains(github.event.comment.body, '/deploy')
-  #   runs-on: ubuntu-latest
-  #   outputs:
-  #     unit_tests_passed: ${{ steps.check.outputs.unit_tests_passed }}
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v2
-  #       with:
-  #         token: ${{ secrets.MY_GITHUB_TOKEN }}
+  trigger-unit-tests:
+    if: |
+      contains(github.event.comment.body, '/deploy')
+    runs-on: ubuntu-latest
+    outputs:
+      unit_tests_passed: ${{ steps.check.outputs.unit_tests_passed }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.MY_GITHUB_TOKEN }}
 
-  #     - name: Trigger unit tests workflow
-  #       id: trigger
-  #       uses: peter-evans/repository-dispatch@v2
-  #       with:
-  #         token: ${{ secrets.MY_GITHUB_TOKEN }}
-  #         repository: ${{ github.repository }}
-  #         event-type: unit-tests
-  #         client-payload: '{"ref": "${{ github.head_ref }}"}'
+      - name: Trigger unit tests workflow
+        id: trigger
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.MY_GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          event-type: unit-tests
+          client-payload: '{"ref": "${{ github.head_ref }}"}'
 
-  #     - name: Wait for unit tests to complete
-  #       id: check
-  #       env:
-  #         GH_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
-  #       run: |
-  #         echo "Checking the status of unit tests..."
-  #         for i in {1..30}; do
-  #           sleep 20
-  #           STATUS=$(gh run list --workflow=tests.yml --branch=${{ github.head_ref }} --json conclusion -q '.[0].conclusion')
-  #           if [ "$STATUS" == "success" ]; then
-  #             echo "Unit tests passed"
-  #             echo "unit_tests_passed=true" >> $GITHUB_OUTPUT
-  #             exit 0
-  #           elif [ "$STATUS" == "failure" ]; then
-  #             echo "Unit tests failed"
-  #             echo "unit_tests_passed=false" >> $GITHUB_OUTPUT
-  #             exit 1
-  #           fi
-  #         done
-  #         echo "Unit tests did not complete in time"
-  #         echo "unit_tests_passed=false" >> $GITHUB_OUTPUT
-  #         exit 1
+      - name: Wait for unit tests to complete
+        id: check
+        env:
+          GH_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
+        run: |
+          echo "Checking the status of unit tests..."
+          for i in {1..30}; do
+            sleep 20
+            STATUS=$(gh run list --workflow=tests.yml --branch=${{ github.head_ref }} --json conclusion -q '.[0].conclusion')
+            if [ "$STATUS" == "success" ]; then
+              echo "Unit tests passed"
+              echo "unit_tests_passed=true" >> $GITHUB_OUTPUT
+              exit 0
+            elif [ "$STATUS" == "failure" ]; then
+              echo "Unit tests failed"
+              echo "unit_tests_passed=false" >> $GITHUB_OUTPUT
+              exit 1
+            fi
+          done
+          echo "Unit tests did not complete in time"
+          echo "unit_tests_passed=false" >> $GITHUB_OUTPUT
+          exit 1
 
   build-and-deploy:
-    # if: |
-    #   needs.trigger-unit-tests.outputs.unit_tests_passed == 'true'
+    if: |
+      needs.trigger-unit-tests.outputs.unit_tests_passed == 'true'
     runs-on: ubuntu-latest
-    # needs: [trigger-unit-tests]
+    needs: [trigger-unit-tests]
     steps:
       - name: Set up GitHub token
         id: get-pr-details
