@@ -27,17 +27,45 @@ const authenticate = async (req, res) => {
     if (googleToken !== null) {
       const userData = await loginUser(googleToken, accessToken)
       user = await findUserByEmail(userData.email)
-      if (registerUser === true && accountInfo !== null) {
+      if (registerUser === true) {
         user = await createUser(userData)
 
-        const accountData = {
-          beneficiaryName: userData.name + ' ' + userData.surname,
-          beneficiaryAddress: accountInfo.beneficiaryAddress,
-          accountNumber: uuidv4(),
-          accountType: accountInfo.accountType,
-          userId: user.id,
-        }
-        account = await createAccount(accountData)
+        const accountDataList = [
+          {
+            beneficiaryName: userData.name + ' ' + userData.surname,
+            beneficiaryAddress: accountInfo.beneficiaryAddress,
+            accountNumber: uuidv4(),
+            beneficiaryAddress: '',
+            accountType: 'Pesos',
+            accountCurrency: 'ARS',
+            accountStatus: 'pending',
+            userId: user.id,
+          },
+          {
+            beneficiaryName: userData.name + ' ' + userData.surname,
+            beneficiaryAddress: accountInfo.beneficiaryAddress,
+            accountNumber: uuidv4(),
+            beneficiaryAddress: '',
+            accountType: 'Dolares',
+            accountCurrency: 'USD',
+            accountStatus: 'pending',
+            userId: user.id,
+          },
+          {
+            beneficiaryName: userData.name + ' ' + userData.surname,
+            beneficiaryAddress: accountInfo.beneficiaryAddress,
+            accountNumber: uuidv4(),
+            beneficiaryAddress: '',
+            accountType: 'XCoin',
+            accountCurrency: 'XCN',
+            accountStatus: 'pending',
+            userId: user.id,
+          },
+        ]
+
+        await Promise.all(
+          accountDataList.map((accountData) => createAccount(accountData))
+        )
       }
     } else if (accessToken !== null) {
       const decode = verify(accessToken, process.env.CODE, (err, decoded) => {

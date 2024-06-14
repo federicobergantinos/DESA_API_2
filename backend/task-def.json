@@ -63,11 +63,19 @@
                 },
                 {
                     "name": "CORE_BANCARIO_QUEUE_URL",
-                    "value": "https://sqs.us-east-1.amazonaws.com/877306037129/core_bancario_queue"
+                    "value": "https://sqs.us-east-1.amazonaws.com/137318283310/core_bancario_queue"
                 },
                 {
                     "name": "CRYPTO_QUEUE_URL",
-                    "value": "https://sqs.us-east-1.amazonaws.com/877306037129/crypto_queue"
+                    "value": "https://sqs.us-east-1.amazonaws.com/137318283310/crypto_queue"
+                },
+                {
+                    "name": "INHOUSE_QUEUE_URL",
+                    "value": "https://sqs.us-east-1.amazonaws.com/696571260279/uade-inhouse"
+                },
+                {
+                    "name": "WALLET_QUEUE_URL",
+                    "value": "https://sqs.us-east-1.amazonaws.com/137318283310/wallet_service_queue"
                 }
             ],
             "logConfiguration": {

@@ -2,6 +2,7 @@ const {
   createAccount,
   findAccountByUserId,
   findAccountById,
+  deleteAccountById,
 } = require('../services/accountService')
 const { findUserById } = require('../services/userService')
 const { v4: uuidv4 } = require('uuid')
@@ -44,6 +45,19 @@ const getById = async (req, res) => {
     })
   }
 }
+const deleteAccount = async (req, res) => {
+  try {
+    const userId = req.user.id // Asumiendo que el userId se obtiene del token de autenticación
+    await deleteAccountById(userId)
+
+    return sendResponse(res, 200, { message: 'Account deleted successfully' })
+  } catch (error) {
+    logger.error(`Error deleting account: ${error}`)
+    return sendResponse(res, error.code || 500, {
+      msg: error.message || 'An exception has occurred',
+    })
+  }
+}
 
 const getAccountsByUserId = async (req, res) => {
   try {
@@ -59,15 +73,15 @@ const getAccountsByUserId = async (req, res) => {
         accountNumber: account.accountNumber,
         accountType: account.accountType,
         accountCurrency: account.accountCurrency,
-        // Puedes agregar más campos aquí según sea necesario.
+        accountStatus: account.accountStatus,
       }))
 
       // Devolver la lista de objetos.
       return sendResponse(res, 200, accountDetails)
     } else {
-      return es
-        .status(404)
-        .json({ msg: 'No accounts found for the given user ID' })
+      return sendResponse(res, 404, {
+        message: 'No accounts found for the given user ID',
+      })
     }
   } catch (error) {
     logger.error(`Error fetching accounts by user ID: ${error}`)
@@ -81,4 +95,5 @@ module.exports = {
   create,
   getById,
   getAccountsByUserId,
+  deleteAccount,
 }

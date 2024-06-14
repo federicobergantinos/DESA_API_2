@@ -5,6 +5,7 @@ const {
   create,
   getAccountsByUserId,
   getById,
+  deleteAccount,
 } = require('../controllers/accountController')
 
 router.post('/create', create)
