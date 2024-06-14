@@ -35,7 +35,7 @@ try {
       console.error('Unable to connect to the database:', err)
     })
 } catch (error) {
-  logger.error('Error creating Sequelize instance', {
+  console.error('Error creating Sequelize instance', {
     message: error.message,
     stack: error.stack,
   })

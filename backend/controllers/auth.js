@@ -1,25 +1,33 @@
 const { createUser, findUserByEmail } = require('../services/userService')
-const { createAccount } = require('../services/accountService')
+const {
+  createAccount,
+  getAvailableMetamaskAccounts,
+  markMetamaskAccountAsUsed,
+} = require('../services/accountService')
 const {
   createAuthTokens,
   loginUser,
   refreshToken,
   deleteCredentials,
 } = require('../services/authService')
+const { sendMessageToSQS } = require('../scripts/sqsSender')
 const { verify } = require('jsonwebtoken')
 const Unauthorized = require('../Errors/Unauthorized')
 const { sendResponse } = require('../configurations/utils.js')
 const createLogger = require('../configurations/Logger')
 const logger = createLogger(__filename)
+const sequelize = require('../configurations/database/sequelizeConnection')
 const { v4: uuidv4 } = require('uuid')
 
 const authenticate = async (req, res) => {
+  const transaction = await sequelize.transaction()
   try {
     logger.info('Starting processing request.')
     const googleToken = req.body.token
     const registerUser = req.body.registerUser
     const accountInfo = req.body.accountInfo
     const accessToken = req.headers['authorization']
+    const additionalData = req.body.additionalData // Extraer los datos adicionales
 
     let user = null
     let tokens = null
@@ -28,12 +36,25 @@ const authenticate = async (req, res) => {
       const userData = await loginUser(googleToken, accessToken)
       user = await findUserByEmail(userData.email)
       if (registerUser === true) {
-        user = await createUser(userData)
+        // Obtener cuentas de Metamask disponibles
+        const availableMetamaskAccounts = await getAvailableMetamaskAccounts()
+        if (availableMetamaskAccounts.length < 1) {
+          await transaction.rollback()
+          return sendResponse(res, 400, {
+            msg: 'No hay suficientes cuentas de Metamask disponibles para XCoin',
+          })
+        }
 
+        // Tomar la primera cuenta disponible para XCoin
+        const metamaskAccount = availableMetamaskAccounts[0]
+
+        // Primero, crea el usuario
+        user = await createUser(userData, { transaction })
+
+        // Crear las cuentas utilizando UUID para Pesos y Dólares y cuenta de Metamask para XCoin
         const accountDataList = [
           {
             beneficiaryName: userData.name + ' ' + userData.surname,
-            beneficiaryAddress: accountInfo.beneficiaryAddress,
             accountNumber: uuidv4(),
             beneficiaryAddress: '',
             accountType: 'Pesos',
@@ -43,18 +64,16 @@ const authenticate = async (req, res) => {
           },
           {
             beneficiaryName: userData.name + ' ' + userData.surname,
-            beneficiaryAddress: accountInfo.beneficiaryAddress,
             accountNumber: uuidv4(),
             beneficiaryAddress: '',
-            accountType: 'Dolares',
+            accountType: 'Dólares',
             accountCurrency: 'USD',
             accountStatus: 'pending',
             userId: user.id,
           },
           {
             beneficiaryName: userData.name + ' ' + userData.surname,
-            beneficiaryAddress: accountInfo.beneficiaryAddress,
-            accountNumber: uuidv4(),
+            accountNumber: metamaskAccount.accountNumber,
             beneficiaryAddress: '',
             accountType: 'XCoin',
             accountCurrency: 'XCN',
@@ -63,9 +82,37 @@ const authenticate = async (req, res) => {
           },
         ]
 
+        // Crear las cuentas y marcar la cuenta de Metamask como usada
         await Promise.all(
-          accountDataList.map((accountData) => createAccount(accountData))
+          accountDataList.map((accountData) =>
+            createAccount(accountData, { transaction })
+          )
         )
+        await markMetamaskAccountAsUsed(metamaskAccount.accountNumber, {
+          transaction,
+        })
+
+        // Crear el payload para SQS
+        const payload = {
+          operationType: 'CreateUser',
+          data: {
+            immovables: additionalData.immovables,
+            hasTesla: additionalData.hasTesla,
+            employmentSituation: additionalData.employmentSituation,
+            monthlyIncome: additionalData.monthlyIncome,
+            pictureSelfie: additionalData.pictureSelfie,
+            pictureIdPassport: additionalData.pictureIdPassport,
+            firstName: userData.name,
+            lastName: userData.surname,
+            email: userData.email,
+          },
+        }
+
+        // Imprimir el payload antes de enviarlo a SQS
+        console.log('Payload to SQS:', JSON.stringify(payload, null, 2))
+
+        // Enviar mensaje a SQS
+        await sendMessageToSQS(payload)
       }
     } else if (accessToken !== null) {
       const decode = verify(accessToken, process.env.CODE, (err, decoded) => {
@@ -81,37 +128,31 @@ const authenticate = async (req, res) => {
         user = userData.dataValues
       }
     } else {
+      await transaction.rollback()
       return sendResponse(res, 400, { msg: 'invalid credentials' })
     }
 
     if (user === null) {
-      // Si el usuario no existe, devuelve un código de estado 301 (redirección)
+      await transaction.rollback()
       return sendResponse(res, 301, {
         msg: 'User needs to complete registration',
       })
-    } else if (user !== null) {
-      // Si el usuario existe, genera los tokens y devuelve la respuesta con código 200
+    } else {
       tokens = createAuthTokens(user)
-      if (registerUser) {
-        statusCode = 201
-      } else {
-        statusCode = 200
-      }
+      const statusCode = registerUser ? 201 : 200
       logger.info(statusCode)
+      await transaction.commit()
       return sendResponse(res, statusCode, {
         id: user.id,
         accessToken: tokens.accessToken,
         refreshToken: tokens.refreshToken,
       })
-    } else {
-      return sendResponse(res, 500, {
-        msg: 'Internal error',
-      })
     }
   } catch (error) {
+    await transaction.rollback()
     logger.error(`${error}`)
     return sendResponse(res, error.code || 500, {
-      msg: error.message || 'An exception has ocurred',
+      msg: error.message || 'An exception has occurred',
     })
   }
 }
@@ -132,7 +173,7 @@ const refresh = async (req, res) => {
   } catch (error) {
     logger.error(` ${error}`)
     return sendResponse(res, error.code || 500, {
-      msg: error.message || 'An exception has ocurred',
+      msg: error.message || 'An exception has occurred',
     })
   }
 }
@@ -145,7 +186,7 @@ const deleteCredential = async (req, res) => {
   } catch (error) {
     logger.error(` ${error}`)
     return sendResponse(res, error.code || 500, {
-      msg: error.message || 'An exception has ocurred',
+      msg: 'An exception has occurred',
     })
   }
 }

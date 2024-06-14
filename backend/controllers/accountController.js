@@ -3,26 +3,43 @@ const {
   findAccountByUserId,
   findAccountById,
   deleteAccountById,
+  getAvailableMetamaskAccounts,
+  markMetamaskAccountAsUsed,
 } = require('../services/accountService')
 const { findUserById } = require('../services/userService')
-const { v4: uuidv4 } = require('uuid')
 const { sendResponse } = require('../configurations/utils.js')
 const createLogger = require('../configurations/Logger')
 const logger = createLogger(__filename)
 
 const create = async (req, res) => {
   try {
+    // Buscar una cuenta de Metamask disponible
+    const availableMetamaskAccounts = await getAvailableMetamaskAccounts()
+    if (availableMetamaskAccounts.length === 0) {
+      return sendResponse(res, 400, {
+        msg: 'No available Metamask accounts',
+      })
+    }
+
+    // Tomar la primera cuenta disponible
+    const metamaskAccount = availableMetamaskAccounts[0]
+
     const accountData = {
       ...req.body,
+      accountNumber: metamaskAccount.accountNumber, // Usar la cuenta de Metamask disponible
     }
+
     const accountId = await createAccount(accountData)
+
+    // Marcar la cuenta de Metamask como usada
+    await markMetamaskAccountAsUsed(metamaskAccount.accountNumber)
 
     return sendResponse(res, 201, {
       id: accountId,
       message: 'La cuenta creada con éxito',
     })
   } catch (error) {
-    logger.error(`Error en la creación de la cuenta: ${error}`)
+    console.error(`Error en la creación de la cuenta: ${error}`)
     return sendResponse(res, error.code || 500, {
       msg: error.message || 'Ha ocurrido una excepción',
     })
@@ -39,12 +56,13 @@ const getById = async (req, res) => {
       ...account,
     })
   } catch (error) {
-    logger.error(` ${error}`)
+    console.error(` ${error}`)
     return sendResponse(res, error.code || 500, {
       msg: error.message || 'An exception has occurred',
     })
   }
 }
+
 const deleteAccount = async (req, res) => {
   try {
     const userId = req.user.id // Asumiendo que el userId se obtiene del token de autenticación
@@ -52,7 +70,7 @@ const deleteAccount = async (req, res) => {
 
     return sendResponse(res, 200, { message: 'Account deleted successfully' })
   } catch (error) {
-    logger.error(`Error deleting account: ${error}`)
+    console.error(`Error deleting account: ${error}`)
     return sendResponse(res, error.code || 500, {
       msg: error.message || 'An exception has occurred',
     })
@@ -84,7 +102,7 @@ const getAccountsByUserId = async (req, res) => {
       })
     }
   } catch (error) {
-    logger.error(`Error fetching accounts by user ID: ${error}`)
+    console.error(`Error fetching accounts by user ID: ${error}`)
     return sendResponse(res, error.code || 500, {
       msg: error.message || 'An exception has occurred',
     })

@@ -11,13 +11,21 @@ import LoadingScreen from '../components/LoadingScreen'
 import { BiometricDataComponent } from 'react-native-biometric-data'
 import { Block } from 'galio-framework'
 import { Images } from '../constants'
+import { authService, logOut } from '../components/Google'
 import backendApi from '../api/backendGateway'
-import { v4 as uuidv4 } from 'uuid' // Asegúrate de instalar uuid: npm install uuid
+import { useWallet } from '../navigation/WalletContext'
 
 const { width, height } = Dimensions.get('screen')
 
-const Signup = ({ route }) => {
+const Signup = ({ route, navigation }) => {
   const [isLoading, setIsLoading] = useState(false)
+  const { setUser, setSelectedAccount } = useWallet()
+
+  const updateUserAndAccount = (userData, accountData) => {
+    console.log('Actualizando usuario y cuenta:', userData, accountData)
+    setUser(userData)
+    setSelectedAccount(accountData)
+  }
 
   const handleSubmit = async (data) => {
     try {
@@ -36,17 +44,22 @@ const Signup = ({ route }) => {
         filename: 'id_passport.jpeg',
       })
 
-      data.pictureSelfie = selfieUrl.response
-      data.pictureIdPassport = idPassportUrl.response
+      data.pictureSelfie = selfieUrl.response.response
+      data.pictureIdPassport = idPassportUrl.response.response
 
-      const { response, statusCode } = await backendApi.authUser.authenticate({
+      const authPayload = {
         token: idToken,
         registerUser: true,
-      })
+        additionalData: data,
+      }
 
-      console.log(data)
+      const { response, statusCode } =
+        await backendApi.authUser.authenticate(authPayload)
+
+      console.log('Datos de la autenticación:', response, statusCode)
 
       if (statusCode === 201) {
+        console.log('Usuario autenticado, guardando credenciales...')
         await authService.saveCredentials({
           accessToken: response.accessToken,
           refreshToken: response.refreshToken,
@@ -54,17 +67,17 @@ const Signup = ({ route }) => {
           navigation: navigation,
           updateUserAndAccount: updateUserAndAccount,
         })
+        console.log('Credenciales guardadas.')
       }
       setIsLoading(false)
     } catch (error) {
-      logger.error(error)
+      console.error('Error durante el manejo de la sumisión:', error)
       await logOut()
       setIsLoading(false)
     }
   }
 
   useEffect(() => {
-    // Ignorar warnings específicos de las imágenes nulas
     LogBox.ignoreLogs(['ReactImageView: Image source "null" doesn\'t exist'])
   }, [])
 
