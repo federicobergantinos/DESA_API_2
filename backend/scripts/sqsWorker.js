@@ -2,7 +2,7 @@ require('dotenv').config()
 const AWS = require('aws-sdk')
 const { dbConnection } = require('../configurations/database/config')
 const createLogger = require('../configurations/Logger')
-const ProcessedMessage = require('../entities/processedMessages') 
+const ProcessedMessage = require('../entities/processedMessages')
 const logger = createLogger(__filename)
 
 // Configurar AWS SDK
@@ -14,15 +14,18 @@ const queueUrls = {
   coreBancario: process.env.CORE_BANCARIO_QUEUE_URL,
   inHouse: process.env.INHOUSE_QUEUE_URL,
   crypto: process.env.CRYPTO_QUEUE_URL,
+  wallet: process.env.WALLET_QUEUE_URL,
 }
 
 // Conectar a la base de datos principal
-dbConnection().then(() => {
-  logger.info('Database connection established successfully.')
-  startWorkers()
-}).catch(error => {
-  logger.error('Error establishing database connection:', error)
-})
+dbConnection()
+  .then(() => {
+    logger.info('Database connection established successfully.')
+    startWorkers()
+  })
+  .catch((error) => {
+    logger.error('Error establishing database connection:', error)
+  })
 
 async function processMessage(queueUrl) {
   if (!queueUrl) {
@@ -32,7 +35,7 @@ async function processMessage(queueUrl) {
 
   const params = {
     QueueUrl: queueUrl,
-    MaxNumberOfMessages: 1,
+    MaxNumberOfMessages: 10,
     VisibilityTimeout: 30,
     WaitTimeSeconds: 20,
   }
@@ -40,42 +43,45 @@ async function processMessage(queueUrl) {
   try {
     const data = await sqs.receiveMessage(params).promise()
     if (data.Messages && data.Messages.length > 0) {
-      const message = data.Messages[0]
-      logger.info(`Mensaje recibido de ${queueUrl}: ${message.Body}`)
+      await Promise.all(
+        data.Messages.map(async (message) => {
+          logger.info(`Mensaje recibido de ${queueUrl}: ${message.Body}`)
 
-      try {
-        // Verificar si el mensaje ya ha sido procesado
-        const rows = await ProcessedMessage.findAll({
-          where: {
-            message_id: message.MessageId
+          try {
+            // Verificar si el mensaje ya ha sido procesado
+            const rows = await ProcessedMessage.findAll({
+              where: {
+                message_id: message.MessageId,
+              },
+            })
+            if (rows.length > 0) {
+              logger.debug(`Mensaje ya procesado: ${message.MessageId}`)
+              return
+            }
+
+            await handleMessage(message)
+
+            // Registrar el mensaje como procesado
+            await ProcessedMessage.create({
+              queue_name: queueUrl,
+              message_id: message.MessageId,
+              body: message.Body,
+              status: 'processed',
+            })
+          } catch (error) {
+            logger.error(`Error procesando el mensaje: ${error.message}`)
+
+            // Registrar el mensaje como error
+            await ProcessedMessage.create({
+              queue_name: queueUrl,
+              message_id: message.MessageId,
+              body: message.Body,
+              status: 'error',
+              error_message: error.message,
+            })
           }
         })
-        if (rows.length > 0) {
-          logger.debug(`Mensaje ya procesado: ${message.MessageId}`)
-          return
-        }
-
-        await handleMessage(message)
-
-        // Registrar el mensaje como procesado
-        await ProcessedMessage.create({
-          queue_name: queueUrl,
-          message_id: message.MessageId,
-          body: message.Body,
-          status: 'processed'
-        })
-      } catch (error) {
-        logger.error(`Error procesando el mensaje: ${error.message}`)
-        
-        // Registrar el mensaje como error
-        await ProcessedMessage.create({
-          queue_name: queueUrl,
-          message_id: message.MessageId,
-          body: message.Body,
-          status: 'error',
-          error_message: error.message
-        })
-      }
+      )
     } else {
       logger.debug(`No messages received from ${queueUrl}`)
     }
@@ -87,7 +93,7 @@ async function processMessage(queueUrl) {
 async function handleMessage(message) {
   try {
     const messageBody = JSON.parse(message.Body)
-    
+
     // Simular un error para mensajes inválidos
     if (messageBody.invalid) {
       throw new Error('Mensaje inválido')
@@ -101,7 +107,7 @@ async function handleMessage(message) {
 }
 
 function startWorkers() {
-  Object.values(queueUrls).forEach(queueUrl => {
+  Object.values(queueUrls).forEach((queueUrl) => {
     if (!queueUrl) {
       logger.error('Queue URL is undefined for one of the queues')
       return

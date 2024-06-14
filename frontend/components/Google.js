@@ -38,7 +38,6 @@ const authService = {
       // Ahora, hacemos el request para obtener los datos del usuario por ID
       const { response: userData, statusCode: userStatusCode } =
         await backendApi.usersGateway.getUser(userId)
-
       // Aseguramos que la solicitud fue exitosa
       if (userStatusCode === 200) {
         const { response: accountData, statusCode: accountStatusCode } =

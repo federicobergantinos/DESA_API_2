@@ -46,9 +46,21 @@ const findAccountByUserId = async (userId) => {
   return account
 }
 
+const deactivateAccountsByUserId = async (userId) => {
+  try {
+    await Account.update(
+      { accountStatus: 'desactivated' },
+      { where: { userId: userId } }
+    )
+  } catch (error) {
+    throw error
+  }
+}
+
 module.exports = {
   createAccount,
   findAccountByAccountNumber,
   findAccountById,
   findAccountByUserId,
+  deactivateAccountsByUserId,
 }
