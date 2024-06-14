@@ -4,7 +4,8 @@ const Media = require('./media')
 const Authorization = require('./auth')
 const Account = require('./account')
 const Contact = require('./contact')
-const Mission = require('./mission') // Importa el nuevo modelo de Mission
+const Mission = require('./mission')
+const MetamaskAccount = require('./metamaskAccount')
 
 // Relaciones
 Authorization.belongsTo(User, { as: 'user', foreignKey: 'userId' })
@@ -32,4 +33,5 @@ module.exports = {
   Account,
   Contact,
   Mission,
+  MetamaskAccount,
 }

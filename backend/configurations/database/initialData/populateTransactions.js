@@ -30,7 +30,7 @@ const populateTransactions = async () => {
 
     logger.info('Transactions table has been populated with initial data.')
   } catch (error) {
-    logger.error('Error populating Transactions table:', error)
+    console.error('Error populating Transactions table:', error)
   }
 }
 

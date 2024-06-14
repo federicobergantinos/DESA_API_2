@@ -39,7 +39,7 @@ const uploadBase64ImageToS3 = async (base64Image, prefix, filename) => {
     const s3Response = await s3.upload(params).promise()
     return s3Response.Location // Retorna la URL del archivo cargado
   } catch (error) {
-    logger.error('Error al cargar la imagen a S3:', error)
+    console.error('Error al cargar la imagen a S3:', error)
     throw error
   }
 }
@@ -50,7 +50,7 @@ const getUser = async (req, res) => {
     const user = await findUserById(userId)
     return sendResponse(res, 200, { user })
   } catch (error) {
-    logger.error(`${error}`)
+    console.error(`${error}`)
     return sendResponse(res, error.code || 500, {
       msg: error.message || 'An exception has ocurred',
     })
@@ -75,7 +75,7 @@ const editProfile = async (req, res) => {
       return sendResponse(res, 404, { msg: 'User not found' })
     }
   } catch (error) {
-    logger.error(error)
+    console.error(error)
     return sendResponse(res, 500, {
       msg: 'An exception has occurred',
     })
@@ -97,7 +97,7 @@ const deactivateUser = async (req, res) => {
 
     return sendResponse(res, 200, { message: 'User desactivated successfully' })
   } catch (error) {
-    logger.error(`Error deleting user: ${error}`)
+    console.error(`Error deleting user: ${error}`)
     return sendResponse(res, error.code || 500, {
       msg: error.message || 'An exception has occurred',
     })
@@ -114,7 +114,7 @@ const uploadImage = async (req, res) => {
       response: imageUrl,
     })
   } catch (error) {
-    logger.error(`Hubo un problema al subir la imagen: ${error}`)
+    console.error(`Hubo un problema al subir la imagen: ${error}`)
     return sendResponse(res, error.code || 500, {
       msg: error.message || 'Ha ocurrido un error al subir la imagen',
     })

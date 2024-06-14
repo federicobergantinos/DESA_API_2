@@ -5,13 +5,15 @@ const {
   Media,
   Account,
   Contact,
-  Mission, // Asegúrate de importar el modelo Mission
+  Mission,
+  MetamaskAccount, // Asegúrate de importar el modelo MetamaskAccount
 } = require('../../entities/associateModels')
 const {
   populateTransactions,
   populateUser,
   populateMissions,
-} = require('./initialData') // Agrega populateMissions
+  populateMetamaskAccounts, // Agrega la función de populación de MetamaskAccounts
+} = require('./initialData')
 const createLogger = require('../Logger')
 const logger = createLogger(__filename)
 
@@ -19,11 +21,12 @@ const dbConnection = async () => {
   try {
     await sequelize.authenticate()
     await sequelize.sync()
-    // await sequelize.sync({ force: true })
+    // await sequelaize.sync({ force: true })
 
     const usersCount = await User.count()
     const transactionsCount = await Transaction.count()
-    const missionsCount = await Mission.count() // Cuenta las misiones
+    const missionsCount = await Mission.count()
+    const metamaskAccountsCount = await MetamaskAccount.count()
 
     if (usersCount === 0) {
       await populateUser()
@@ -37,9 +40,13 @@ const dbConnection = async () => {
       await populateMissions()
     }
 
+    if (metamaskAccountsCount === 0) {
+      await populateMetamaskAccounts()
+    }
+
     logger.info('Database online')
   } catch (error) {
-    logger.error('There is an error starting database', {
+    console.error('There is an error starting database', {
       message: error.message,
       stack: error.stack,
       original: error.original,

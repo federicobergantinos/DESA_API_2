@@ -19,7 +19,7 @@ const create = async (req, res) => {
       message: 'Transaccion creada con éxito',
     })
   } catch (error) {
-    logger.error(`Error en la creación de la transaccion: ${error}`)
+    console.error(`Error en la creación de la transaccion: ${error}`)
     return sendResponse(res, error.code || 500, {
       msg: error.message || 'Ha ocurrido una excepción',
     })
@@ -37,7 +37,7 @@ const getAll = async (req, res) => {
 
     return sendResponse(res, 200, response)
   } catch (error) {
-    logger.error(` ${error}`)
+    console.error(` ${error}`)
     return sendResponse(res, error.code || 500, {
       msg: error.message || 'An exception has occurred',
     })
@@ -54,7 +54,7 @@ const getById = async (req, res) => {
       ...transaction,
     })
   } catch (error) {
-    logger.error(` ${error}`)
+    console.error(` ${error}`)
     return sendResponse(res, error.code || 500, {
       msg: error.message || 'An exception has occurred',
     })
@@ -77,7 +77,7 @@ const calculateAccountBalance = async (req, res) => {
 
     return sendResponse(res, 200, balance)
   } catch (error) {
-    logger.error('Error calculando el saldo de la cuenta:', error)
+    console.error('Error calculando el saldo de la cuenta:', error)
     throw error
   }
 }

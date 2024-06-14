@@ -28,7 +28,7 @@ const populateMissions = async () => {
 
     logger.info('Missions have been populated.')
   } catch (error) {
-    logger.error('Error populating missions:', error)
+    console.error('Error populating missions:', error)
   }
 }
 

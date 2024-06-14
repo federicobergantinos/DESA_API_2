@@ -24,12 +24,12 @@ dbConnection()
     startWorkers()
   })
   .catch((error) => {
-    logger.error('Error establishing database connection:', error)
+    console.error('Error establishing database connection:', error)
   })
 
 async function processMessage(queueUrl) {
   if (!queueUrl) {
-    logger.error('Queue URL is undefined')
+    console.error('Queue URL is undefined')
     return
   }
 
@@ -69,7 +69,7 @@ async function processMessage(queueUrl) {
               status: 'processed',
             })
           } catch (error) {
-            logger.error(`Error procesando el mensaje: ${error.message}`)
+            console.error(`Error procesando el mensaje: ${error.message}`)
 
             // Registrar el mensaje como error
             await ProcessedMessage.create({
@@ -86,7 +86,7 @@ async function processMessage(queueUrl) {
       logger.debug(`No messages received from ${queueUrl}`)
     }
   } catch (error) {
-    logger.error(`Error procesando mensaje de ${queueUrl}: ${error.message}`)
+    console.error(`Error procesando mensaje de ${queueUrl}: ${error.message}`)
   }
 }
 
@@ -101,7 +101,7 @@ async function handleMessage(message) {
 
     console.log(messageBody)
   } catch (error) {
-    logger.error(`Error parsing message body: ${error.message}`)
+    console.error(`Error parsing message body: ${error.message}`)
     throw error
   }
 }
@@ -109,7 +109,7 @@ async function handleMessage(message) {
 function startWorkers() {
   Object.values(queueUrls).forEach((queueUrl) => {
     if (!queueUrl) {
-      logger.error('Queue URL is undefined for one of the queues')
+      console.error('Queue URL is undefined for one of the queues')
       return
     }
     setInterval(() => processMessage(queueUrl), 10000)
