@@ -14,7 +14,6 @@ const queueUrls = {
   coreBancario: process.env.CORE_BANCARIO_QUEUE_URL,
   inHouse: process.env.INHOUSE_QUEUE_URL,
   crypto: process.env.CRYPTO_QUEUE_URL,
-  wallet: process.env.WALLET_QUEUE_URL,
 }
 
 // Conectar a la base de datos principal
