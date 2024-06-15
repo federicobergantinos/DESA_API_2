@@ -17,22 +17,105 @@ import { Images, walletTheme } from '../constants'
 import backendGateway from '../api/backendGateway'
 import backendApi from '../api/backendGateway'
 import WalletContext from '../navigation/WalletContext'
+import LoadingScreen from '../components/LoadingScreen'
+import { launchImageLibrary } from 'react-native-image-picker'
+import RNFS from 'react-native-fs'
 
 const { width, height } = Dimensions.get('window')
 
 export function Settings() {
   const navigation = useNavigation()
+  const [isLoading, setIsLoading] = useState(false)
   const [nombre, setNombre] = useState('')
   const [apellido, setApellido] = useState('')
   const [email, setEmail] = useState('')
-  const { user } = useContext(WalletContext)
+  const { user, setUser } = useContext(WalletContext)
+  const [imageUri, setImageUri] = useState(user.photoUrl)
 
-  const logOut = async () => {
-    await AsyncStorage.clear()
-    navigation.navigate('Login')
+  const selectImage = () => {
+    launchImageLibrary({ mediaType: 'photo' }, (response) => {
+      if (response.didCancel) {
+        console.log('User cancelled image picker')
+      } else if (response.error) {
+        console.error('ImagePicker Error: ', response.error)
+      } else {
+        const source = { uri: response.assets[0].uri }
+        setImageUri(source.uri)
+
+        // Convertir imagen a base64 y subirla
+        RNFS.readFile(source.uri, 'base64')
+          .then((base64Image) => {
+            uploadImage(base64Image)
+          })
+          .catch((error) => {
+            console.error('Error reading file: ', error)
+          })
+      }
+    })
+  }
+
+  const uploadImage = async (base64Image) => {
+    setIsLoading(true)
+    try {
+      const userId = await AsyncStorage.getItem('userId')
+      if (!userId) throw new Error('Usuario no encontrado')
+
+      const filename = `${userId}.jpg` // O cualquier lógica que prefieras
+      const prefix = 'profile_pictures' // O cualquier prefijo que prefieras
+
+      const response = await backendApi.usersGateway.uploadImage({
+        image: base64Image,
+        prefix,
+        filename,
+      })
+
+      if (response.statusCode === 200) {
+        try {
+          const userId = await AsyncStorage.getItem('userId')
+          if (!userId) throw new Error('Usuario no encontrado')
+          const photoUrl = response.response.response // URL de la imagen subida
+          const userData = {
+            photoUrl: photoUrl,
+          }
+
+          const updateResponse = await backendApi.usersGateway.editProfile(
+            userId,
+            userData
+          )
+          if (updateResponse.statusCode === 200) {
+            // Actualiza el estado de la imagen y del usuario
+            setImageUri(photoUrl)
+            setUser((prevUser) => ({ ...prevUser, photoUrl }))
+
+            setIsLoading(false)
+            alert('Imagen subida con éxito')
+          } else {
+            setIsLoading(false)
+            console.error(
+              'Error al actualizar la foto de perfil:',
+              updateResponse
+            )
+            alert('Error al actualizar el perfil.')
+          }
+        } catch (error) {
+          setIsLoading(false)
+          console.error('Error al editar la foto de perfil:', error)
+          alert('Error al editar la foto de perfil.')
+        }
+      } else {
+        setIsLoading(false)
+        console.error('Error al subir la imagen:', response)
+        alert('Error al subir la imagen')
+      }
+    } catch (error) {
+      setIsLoading(false)
+      console.error('Error al subir la imagen:', error)
+      alert('Error al subir la imagen')
+    }
   }
 
   const editProfile = async () => {
+    setIsLoading(true)
     try {
       const userId = await AsyncStorage.getItem('userId')
       if (!userId) throw new Error('Usuario no encontrado')
@@ -47,12 +130,20 @@ export function Settings() {
         userData
       )
       if (updateResponse.statusCode === 200) {
+        setUser((prevUser) => ({
+          ...prevUser,
+          name: nombre,
+          surname: apellido,
+        }))
+        setIsLoading(false)
         alert('Perfil actualizado con éxito.')
       } else {
+        setIsLoading(false)
         console.error('Error al actualizar el perfil:', updateResponse)
         alert('Error al actualizar el perfil.')
       }
     } catch (error) {
+      setIsLoading(false)
       console.error('Error al editar el perfil:', error)
       alert('Error al editar el perfil.')
     }
@@ -90,11 +181,15 @@ export function Settings() {
                 source={{ uri: user.photoUrl }} // Reemplaza con la URL de tu imagen de perfil
                 style={styles.profilePicture}
               />
-              <TouchableOpacity style={styles.editIconContainer}>
+              <TouchableOpacity
+                style={styles.editIconContainer}
+                onPress={selectImage}
+              >
                 <Icon
                   name="pencil"
-                  size={20}
-                  color={walletTheme.COLORS.VIOLET}
+                  family="EvilIcons"
+                  size={24}
+                  color="black"
                 />
               </TouchableOpacity>
             </View>
@@ -108,7 +203,12 @@ export function Settings() {
                 placeholderTextColor="#BFBFBF"
               />
               <TouchableOpacity style={styles.editIconInput}>
-                <Icon name="pencil" size={20} color="grey" />
+                <Icon
+                  name="pencil"
+                  family="EvilIcons"
+                  size={24}
+                  color="black"
+                />
               </TouchableOpacity>
             </View>
             <View style={styles.inputRow}>
@@ -121,8 +221,23 @@ export function Settings() {
                 placeholderTextColor="#BFBFBF"
               />
               <TouchableOpacity style={styles.editIconInput}>
-                <Icon name="pencil" size={20} color="grey" />
+                <Icon
+                  name="pencil"
+                  family="EvilIcons"
+                  size={24}
+                  color="black"
+                />
               </TouchableOpacity>
+            </View>
+            <View style={styles.inputRow}>
+              <Text style={styles.inputLabel}>Email</Text>
+              <TextInput
+                style={styles.input}
+                value={email}
+                editable={false}
+                placeholder="Email"
+                placeholderTextColor="#BFBFBF"
+              />
             </View>
             <TouchableOpacity style={styles.vincularButton}>
               <Icon
@@ -139,6 +254,7 @@ export function Settings() {
           </View>
         </ScrollView>
       </ImageBackground>
+      <LoadingScreen visible={isLoading} />
     </Block>
   )
 }

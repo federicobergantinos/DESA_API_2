@@ -8,15 +8,15 @@ import {
   TextInput,
   Modal,
   Alert,
-  Button,
   FlatList,
   TouchableOpacity,
 } from 'react-native'
+import { Picker } from '@react-native-picker/picker'
 import { theme, Block } from 'galio-framework'
 import { Images, walletTheme } from '../constants'
+import LoadingScreen from '../components/LoadingScreen'
 import Icon from '../components/Icon'
 import Input from '../components/Input'
-import CheckBox from '@react-native-community/checkbox'
 import { useNavigation } from '@react-navigation/native'
 import backendApi from '../api/backendGateway'
 import { useWallet } from '../navigation/WalletContext'
@@ -24,11 +24,11 @@ import { useWallet } from '../navigation/WalletContext'
 const { width, height } = Dimensions.get('screen')
 
 const Transfer = () => {
+  const [isLoading, setIsLoading] = useState(false)
   const [isModalVisible, setIsModalVisible] = useState(false)
   const [contactName, setContactName] = useState('')
   const [contactAccountNumber, setContactAccountNumber] = useState('')
-  const [contactAccountType, setContactAccountType] = useState('Checking')
-  const [isCheckingAccount, setIsCheckingAccount] = useState(true)
+  const [contactAccountType, setContactAccountType] = useState('XCoin')
   const [contacts, setContacts] = useState([])
   const [isLoadingContacts, setIsLoadingContacts] = useState(false)
   const searchInputRef = useRef(null)
@@ -42,6 +42,18 @@ const Transfer = () => {
   const showModal = () => setIsModalVisible(true)
   const hideModal = () => setIsModalVisible(false)
   const navigation = useNavigation()
+
+  useEffect(() => {
+    if (editingContact) {
+      setContactName(editingContact.name)
+      setContactAccountNumber(editingContact.accountNumber)
+      setContactAccountType(editingContact.accountType) // Asegúrate de establecer el tipo de cuenta al editar
+    } else {
+      setContactName('')
+      setContactAccountNumber('')
+      setContactAccountType('XCoin') // Valor predeterminado para el tipo de cuenta
+    }
+  }, [editingContact])
 
   useEffect(() => {
     // Inicializar la búsqueda cuando el componente se monta
@@ -372,32 +384,39 @@ const Transfer = () => {
       return
     }
 
+    setIsLoading(true)
     // Construir el objeto de datos de la transacción
-    console.log(selectedContact)
     const transactionData = {
-      accountNumber: selectedContact.accountNumber,
+      accountNumberOrigin: selectedAccount.accountNumber,
+      accountNumberDestination: selectedContact.accountNumber,
       name: 'Transferencia',
       description: 'Transferencia',
-      amount: -Math.abs(parseFloat(localAmount)),
-      currency: 'USD',
-      status: 'Paid',
+      amount: Math.abs(parseFloat(localAmount)),
+      currencyOrigin: selectedAccount.accountType,
+      currencyDestination: selectedContact.accountType,
+      status: 'pending',
       date: new Date().toISOString(),
     }
 
     try {
       const response =
         await backendApi.transactionsGateway.createTransaction(transactionData)
+
+      setIsLoading(false)
       if (response.statusCode === 200 || response.statusCode === 201) {
         Alert.alert('Éxito', 'La transferencia ha sido realizada exitosamente.')
         // Limpieza o acciones post-transacción
         setLocalAmount('')
         setSelectedContact(null)
         navigation.replace('Home')
+      } else if (response.response.msg === 'Invalid Account') {
+        Alert.alert('Error', 'La cuenta no existe.')
       } else {
         // Manejo de otros códigos de estado HTTP
         Alert.alert('Error', 'No se pudo realizar la transferencia.')
       }
     } catch (error) {
+      setIsLoading(false)
       console.error('Error al crear la transacción:', error)
       Alert.alert(
         'Error',
@@ -473,9 +492,16 @@ const Transfer = () => {
                 />
               }
             />
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <CheckBox value={isCheckingAccount} onValueChange={() => {}} />
-              <Text style={styles.description}>Checking Account</Text>
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={contactAccountType}
+                onValueChange={(itemValue) => setContactAccountType(itemValue)}
+                style={styles.picker}
+              >
+                <Picker.Item label="XCoin" value="XCoin" />
+                <Picker.Item label="Pesos" value="Pesos" />
+                <Picker.Item label="Dolares" value="Dolares" />
+              </Picker>
             </View>
             <View style={styles.modalButtonContainer}>
               <TouchableOpacity
@@ -488,10 +514,8 @@ const Transfer = () => {
                 style={[styles.modalButton, styles.buttonAdd]}
                 onPress={() => {
                   if (editingContact) {
-                    // Lógica para editar contacto
                     handleEditContactFinal()
                   } else {
-                    // Lógica para agregar nuevo contacto
                     handleAddContact()
                   }
                 }}
@@ -504,6 +528,7 @@ const Transfer = () => {
           </View>
         </View>
       </Modal>
+      <LoadingScreen visible={isLoading} />
     </Block>
   )
 }
@@ -689,6 +714,17 @@ const styles = StyleSheet.create({
     color: walletTheme.COLORS.BLACK,
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  pickerContainer: {
+    borderWidth: 1,
+    borderColor: walletTheme.COLORS.BORDER,
+    borderRadius: 4,
+    backgroundColor: '#FFFFFF',
+    marginVertical: 10,
+  },
+  picker: {
+    width: '100%',
+    height: 44,
   },
 })
 

@@ -8,6 +8,7 @@ const { sendResponse } = require('../configurations/utils.js')
 const createLogger = require('../configurations/Logger')
 const logger = createLogger(__filename)
 
+
 const AWS = require('aws-sdk')
 AWS.config.update({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,

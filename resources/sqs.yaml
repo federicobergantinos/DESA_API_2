@@ -1,36 +1,42 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: Template para crear colas de SQS en AWS con acceso público
+Description: Template para crear colas de SQS en AWS con acceso controlado y suscripciones a SNS
 
 Resources:
-  CoreBancarioQueue:
-    Type: AWS::SQS::Queue
+  MySNSTopic:
+    Type: AWS::SNS::Topic
     Properties:
-      QueueName: core_bancario_queue
-      VisibilityTimeout: 30
+      TopicName: wallet_topic
 
-  CryptoQueue:
-    Type: AWS::SQS::Queue
+  MySNSTopicPolicy:
+    Type: AWS::SNS::TopicPolicy
     Properties:
-      QueueName: crypto_queue
-      VisibilityTimeout: 30
+      Topics:
+        - !Ref MySNSTopic
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal: "*"
+            Action: "SNS:Publish"
+            Resource: !Ref MySNSTopic
 
-  InHouseQueue:
+  TestServiceQueue:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: inhouse_queue
-      VisibilityTimeout: 30
+      QueueName: test_service_queue
+      VisibilityTimeout: 0
 
   WalletServiceQueue:
     Type: AWS::SQS::Queue
     Properties:
       QueueName: wallet_service_queue
-      VisibilityTimeout: 30
+      VisibilityTimeout: 0
 
-  CoreBancarioQueuePolicy:
+  TestServiceQueuePolicy:
     Type: AWS::SQS::QueuePolicy
     Properties:
       Queues:
-        - !Ref CoreBancarioQueue
+        - !Ref TestServiceQueue
       PolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -38,47 +44,7 @@ Resources:
             Principal: "*"
             Action:
               - "SQS:SendMessage"
-              - "SQS:ReceiveMessage"
-              - "SQS:DeleteMessage"
-              - "SQS:GetQueueUrl"
-              - "SQS:GetQueueAttributes"
-            Resource: !GetAtt CoreBancarioQueue.Arn
-
-  CryptoQueuePolicy:
-    Type: AWS::SQS::QueuePolicy
-    Properties:
-      Queues:
-        - !Ref CryptoQueue
-      PolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal: "*"
-            Action:
-              - "SQS:SendMessage"
-              - "SQS:ReceiveMessage"
-              - "SQS:DeleteMessage"
-              - "SQS:GetQueueUrl"
-              - "SQS:GetQueueAttributes"
-            Resource: !GetAtt CryptoQueue.Arn
-
-  InHouseQueuePolicy:
-    Type: AWS::SQS::QueuePolicy
-    Properties:
-      Queues:
-        - !Ref InHouseQueue
-      PolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal: "*"
-            Action:
-              - "SQS:SendMessage"
-              - "SQS:ReceiveMessage"
-              - "SQS:DeleteMessage"
-              - "SQS:GetQueueUrl"
-              - "SQS:GetQueueAttributes"
-            Resource: !GetAtt InHouseQueue.Arn
+            Resource: !GetAtt TestServiceQueue.Arn
 
   WalletServiceQueuePolicy:
     Type: AWS::SQS::QueuePolicy
@@ -99,18 +65,10 @@ Resources:
             Resource: !GetAtt WalletServiceQueue.Arn
 
 Outputs:
-  CoreBancarioQueueUrl:
-    Description: URL de la cola Core Bancario
-    Value: !Ref CoreBancarioQueue
-
-  CryptoQueueUrl:
-    Description: URL de la cola Crypto
-    Value: !Ref CryptoQueue
-
-  InHouseQueueUrl:
-    Description: URL de la cola Inhouse
-    Value: !Ref InHouseQueue
-
   WalletServiceQueueUrl:
     Description: URL de la cola Wallet Service
     Value: !Ref WalletServiceQueue
+
+  TestServiceQueueUrl:
+    Description: URL de la cola Test Service
+    Value: !Ref TestServiceQueue

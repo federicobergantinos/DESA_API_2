@@ -10,7 +10,7 @@ const {
   refreshToken,
   deleteCredentials,
 } = require('../services/authService')
-const { sendMessageToSQS } = require('../scripts/sqsSender')
+const { sendMessageToSNS } = require('../utils/snsSender')
 const { verify } = require('jsonwebtoken')
 const Unauthorized = require('../Errors/Unauthorized')
 const { sendResponse } = require('../configurations/utils.js')
@@ -26,14 +26,19 @@ const authenticate = async (req, res) => {
     const googleToken = req.body.token
     const registerUser = req.body.registerUser
     const accountInfo = req.body.accountInfo
+    const email = req.body.email
     const accessToken = req.headers['authorization']
-    const additionalData = req.body.additionalData // Extraer los datos adicionales
+    const additionalData = req.body.additionalData
 
     let user = null
     let tokens = null
 
     if (googleToken !== null) {
       const userData = await loginUser(googleToken, accessToken)
+
+      if (email !== null || email !== undefined) {
+        userData.email = email
+      }
       user = await findUserByEmail(userData.email)
       if (registerUser === true) {
         // Obtener cuentas de Metamask disponibles
@@ -92,7 +97,7 @@ const authenticate = async (req, res) => {
           transaction,
         })
 
-        // Crear el payload para SQS
+        // Crear el payload para SNS
         const payload = {
           operationType: 'CreateUser',
           data: {
@@ -107,22 +112,23 @@ const authenticate = async (req, res) => {
             email: userData.email,
           },
         }
-
-        // Imprimir el payload antes de enviarlo a SQS
-        console.log('Payload to SQS:', JSON.stringify(payload, null, 2))
-
-        // Enviar mensaje a SQS
-        await sendMessageToSQS(payload)
+        // Enviar mensaje a SNS
+        await sendMessageToSNS(payload)
       }
     } else if (accessToken !== null) {
+      console.log('accessToken', accessToken)
       const decode = verify(accessToken, process.env.CODE, (err, decoded) => {
         if (err) {
-          logger.error('ERROR', err)
+          console.error('ERROR', err)
           throw new Unauthorized('Invalid credentials')
         } else {
           return decoded
         }
       })
+      if (email !== null || email !== undefined) {
+        userData.email = email
+      }
+
       const userData = await findUserByEmail(decode.email)
       if (userData !== null) {
         user = userData.dataValues
@@ -150,7 +156,7 @@ const authenticate = async (req, res) => {
     }
   } catch (error) {
     await transaction.rollback()
-    logger.error(`${error}`)
+    console.error(`${error}`)
     return sendResponse(res, error.code || 500, {
       msg: error.message || 'An exception has occurred',
     })
@@ -171,7 +177,7 @@ const refresh = async (req, res) => {
       refreshToken: tokens.refreshToken,
     })
   } catch (error) {
-    logger.error(` ${error}`)
+    console.error(` ${error}`)
     return sendResponse(res, error.code || 500, {
       msg: error.message || 'An exception has occurred',
     })
@@ -184,7 +190,7 @@ const deleteCredential = async (req, res) => {
     deleteCredentials(accessToken)
     return res.status(204).send()
   } catch (error) {
-    logger.error(` ${error}`)
+    console.error(` ${error}`)
     return sendResponse(res, error.code || 500, {
       msg: 'An exception has occurred',
     })

@@ -30,7 +30,7 @@ const populateUser = async () => {
         {
           beneficiaryName: 'Federico Bergantinos',
           beneficiaryAddress: 'Lima 123, Buenos Aires, Argentina',
-          accountNumber: '000223458436',
+          accountNumber: '0x2752a430B1aDD6789d4179D69A51B39Cc81DCf2d',
           accountType: 'XCoin',
           accountCurrency: 'XCN',
           accountStatus: 'validated',

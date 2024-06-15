@@ -71,14 +71,19 @@ const requests = {
 const authUser = {
   authenticate: (
     auth: CreateAuthDTO
-  ): Promise<{ response: any; statusCode: number }> =>
-    requests.post('/v1/auth', auth),
+  ): Promise<{ response: any; statusCode: number }> => {
+    const requestBody = { ...auth }
+    console.log('Request body:', requestBody)  // Verifica que el cuerpo de la solicitud contenga el email
+    return requests.post('/v1/auth', requestBody)
+  },
   refresh: (
     refreshToken: string
   ): Promise<{ response: Credentials; statusCode: number }> =>
     requests.put('/v1/auth', { refreshToken }),
   deleteCredential: () => requests.delete('/v1/auth'),
-};
+}
+
+
 
 // Objeto para funciones relacionadas con transacciones
 const transactionsGateway = {

@@ -93,7 +93,7 @@ const AccountDetails = () => {
               </TouchableOpacity>
             </View>
             <View style={styles.divider} />
-            <Text style={styles.cardTitle}>Domicilio del beneficiario</Text>
+            {/* <Text style={styles.cardTitle}>Domicilio del beneficiario</Text>
             <View style={styles.fieldContainer}>
               <Text style={styles.field}>
                 {accountDetails.beneficiaryAddress}
@@ -106,7 +106,7 @@ const AccountDetails = () => {
                 <Icon name="clipboard" family="Feather" size={20} />
               </TouchableOpacity>
             </View>
-            <View style={styles.divider} />
+            <View style={styles.divider} /> */}
             <Text style={styles.cardTitle}>Numero de cuenta</Text>
             <View style={styles.fieldContainer}>
               <Text style={styles.field}>{accountDetails.accountNumber}</Text>

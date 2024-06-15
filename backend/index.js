@@ -39,7 +39,7 @@ dbConnection()
     })
 
     // Importar y arrancar el worker
-    require('./scripts/sqsWorker')
+    require('./utils/sqsWorker')
   })
   .catch((error) => {
     console.error('Error establishing database connection:', error)
