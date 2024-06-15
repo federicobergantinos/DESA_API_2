@@ -19,11 +19,12 @@ Mission.belongsTo(User, { as: 'user', foreignKey: 'userId' }) // Una misión per
 
 // Opcional, dependiendo de cómo quieras acceder a los datos relacionados
 Transaction.belongsTo(Account, {
-  foreignKey: 'accountNumber',
+  foreignKey: 'accountNumberOrigin',
   targetKey: 'accountNumber',
 })
+
 Account.hasMany(Transaction, {
-  foreignKey: 'accountNumber',
+  foreignKey: 'accountNumberOrigin',
   sourceKey: 'accountNumber',
 })
 

@@ -31,6 +31,7 @@ const Signup = ({ route, navigation }) => {
     try {
       setIsLoading(true)
       const idToken = route.params.idToken
+      const email = route.params.email
 
       const prefix = `rekognition`
       const selfieUrl = await backendApi.usersGateway.uploadImage({
@@ -49,6 +50,7 @@ const Signup = ({ route, navigation }) => {
 
       const authPayload = {
         token: idToken,
+        email: email,
         registerUser: true,
         additionalData: data,
       }

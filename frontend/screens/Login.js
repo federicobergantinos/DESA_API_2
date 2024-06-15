@@ -7,19 +7,19 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   Image,
+  TouchableOpacity,
   View,
+  TextInput,
 } from 'react-native'
+import Icon from 'react-native-vector-icons/Feather'
 import { Block, Text } from 'galio-framework'
-
 import { Button } from '../components'
 import { Images, walletTheme } from '../constants'
-// import { GoogleSignin } from '@react-native-google-signin/google-signin'
 import { authService, GoogleSignin, logOut } from '../components/Google'
 import backendApi from '../api/backendGateway'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useNavigation } from '@react-navigation/native'
 import LoadingScreen from '../components/LoadingScreen'
-import asyncStorage from '@react-native-async-storage/async-storage/src/AsyncStorage'
 import { useWallet } from '../navigation/WalletContext'
 import createLogger from '../components/Logger'
 
@@ -35,6 +35,10 @@ const DismissKeyboard = ({ children }) => (
 const Login = () => {
   const navigation = useNavigation()
   const { setUser, setSelectedAccount } = useWallet()
+  const [isTesting, setIsTesting] = useState(false)
+  const [emailPrefix, setEmailPrefix] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const [showTestingButton, setShowTestingButton] = useState(false)
 
   const updateUserAndAccount = (userData, accountData) => {
     setUser(userData)
@@ -49,8 +53,6 @@ const Login = () => {
     )
   }
 
-  const [isLoading, setIsLoading] = useState(isLoggedUser)
-
   useEffect(() => {
     const validateLoggedUser = async () => {
       const isLogged = await isLoggedUser()
@@ -64,15 +66,29 @@ const Login = () => {
     validateLoggedUser()
   }, [])
 
+  const getTestEmail = (user, isTesting, emailPrefix) => {
+    let email = user.email.toLowerCase()
+    if (isTesting && emailPrefix) {
+      const domain = email.split('@')[1]
+      email = `${emailPrefix.toLowerCase()}@${domain}`
+    }
+    return email
+  }
+
   const authenticate = async () => {
     try {
       setIsLoading(true)
       const userInfo = await GoogleSignin.signIn()
       const { idToken, user } = userInfo
+      const email = getTestEmail(user, isTesting, emailPrefix)
 
-      const { response, statusCode } = await backendApi.authUser.authenticate({
+      const authPayload = {
         token: idToken,
-      })
+        email: email,
+      }
+
+      const { response, statusCode } =
+        await backendApi.authUser.authenticate(authPayload)
 
       if (statusCode === 200) {
         await authService.saveCredentials({
@@ -84,19 +100,28 @@ const Login = () => {
         })
         setIsLoading(false)
       } else if (statusCode === 301) {
-        navigation.replace('Signup', { idToken })
+        navigation.replace('Signup', { idToken, email })
       }
       setIsLoading(false)
     } catch (error) {
       await logOut()
+      setIsLoading(false)
     }
   }
 
   const reAuthenticate = async () => {
     setIsLoading(true)
-    const { response, statusCode } = await backendApi.authUser.authenticate({
+    const userInfo = await GoogleSignin.signInSilently()
+    const { user } = userInfo
+
+    const email = getTestEmail(user, isTesting, emailPrefix)
+    const authPayload = {
       token: null,
-    })
+      email: email,
+    }
+
+    const { response, statusCode } =
+      await backendApi.authUser.authenticate(authPayload)
 
     if (statusCode === 200) {
       authService.saveCredentials({
@@ -107,7 +132,6 @@ const Login = () => {
         updateUserAndAccount: updateUserAndAccount,
       })
       setIsLoading(false)
-      const item = await asyncStorage.getItem('token')
     } else {
       try {
         if ((await asyncStorage.getItem('token')) !== null) {
@@ -191,10 +215,34 @@ const Login = () => {
                         </Block>
                       </Button>
                     </Block>
+                    {isTesting && (
+                      <TextInput
+                        style={styles.input}
+                        placeholder="Enter email prefix"
+                        value={emailPrefix}
+                        onChangeText={setEmailPrefix}
+                      />
+                    )}
                   </Block>
                 </Block>
               </Block>
             </Block>
+            <TouchableOpacity
+              style={styles.showTestingButton}
+              onPress={() => {
+                setShowTestingButton(!showTestingButton)
+                setIsTesting(!isTesting)
+              }}
+            >
+              <Icon
+                name="tool"
+                size={20}
+                color={showTestingButton ? 'red' : 'green'}
+              />
+              <Text color={showTestingButton ? 'red' : 'green'}>
+                {showTestingButton}
+              </Text>
+            </TouchableOpacity>
           </ImageBackground>
         </Block>
       </DismissKeyboard>
@@ -228,7 +276,7 @@ const styles = StyleSheet.create({
     width: 200,
     height: 40,
     backgroundColor: '#f2f2f2',
-    borderRadius: 20,
+    borderRadius: 10,
     shadowColor: walletTheme.COLORS.BLACK,
     shadowOffset: {
       width: 0,
@@ -245,18 +293,25 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     fontSize: 14,
   },
-  inputIcons: {
-    marginRight: 12,
+  input: {
+    height: 40,
+    borderColor: 'gray',
+    borderWidth: 1,
+    marginTop: 20,
+    marginBottom: 20,
+    paddingHorizontal: 10,
+    width: '80%',
+    alignSelf: 'center',
   },
-  passwordCheck: {
-    paddingLeft: 2,
-    paddingTop: 6,
-    paddingBottom: 15,
-  },
-  createButton: {
-    width: width * 0.5,
-    marginTop: 25,
-    marginBottom: 40,
+  showTestingButton: {
+    position: 'absolute',
+    bottom: 50,
+    alignSelf: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: walletTheme.COLORS.BLOCK,
+    padding: 10,
+    borderRadius: 20,
   },
 })
 

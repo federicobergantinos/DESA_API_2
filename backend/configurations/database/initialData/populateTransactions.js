@@ -10,10 +10,12 @@ const populateTransactions = async () => {
         name,
         description,
         amount,
-        currency,
+        currencyOrigin,
+        currencyDestination,
         status,
         date,
-        accountNumber,
+        accountNumberDestination,
+        accountNumberOrigin,
       } = transactionData
 
       // Asumimos que accountNumber ya está correctamente establecido en transactionsData
@@ -21,10 +23,12 @@ const populateTransactions = async () => {
         name,
         description,
         amount,
-        currency,
+        currencyOrigin,
+        currencyDestination,
         status,
         date,
-        accountNumber, // Asegúrate de que este campo exista en tu modelo y data
+        accountNumberDestination,
+        accountNumberOrigin,
       })
     }
 

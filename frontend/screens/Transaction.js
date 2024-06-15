@@ -115,7 +115,7 @@ const Transaction = () => {
                     { color: getAmountTextColor(transaction.amount) },
                   ]}
                 >
-                  {transaction.amount} {transaction.currency}
+                  {transaction.amount} {transaction.currencyOrigin}
                 </Text>
               </TransactionDetailCard>
 

@@ -1,6 +1,5 @@
-// backend/entities/metamaskAccount.js
-const { DataTypes } = require('sequelize')
-const sequelize = require('../configurations/database/sequelizeConnection')
+const { DataTypes } = require('sequelize');
+const sequelize = require('../configurations/database/sequelizeConnection');
 
 const MetamaskAccount = sequelize.define('metamask_accounts', {
   id: {
@@ -13,11 +12,19 @@ const MetamaskAccount = sequelize.define('metamask_accounts', {
     allowNull: false,
     unique: true,
   },
+  mnemonic: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  privateKey: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
   used: {
     type: DataTypes.BOOLEAN,
     allowNull: false,
-    defaultValue: true,
+    defaultValue: false,
   },
-})
+});
 
-module.exports = MetamaskAccount
+module.exports = MetamaskAccount;

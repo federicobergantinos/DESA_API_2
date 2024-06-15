@@ -30,6 +30,10 @@ const Home = ({ navigation }) => {
     }, 500)
   }
 
+  useEffect(() => {
+    onRefresh()
+  }, [selectedAccount])
+
   const ActionButton = ({ icon, family, title, onPress }) => {
     return (
       <View style={styles.actionButtonContainer}>

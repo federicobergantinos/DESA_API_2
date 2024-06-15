@@ -3,7 +3,9 @@ export interface TransactionDTO {
   name: string
   description: string
   amount: number
-  currency: string
-  accountNumber: string
+  currencyOrigin: string
+  currencyDestination: string
+  accountNumberOrigin: string
+  accountNumberDestination: string
   date: Date
 }

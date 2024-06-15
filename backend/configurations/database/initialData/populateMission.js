@@ -4,21 +4,20 @@ const logger = createLogger(__filename)
 
 const populateMissions = async () => {
   const missionsData = [
-    {
-      title: 'Misión 1',
-      description: 'Descripción de la misión 1',
-      reward: 100,
-      claimed: true,
-      userId: 1, // Cambia el userId según los usuarios creados
-    },
-    {
-      title: 'Misión 2',
-      description: 'Descripción de la misión 2',
-      reward: 200,
-      claimed: false,
-      userId: 1,
-    },
-    // Más misiones según sea necesario
+    // {
+    //   title: 'Misión 1',
+    //   description: 'Descripción de la misión 1',
+    //   reward: 100,
+    //   claimed: true,
+    //   userId: 1,
+    // },
+    // {
+    //   title: 'Misión 2',
+    //   description: 'Descripción de la misión 2',
+    //   reward: 200,
+    //   claimed: false,
+    //   userId: 1,
+    // },
   ]
 
   try {
