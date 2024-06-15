@@ -384,14 +384,31 @@ const Transfer = () => {
       return
     }
 
+    // Convertir el monto a número y asegurarse de que sea positivo
+    const amount = Math.abs(parseFloat(localAmount))
+
+    // Validar que el saldo sea suficiente
+    const { response: balanceResult } =
+      await backendApi.transactionsGateway.balance(
+        selectedAccount.accountNumber
+      )
+    const formattedBalance = parseFloat(balanceResult).toFixed(2)
+    const balance = parseFloat(formattedBalance)
+
+    if (amount > balance) {
+      Alert.alert('Error', 'Saldo insuficiente para realizar la transferencia.')
+      return
+    }
+
     setIsLoading(true)
+
     // Construir el objeto de datos de la transacción
     const transactionData = {
       accountNumberOrigin: selectedAccount.accountNumber,
       accountNumberDestination: selectedContact.accountNumber,
       name: 'Transferencia',
       description: 'Transferencia',
-      amount: Math.abs(parseFloat(localAmount)),
+      amount: amount,
       currencyOrigin: selectedAccount.accountType,
       currencyDestination: selectedContact.accountType,
       status: 'pending',
