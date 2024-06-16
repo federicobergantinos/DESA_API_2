@@ -6,6 +6,7 @@ const Account = require('./account')
 const Contact = require('./contact')
 const Mission = require('./mission')
 const MetamaskAccount = require('./metamaskAccount')
+const ExchangeRate = require('./exchangeRate')
 
 // Relaciones
 Authorization.belongsTo(User, { as: 'user', foreignKey: 'userId' })
@@ -35,4 +36,5 @@ module.exports = {
   Contact,
   Mission,
   MetamaskAccount,
+  ExchangeRate,
 }
