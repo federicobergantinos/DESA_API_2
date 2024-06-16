@@ -1,7 +1,7 @@
 const User = require('../entities/user')
 const InternalError = require('../Errors/InternalError')
 const jwt = require('jsonwebtoken')
-const { Recipe } = require('../entities/associateModels')
+const { v4: uuidv4 } = require('uuid')
 const NotFound = require('../Errors/NotFound')
 const createLogger = require('../configurations/Logger')
 const logger = createLogger(__filename)
@@ -61,8 +61,21 @@ const updateUserProfile = async (userId, updateData) => {
   if (updatedRows > 0) {
     return User.findByPk(userId)
   } else {
-    throw new Error('User not found') // O manejar con una clase de error específica
+    throw new Error('User not found')
   }
+}
+
+const deactivateUserService = async (userId) => {
+  const user = await User.findByPk(userId)
+  if (!user) {
+    throw new NotFound('User not found')
+  }
+
+  user.userStatus = false
+  user.email = `${uuidv4()}@deleted.com`
+  await user.save()
+
+  return user
 }
 
 module.exports = {
@@ -71,4 +84,5 @@ module.exports = {
   findUserById,
   findUserByEmail,
   updateUserProfile,
+  deactivateUserService,
 }

@@ -1,11 +1,15 @@
-const { DataTypes } = require('sequelize')
-const sequelize = require('../configurations/database/sequelizeConnection')
+const { DataTypes } = require('sequelize');
+const sequelize = require('../configurations/database/sequelizeConnection');
 
 const Transaction = sequelize.define('transactions', {
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
     autoIncrement: true,
+  },
+  transactionId: {
+    type: DataTypes.UUID,
+    allowNull: false,
   },
   name: {
     type: DataTypes.STRING,
@@ -19,7 +23,23 @@ const Transaction = sequelize.define('transactions', {
     type: DataTypes.FLOAT,
     allowNull: false,
   },
-  currency: {
+  accountNumberOrigin: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    references: {
+      model: 'accounts',
+      key: 'accountNumber',
+    },
+  },
+  currencyOrigin: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  accountNumberDestination: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  currencyDestination: {
     type: DataTypes.STRING,
     allowNull: false,
   },
@@ -31,14 +51,6 @@ const Transaction = sequelize.define('transactions', {
     type: DataTypes.DATE,
     allowNull: false,
   },
-  accountNumber: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    references: {
-      model: 'accounts',
-      key: 'accountNumber',
-    },
-  },
-})
+});
 
-module.exports = Transaction
+module.exports = Transaction;

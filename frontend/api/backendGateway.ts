@@ -5,8 +5,8 @@ import { TransactionDTO } from './TransactionDTO';
 import { ContactDTO, ContactsDTO } from './ContactDTO';
 import { AccountDTO, AccountSummaryDTO } from './AccountDTO';
 
-const api = axios.create({ baseURL: "https://www.wallet-elb.federicobergantinos.com/" });
-// const api = axios.create({ baseURL: 'http://192.168.3.6:8080' });
+// const api = axios.create({ baseURL: "https://www.wallet-elb.federicobergantinos.com/" });
+const api = axios.create({ baseURL: 'http://192.168.1.112:8080' });
 // const api = axios.create({baseURL: 'https://277c-170-150-153-225.ngrok-free.app:8080'});
 
 const transactionBaseUrl = '/v1/transactions';
@@ -71,14 +71,19 @@ const requests = {
 const authUser = {
   authenticate: (
     auth: CreateAuthDTO
-  ): Promise<{ response: any; statusCode: number }> =>
-    requests.post('/v1/auth', auth),
+  ): Promise<{ response: any; statusCode: number }> => {
+    const requestBody = { ...auth }
+    console.log('Request body:', requestBody)  // Verifica que el cuerpo de la solicitud contenga el email
+    return requests.post('/v1/auth', requestBody)
+  },
   refresh: (
     refreshToken: string
   ): Promise<{ response: Credentials; statusCode: number }> =>
     requests.put('/v1/auth', { refreshToken }),
   deleteCredential: () => requests.delete('/v1/auth'),
-};
+}
+
+
 
 // Objeto para funciones relacionadas con transacciones
 const transactionsGateway = {
@@ -203,7 +208,9 @@ const accountGateway = {
     const url = `${accountBaseUrl}/${accountId}`;
     return requests.get(url);
   },
+
 };
+
 
 // Objeto para funciones relacionadas con usuarios
 const usersGateway = {
@@ -214,17 +221,21 @@ const usersGateway = {
     userData: any
   ): Promise<{ response: any; statusCode: number }> =>
     requests.put(`${usersBaseUrl}/${userId}`, userData),
-  uploadImage: async (image) => {
-    try {
-      const url = `${transactionBaseUrl}/uploadImage`;
-      const response = await requests.post(url, image);
-      return response;
-    } catch (error) {
-      console.error('Error al subir una imagen:', error);
-      throw error;
-    }
+  uploadImage: async ({
+    image,
+    prefix,
+    filename,
+  }: {
+    image: string,
+    prefix: string,
+    filename: string,
+  }): Promise<{ response: string; statusCode: number }> => {
+    return requests.post(`${usersBaseUrl}/uploadImage`, { image, prefix, filename })
   },
-};
+  deleteUser: (userId: number): Promise<{ response: any; statusCode: number }> =>
+    requests.delete(`${usersBaseUrl}/${userId}`),
+}
+
 
 // Función para obtener el token de autenticación del almacenamiento local
 const getToken = async (): Promise<string> => {

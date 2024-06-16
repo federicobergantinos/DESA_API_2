@@ -262,9 +262,34 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa $EC2_USER@$EC2_HOST <<EOF
             cd DESA_API_2/backend
-            ls
-            echo $(cat previous_task_definition.txt | grep PREVIOUS_TASK_DEFINITION_ARN)
-            previous_task_definition_arn=$(cat previous_task_definition.txt | grep PREVIOUS_TASK_DEFINITION_ARN | cut -d '=' -f 2)
-            echo $previous_task_definition_arn
-            aws ecs update-service --cluster InfraBase-ECSCluster-f3Ia4koRrIVC --service wallet-serving-WalletECSService-n4bFK1XXE4XD --task-definition "\$previous_task_definition_arn"
+            echo "Archivos en el directorio actual:"
+            ls -l
+            if [ -f "previous_task_definition.txt" ]; then
+              previous_task_definition_arn=\$(grep 'PREVIOUS_TASK_DEFINITION_ARN' previous_task_definition.txt | cut -d '=' -f 2)
+              echo \$previous_task_definition_arn
+              aws ecs update-service --cluster InfraBase-ECSCluster-f3Ia4koRrIVC --service wallet-serving-WalletECSService-n4bFK1XXE4XD --task-definition "\$previous_task_definition_arn"
+            else
+              echo "ERROR: Archivo previous_task_definition.txt no encontrado."
+              exit 1
+            fi
           EOF
+
+      - name: Add comment to PR
+        uses: actions/github-script@v6
+        if: failure()
+        env:
+          GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
+        with:
+          github-token: ${{ secrets.MY_GITHUB_TOKEN }}
+          script: |
+            const name = 'Rollback to previous version';
+            const url = '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}';
+            const success = '${{ job.status }}' === 'success';
+            const body = `${name}: ${success ? 'succeeded ✅' : 'failed ❌'}\n${url}`;
+
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            })

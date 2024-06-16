@@ -91,7 +91,7 @@ const RenderTransactionsDetail = ({ showBalance, navigation, refreshing }) => {
     const iconColor = isPositive ? '#00C853' : '#C70039'
     const formattedAmount = parseFloat(item.amount).toFixed(2)
     const amountDisplay = showBalance
-      ? `${formattedAmount} ${item.currency}`
+      ? `${formattedAmount} ${item.currencyOrigin}`
       : '***'
 
     return (
