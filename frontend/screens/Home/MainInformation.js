@@ -14,6 +14,7 @@ const RenderMainInformation = ({
 }) => {
   const [balance, setBalance] = useState(0)
   const [usdValue, setUsdValue] = useState(0)
+  const [arsValue, setArsValue] = useState(0)
   const { user, selectedAccount } = useContext(WalletContext)
 
   useEffect(() => {
@@ -30,10 +31,16 @@ const RenderMainInformation = ({
         if (selectedAccount.accountCurrency === 'XCN') {
           const { response: usdResult } =
             await backendApi.exchangeRatesGateway.getExchangeRate('XCN')
+          const { response: arsResult } =
+            await backendApi.exchangeRatesGateway.getExchangeRate('ARS')
           const usdValue = (
             parseFloat(formattedBalance) * parseFloat(usdResult.rate)
           ).toFixed(2)
           setUsdValue(usdValue)
+          const arsValue = (
+            parseFloat(formattedBalance) * parseFloat(arsResult.rate)
+          ).toFixed(2)
+          setArsValue(arsValue)
         }
       } catch (error) {
         console.error('Error fetching balance:', error)
@@ -65,7 +72,8 @@ const RenderMainInformation = ({
       </Text>
       {selectedAccount.accountCurrency === 'XCN' && (
         <Text style={styles.usdValueText}>
-          ≈ {showBalance ? `${usdValue} USD` : '*** USD'}
+          ≈ {showBalance ? `${usdValue} USD` : '*** USD'} |{' '}
+          {showBalance ? `${arsValue} ARS` : '*** ARS'}
         </Text>
       )}
       <TouchableOpacity
