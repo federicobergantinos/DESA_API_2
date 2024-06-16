@@ -100,7 +100,7 @@ const Login = () => {
         })
         setIsLoading(false)
       } else if (statusCode === 301) {
-        navigation.replace('Signup', { idToken, email })
+        navigation.navigate('Signup', { idToken, email })
       }
       setIsLoading(false)
     } catch (error) {
