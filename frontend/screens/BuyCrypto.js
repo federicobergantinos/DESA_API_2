@@ -12,6 +12,8 @@ import {
 import { useNavigation } from '@react-navigation/native'
 import { theme, Block } from 'galio-framework'
 import { Images, walletTheme } from '../constants'
+import backendApi from '../api/backendGateway'
+import WalletContext from '../navigation/WalletContext'
 
 const { width, height } = Dimensions.get('screen')
 
@@ -21,23 +23,46 @@ const BuyCrypto = () => {
   const [typingTimeout, setTypingTimeout] = useState(0)
   const [currency, setCurrency] = useState('USD')
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const [exchangeRate, setExchangeRate] = useState(1) // Default exchange rate
 
   const navigation = useNavigation()
+  const { user } = useContext(WalletContext)
+
+  useEffect(() => {
+    const fetchExchangeRate = async () => {
+      try {
+        const response =
+          await backendApi.exchangeRatesGateway.getExchangeRate(currency)
+        if (response.statusCode === 200) {
+          setExchangeRate(response.response.rate)
+        } else {
+          console.error('Error fetching exchange rate:', response)
+        }
+      } catch (error) {
+        console.error('Error fetching exchange rate:', error)
+      }
+    }
+
+    fetchExchangeRate()
+  }, [currency])
+
+  useEffect(() => {
+    const receivedAmount = (amountSend * exchangeRate).toFixed(4)
+    setAmountReceived(receivedAmount)
+  }, [exchangeRate])
 
   const handleAmountSendChange = (text) => {
     clearTimeout(typingTimeout)
     setAmountSend(text)
     setTypingTimeout(
       setTimeout(() => {
-        const receivedAmount = (parseFloat(text) * 1) / 1 // Simulated conversion rate, replace with actual logic
+        const receivedAmount = (parseFloat(text) * exchangeRate).toFixed(4)
         setAmountReceived(receivedAmount)
       }, 500)
     )
   }
 
   const handleConfirm = () => {
-    console.log(amountSend) // Amount to be sent
-    console.log(amountReceived) // Amount to be received
     navigation.replace('Home')
   }
 
@@ -111,6 +136,7 @@ const BuyCrypto = () => {
               </Text>
             </View>
           </View>
+
           <View style={styles.buttonContainer}>
             <TouchableOpacity
               onPress={handleCancel}

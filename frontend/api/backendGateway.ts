@@ -241,7 +241,6 @@ const exchangeRatesGateway = {
   getExchangeRate: async (currencyCode) => {
     try {
       const url = `${exchangeRateBaseUrl}/${currencyCode}`;
-      console.log(url)
       const response = await requests.get(url);
       return response;
     } catch (error) {

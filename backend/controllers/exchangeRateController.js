@@ -1,10 +1,10 @@
-const { getExchangeRate, getAllExchangeRates } = require('../services/exchangeRateService');
+const { getExchangeRateForCurrency, getAllExchangeRates } = require('../services/exchangeRateService');
 const { sendResponse } = require('../configurations/utils.js');
 
 const getRateByCurrency = async (req, res) => {
   try {
     const currency = req.params.currency;
-    const exchangeRate = await getExchangeRate(currency);
+    const exchangeRate = await getExchangeRateForCurrency(currency);
     return sendResponse(res, 200, exchangeRate);
   } catch (error) {
     console.error(`Error fetching exchange rate: ${error}`);
