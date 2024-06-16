@@ -28,9 +28,9 @@ const User = sequelize.define('users', {
     unique: false,
   },
   userStatus: {
-    type: DataTypes.BOOLEAN,
+    type: DataTypes.STRING,
     allowNull: false,
-    defaultValue: true,
+    defaultValue: 'pending',
   },
 })
 

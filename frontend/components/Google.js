@@ -45,7 +45,7 @@ const authService = {
           await backendApi.accountGateway.getAccountByUserId(userId)
         if (accountStatusCode === 200) {
           updateUserAndAccount(userData.user, accountData[0])
-          navigation.replace('Home')
+          navigation.replace('Validating')
         } else {
           console.error('Error fetching account data: Status Code', statusCode)
         }

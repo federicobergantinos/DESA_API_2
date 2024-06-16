@@ -105,10 +105,10 @@ const styles = StyleSheet.create({
   },
   background: {
     width: width,
-    height: height,
+    height: height * 1.03,
   },
   card: {
-    marginTop: 75,
+    marginTop: 80,
     backgroundColor: 'white',
     margin: 20,
     borderRadius: 10,
