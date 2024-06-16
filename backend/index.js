@@ -24,6 +24,7 @@ dbConnection()
       users: '/v1/users',
       accounts: '/v1/accounts',
       contacts: '/v1/contacts',
+      exchangeRate: '/v1/rates',
     }
 
     app.use(paths.status, require('./routes/healthCheck'))
@@ -32,6 +33,7 @@ dbConnection()
     app.use(paths.users, require('./routes/users'))
     app.use(paths.accounts, require('./routes/account'))
     app.use(paths.contacts, require('./routes/contacts'))
+    app.use(paths.exchangeRate, require('./routes/exchangeRate'))
 
     const PORT = 8080
     app.listen(PORT, () => {

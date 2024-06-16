@@ -28,10 +28,12 @@ const RenderMainInformation = ({
 
         // Fetch USD value if the currency is XCN
         if (selectedAccount.accountCurrency === 'XCN') {
-          // const { response: usdResult, usdStatusCode } =
-          //   await backendApi.transactionsGateway.convertToUSD(formattedBalance)
-          const usdResult = 0.0
-          setUsdValue(parseFloat(usdResult).toFixed(2))
+          const { response: usdResult } =
+            await backendApi.exchangeRatesGateway.getExchangeRate('XCN')
+          const usdValue = (
+            parseFloat(formattedBalance) * parseFloat(usdResult.rate)
+          ).toFixed(2)
+          setUsdValue(usdValue)
         }
       } catch (error) {
         console.error('Error fetching balance:', error)
@@ -57,11 +59,13 @@ const RenderMainInformation = ({
         Balance | Cuenta: ...{lastFourDigits}
       </Text>
       <Text style={styles.amountText}>
-        {showBalance ? `${balance} ${selectedAccount.accountCurrency}` : '***'}
+        {showBalance
+          ? `${balance} ${selectedAccount.accountCurrency}`
+          : `*** ${selectedAccount.accountCurrency}`}
       </Text>
       {selectedAccount.accountCurrency === 'XCN' && (
         <Text style={styles.usdValueText}>
-          ≈ {showBalance ? `${usdValue} USD` : '***'}
+          ≈ {showBalance ? `${usdValue} USD` : '*** USD'}
         </Text>
       )}
       <TouchableOpacity

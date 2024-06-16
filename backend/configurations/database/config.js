@@ -1,18 +1,18 @@
+// backend/configurations/database/config.js
 const sequelize = require('../database/sequelizeConnection')
 const {
   User,
   Transaction,
-  Media,
-  Account,
-  Contact,
   Mission,
-  MetamaskAccount, // Asegúrate de importar el modelo MetamaskAccount
+  MetamaskAccount,
+  ExchangeRate, 
 } = require('../../entities/associateModels')
 const {
   populateTransactions,
   populateUser,
   populateMissions,
-  populateMetamaskAccounts, // Agrega la función de populación de MetamaskAccounts
+  populateMetamaskAccounts,
+  populateExchangeRates, 
 } = require('./initialData')
 const createLogger = require('../Logger')
 const logger = createLogger(__filename)
@@ -27,6 +27,7 @@ const dbConnection = async () => {
     const transactionsCount = await Transaction.count()
     const missionsCount = await Mission.count()
     const metamaskAccountsCount = await MetamaskAccount.count()
+    const exchangeRatesCount = await ExchangeRate.count()
 
     if (usersCount === 0) {
       await populateUser()
@@ -42,6 +43,10 @@ const dbConnection = async () => {
 
     if (metamaskAccountsCount === 0) {
       await populateMetamaskAccounts()
+    }
+
+    if (exchangeRatesCount === 0) {
+      await populateExchangeRates()
     }
 
     logger.info('Database online')

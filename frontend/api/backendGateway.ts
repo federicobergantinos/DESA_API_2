@@ -13,6 +13,7 @@ const transactionBaseUrl = '/v1/transactions';
 const usersBaseUrl = '/v1/users';
 const contactsBaseUrl = '/v1/contacts';
 const accountBaseUrl = '/v1/accounts';
+const exchangeRateBaseUrl = '/v1/rates';
 
 // Interceptores de solicitud y respuesta
 api.interceptors.request.use(
@@ -236,6 +237,20 @@ const usersGateway = {
     requests.delete(`${usersBaseUrl}/${userId}`),
 }
 
+const exchangeRatesGateway = {
+  getExchangeRate: async (currencyCode) => {
+    try {
+      const url = `${exchangeRateBaseUrl}/${currencyCode}`;
+      console.log(url)
+      const response = await requests.get(url);
+      return response;
+    } catch (error) {
+      console.error('Error fetching exchange rate:', error);
+      throw error;
+    }
+  },
+};
+
 
 // Función para obtener el token de autenticación del almacenamiento local
 const getToken = async (): Promise<string> => {
@@ -254,4 +269,5 @@ export default {
   contactsGateway,
   usersGateway,
   accountGateway,
+  exchangeRatesGateway,
 };
