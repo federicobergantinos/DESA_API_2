@@ -75,8 +75,7 @@ const deleteContactById = async (contactId) => {
 const createContact = async (contactData) => {
   try {
     const newContact = await Contact.create(contactData)
-
-    return newContact.id
+    return newContact
   } catch (error) {
     throw error
   }

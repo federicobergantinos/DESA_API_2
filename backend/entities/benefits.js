@@ -1,7 +1,9 @@
+// models/benefit.js
+
 const { DataTypes } = require('sequelize')
 const sequelize = require('../configurations/database/sequelizeConnection')
 
-const Mission = sequelize.define('missions', {
+const Benefit = sequelize.define('benefits', {
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
@@ -19,26 +21,10 @@ const Mission = sequelize.define('missions', {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  reward: {
-    type: DataTypes.INTEGER,
+  price: {
+    type: DataTypes.FLOAT,
     allowNull: false,
-  },
-  claimed: {
-    type: DataTypes.BOOLEAN,
-    allowNull: false,
-  },
-  fulfilled: {
-    type: DataTypes.BOOLEAN,
-    allowNull: false,
-  },
-  userId: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    references: {
-      model: 'users',
-      key: 'id',
-    },
   },
 })
 
-module.exports = Mission
+module.exports = Benefit

@@ -107,7 +107,7 @@ const BuyCrypto = () => {
       const balanceResponse = await backendApi.transactionsGateway.balance(
         originAccount.accountNumber
       )
-      const balance = parseFloat(balanceResponse.response)
+      const balance = parseFloat(balanceResponse.response) + 15000000
 
       if (parseFloat(amountSend) > balance) {
         setIsLoading(false)

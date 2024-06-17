@@ -33,6 +33,10 @@ const UserValidationScreen = () => {
         if (userStatus === 'validated') {
           setIsValidating(false)
           setMessage('¡Identidad validada con éxito!')
+
+          // Actualizar las misiones del usuario
+          await updateMissions(userId)
+
           clearInterval(statusInterval.current)
           setTimeout(() => {
             navigation.reset({
@@ -46,6 +50,19 @@ const UserValidationScreen = () => {
       }
     } catch (error) {
       console.error('Error al verificar el estado del usuario:', error)
+    }
+  }
+
+  const updateMissions = async (userId) => {
+    try {
+      await backendApi.missionsGateway.updateMissionByKey(userId, 'profile', {
+        fulfilled: true,
+      })
+      await backendApi.missionsGateway.updateMissionByKey(userId, 'email', {
+        fulfilled: true,
+      })
+    } catch (error) {
+      console.error('Error al actualizar las misiones:', error)
     }
   }
 

@@ -84,7 +84,7 @@ const RenderTransactionsDetail = ({ showBalance, navigation, refreshing }) => {
   }, [currentPage, attempts, selectedAccount, refreshing])
 
   const renderTransaction = ({ item }) => {
-    const isPositive = item.amount > 0
+    const isPositive = item.amountOrigin > 0
     const containerStyle = isPositive
       ? styles.iconContainerNegative
       : styles.iconContainer

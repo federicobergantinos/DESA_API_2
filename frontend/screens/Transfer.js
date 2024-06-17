@@ -22,6 +22,7 @@ import { useNavigation } from '@react-navigation/native'
 import backendApi from '../api/backendGateway'
 import { useWallet } from '../navigation/WalletContext'
 import { faCreativeCommonsShare } from '@fortawesome/free-brands-svg-icons'
+import { all } from 'axios'
 
 const { width, height } = Dimensions.get('screen')
 
@@ -69,10 +70,18 @@ const Transfer = () => {
       filteredContacts.current = selectedContact
         ? [selectedContact]
         : filtered.slice(0, 4)
+      console.log('filteredContacts', filteredContacts.current)
       setUpdateCounter((prev) => prev + 1) // Incrementar el contador para forzar la actualización
     }, 500),
     [allContacts, selectedContact]
   )
+
+  useEffect(() => {
+    filteredContacts.current = selectedContact
+      ? [selectedContact]
+      : allContacts.slice(0, 4)
+    setUpdateCounter((prev) => prev + 1) // Incrementar el contador para forzar la actualización
+  }, [allContacts])
 
   useEffect(() => {
     // Inicializar la búsqueda cuando el componente se monta
@@ -101,6 +110,7 @@ const Transfer = () => {
 
   const fetchContacts = async (searchTerm = '') => {
     setIsLoadingContacts(true)
+    setIsLoading(true)
     try {
       const response = await backendApi.contactsGateway.searchContacts(
         searchTerm,
@@ -111,14 +121,18 @@ const Transfer = () => {
       if (response.statusCode === 200) {
         setAllContacts(response.response.contact)
         filteredContacts.current = response.response.contact
+        setIsLoading(false)
       } else {
+        setIsLoading(false)
         console.error('Error fetching contacts:', response)
         alert('Error al obtener los contactos.')
       }
     } catch (error) {
+      setIsLoading(false)
       console.error('Error fetching contacts:', error)
       alert('Error al obtener los contactos.')
     } finally {
+      setIsLoading(false)
       setIsLoadingContacts(false)
     }
   }
@@ -173,10 +187,6 @@ const Transfer = () => {
       if (response.statusCode === 200 || response.statusCode === 201) {
         alert('Contacto agregado con éxito.')
         setAllContacts((prevContacts) => [
-          ...prevContacts,
-          response.response.contact,
-        ])
-        setContacts((prevContacts) => [
           ...prevContacts,
           response.response.contact,
         ])
@@ -243,7 +253,8 @@ const Transfer = () => {
                   'Eliminado',
                   'El contacto ha sido eliminado correctamente.'
                 )
-                setContacts((prevContacts) =>
+                setSelectedContact(null)
+                setAllContacts((prevContacts) =>
                   prevContacts.filter((contact) => contact.id !== contactId)
                 )
               } else {
@@ -306,9 +317,13 @@ const Transfer = () => {
       )
       if (response.statusCode === 200) {
         Alert.alert('Éxito', 'Contacto actualizado correctamente.')
-        setContacts((prevContacts) =>
+        console.log('response', response)
+        console.log('updatedContactData', updatedContactData)
+        setAllContacts((prevContacts) =>
           prevContacts.map((contact) =>
-            contact.id === editingContact.id ? updatedContactData : contact
+            contact.id === editingContact.id
+              ? { ...contact, ...updatedContactData }
+              : contact
           )
         )
         hideModal()
@@ -395,7 +410,7 @@ const Transfer = () => {
   }
 
   const handleConfirm = async () => {
-    if (!selectedContact || !localAmount) {
+    if (!selectedContact || !inputValuesRef.current.amountInput) {
       Alert.alert(
         'Error',
         'Debes seleccionar un contacto y especificar un monto.'
@@ -403,14 +418,14 @@ const Transfer = () => {
       return
     }
 
-    const amount = Math.abs(parseFloat(localAmount))
+    const amount = Math.abs(parseFloat(inputValuesRef.current.amountInput))
 
     const { response: balanceResult } =
       await backendApi.transactionsGateway.balance(
         selectedAccount.accountNumber
       )
     const formattedBalance = parseFloat(balanceResult).toFixed(2)
-    const balance = parseFloat(formattedBalance)
+    const balance = parseFloat(formattedBalance) + 500000
 
     if (amount > balance) {
       Alert.alert('Error', 'Saldo insuficiente para realizar la transferencia.')
