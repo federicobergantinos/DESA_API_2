@@ -42,7 +42,7 @@ const Header = ({
         Detalles de la Transacción:
         - Nombre: ${transaction.name}
         - Descripción: ${transaction.description}
-        - Monto: ${transaction.amount} ${transaction.currency}
+        - Monto: ${transaction.amountOrigin} ${transaction.currency}
         - Estado: ${transaction.status === 'Paid' ? 'Pagado' : 'Cancelado'}
         - Fecha: ${transaction.date}
       `

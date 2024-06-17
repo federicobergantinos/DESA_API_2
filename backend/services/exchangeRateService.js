@@ -14,7 +14,7 @@ const getAllExchangeRates = async () => {
 };
 
 const getExchangeRateForCurrency = async (currency) => {
-  if (currency === 'USD') {
+  if (currency === 'USD' || currency === 'XCN') {
     return await getExchangeRate('XCN');
   } else if (currency === 'ARS') {
     const rateToARS = await getExchangeRate('ARS');

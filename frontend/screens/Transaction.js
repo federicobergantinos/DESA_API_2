@@ -112,10 +112,10 @@ const Transaction = () => {
                 <Text
                   style={[
                     styles.amount,
-                    { color: getAmountTextColor(transaction.amount) },
+                    { color: getAmountTextColor(transaction.amountOrigin) },
                   ]}
                 >
-                  {transaction.amount} {transaction.currencyOrigin}
+                  {transaction.amountOrigin} {transaction.currencyOrigin}
                 </Text>
               </TransactionDetailCard>
 

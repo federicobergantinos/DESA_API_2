@@ -43,8 +43,6 @@ const BuyCrypto = () => {
   }
 
   const handleConfirm = () => {
-    console.log(amountSend) // Amount to be sent
-    console.log(amountReceived) // Amount to be received
     navigation.replace('Home')
   }
 
