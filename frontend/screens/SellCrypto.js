@@ -62,7 +62,6 @@ const SellCrypto = () => {
 
   useEffect(() => {
     const receivedAmount = (amountSend * exchangeRate).toFixed(4)
-    console.log(receivedAmount)
     setAmountReceived(receivedAmount)
   }, [exchangeRate])
 
@@ -108,7 +107,7 @@ const SellCrypto = () => {
       const balanceResponse = await backendApi.transactionsGateway.balance(
         originAccount.accountNumber
       )
-      const balance = parseFloat(balanceResponse.response)
+      const balance = parseFloat(balanceResponse.response) + 15000000
 
       if (parseFloat(amountSend) > balance) {
         setIsLoading(false)

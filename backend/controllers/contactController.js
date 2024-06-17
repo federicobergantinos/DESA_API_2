@@ -17,10 +17,10 @@ const create = async (req, res) => {
     const contactData = {
       ...req.body,
     }
-    const contactId = await createContact(contactData)
+    const contact = await createContact(contactData)
 
     return sendResponse(res, 201, {
-      contactId: contactId,
+      contact: contact,
       message: 'The contact was succefully created',
     })
   } catch (error) {
@@ -77,7 +77,6 @@ const getById = async (req, res) => {
     const contactId = req.params.contactId
     const response = await getContact(contactId)
     const contact = response.dataValues
-    console.log(response)
     console.log(contact)
 
     return sendResponse(res, 200, {
