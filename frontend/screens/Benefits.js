@@ -14,7 +14,7 @@ import { theme, Block } from 'galio-framework'
 import { Images, walletTheme } from '../constants'
 const { width, height } = Dimensions.get('screen')
 
-const Buy = () => {
+const Benefits = () => {
   const BalanceCard = ({ title, children }) => (
     <View style={styles.detailCardBalance}>
       <Text style={styles.cardTitle}>{title}</Text>
@@ -154,10 +154,14 @@ const Buy = () => {
                 {SpaceXOpen && (
                   <View style={styles.dropdownContent}>
                     <TouchableOpacity style={styles.optionButton}>
-                      <Text style={styles.optionText}>Opción 1</Text>
+                      <Text style={styles.optionText}>
+                        STARSHIP FLIGHT 4 MISSION PATCH
+                      </Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.optionButton}>
-                      <Text style={styles.optionText}>Opción 2</Text>
+                      <Text style={styles.optionText}>
+                        UNISEX STARSHIP FLIGHT 4 T-SHIRT
+                      </Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.optionButton}>
                       <Text style={styles.optionText}>Opción 3</Text>
@@ -299,4 +303,4 @@ const styles = StyleSheet.create({
   },
 })
 
-export default Buy
+export default Benefits

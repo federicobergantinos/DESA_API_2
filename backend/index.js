@@ -24,6 +24,9 @@ dbConnection()
       users: '/v1/users',
       accounts: '/v1/accounts',
       contacts: '/v1/contacts',
+      exchangeRate: '/v1/rates',
+      missions: '/v1/missions',
+      benefits: '/v1/benefits',
     }
 
     app.use(paths.status, require('./routes/healthCheck'))
@@ -32,6 +35,9 @@ dbConnection()
     app.use(paths.users, require('./routes/users'))
     app.use(paths.accounts, require('./routes/account'))
     app.use(paths.contacts, require('./routes/contacts'))
+    app.use(paths.exchangeRate, require('./routes/exchangeRate'))
+    app.use(paths.missions, require('./routes/missions'))
+    app.use(paths.benefits, require('./routes/benefits'))
 
     const PORT = 8080
     app.listen(PORT, () => {
@@ -40,6 +46,7 @@ dbConnection()
 
     // Importar y arrancar el worker
     require('./utils/sqsWorker')
+    require('./utils/batchWorker') // Importar el nuevo worker
   })
   .catch((error) => {
     console.error('Error establishing database connection:', error)

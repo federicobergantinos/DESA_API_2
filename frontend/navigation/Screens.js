@@ -16,6 +16,7 @@ import SellCrypto from '../screens/SellCrypto'
 import MissionsStore from '../screens/MissionsStore'
 import Missions from '../screens/Missions'
 import Benefits from '../screens/Benefits'
+import Validating from '../screens/Validating'
 import FAQs from '../screens/FAQs'
 // settings
 import Settings from '../screens/Settings'
@@ -49,6 +50,23 @@ function HomeStack(props) {
               white
               back
               title="Registro"
+              navigation={navigation}
+              scene={scene}
+            />
+          ),
+          cardStyle: { backgroundColor: '#F8F9FE' },
+        }}
+      />
+      <Stack.Screen
+        name="Validating"
+        component={Validating}
+        options={{
+          header: ({ navigation, scene }) => (
+            <Header
+              transparent
+              white
+              back
+              title=""
               navigation={navigation}
               scene={scene}
             />

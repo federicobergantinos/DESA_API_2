@@ -6,13 +6,16 @@ import { ContactDTO, ContactsDTO } from './ContactDTO';
 import { AccountDTO, AccountSummaryDTO } from './AccountDTO';
 
 // const api = axios.create({ baseURL: "https://www.wallet-elb.federicobergantinos.com/" });
-const api = axios.create({ baseURL: 'http://192.168.1.112:8080' });
+const api = axios.create({ baseURL: 'http://192.168.1.110:8080' });
 // const api = axios.create({baseURL: 'https://277c-170-150-153-225.ngrok-free.app:8080'});
 
 const transactionBaseUrl = '/v1/transactions';
 const usersBaseUrl = '/v1/users';
 const contactsBaseUrl = '/v1/contacts';
 const accountBaseUrl = '/v1/accounts';
+const exchangeRateBaseUrl = '/v1/rates';
+const missionsBaseUrl = '/v1/missions';
+const benefitsBaseUrl = '/v1/benefits';
 
 // Interceptores de solicitud y respuesta
 api.interceptors.request.use(
@@ -188,6 +191,7 @@ const accountGateway = {
     }
   },
 
+  
   getAccountByUserId: async (
     userId: number
   ): Promise<{ response: AccountSummaryDTO[]; statusCode: number }> => {
@@ -236,6 +240,88 @@ const usersGateway = {
     requests.delete(`${usersBaseUrl}/${userId}`),
 }
 
+const exchangeRatesGateway = {
+  getExchangeRate: async (currencyCode) => {
+    try {
+      const url = `${exchangeRateBaseUrl}/${currencyCode}`;
+      const response = await requests.get(url);
+      return response;
+    } catch (error) {
+      console.error('Error fetching exchange rate:', error);
+      throw error;
+    }
+  },
+};
+
+const missionsGateway = {
+  createMissionsForUser: async (userId, transaction) => {
+    try {
+      const url = `${missionsBaseUrl}/create`;
+      const response = await requests.post(url, { userId, transaction });
+      return response;
+    } catch (error) {
+      console.error('Error al crear las misiones:', error);
+      throw error;
+    }
+  },
+
+  updateMissionByKey: async (userId, key, updates) => {
+    try {
+      const url = `${missionsBaseUrl}/updateByKey/${key}`;
+      const response = await requests.put(url, { userId, ...updates });
+      return response;
+    } catch (error) {
+      console.error('Error al actualizar la misión:', error);
+      throw error;
+    }
+  },
+};
+
+const benefitsGateway = {
+  getAllBenefits: async () => {
+    try {
+      const url = `${benefitsBaseUrl}`;
+      const response = await requests.get(url);
+      return response;
+    } catch (error) {
+      console.error('Error al obtener los beneficios:', error);
+      throw error;
+    }
+  },
+
+  getBenefitById: async (benefitId) => {
+    try {
+      const url = `${benefitsBaseUrl}/${benefitId}`;
+      const response = await requests.get(url);
+      return response;
+    } catch (error) {
+      console.error('Error al obtener el beneficio:', error);
+      throw error;
+    }
+  },
+
+  updateBenefit: async (benefitId, updates) => {
+    try {
+      const url = `${benefitsBaseUrl}/${benefitId}`;
+      const response = await requests.put(url, updates);
+      return response;
+    } catch (error) {
+      console.error('Error al actualizar el beneficio:', error);
+      throw error;
+    }
+  },
+
+  deleteBenefit: async (benefitId) => {
+    try {
+      const url = `${benefitsBaseUrl}/${benefitId}`;
+      const response = await requests.delete(url);
+      return response;
+    } catch (error) {
+      console.error('Error al eliminar el beneficio:', error);
+      throw error;
+    }
+  },
+};
 
 // Función para obtener el token de autenticación del almacenamiento local
 const getToken = async (): Promise<string> => {
@@ -254,4 +340,7 @@ export default {
   contactsGateway,
   usersGateway,
   accountGateway,
+  exchangeRatesGateway,
+  missionsGateway,
+  benefitsGateway
 };

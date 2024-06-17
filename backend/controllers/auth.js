@@ -4,6 +4,7 @@ const {
   getAvailableMetamaskAccounts,
   markMetamaskAccountAsUsed,
 } = require('../services/accountService')
+const { createMissionsForUser } = require('../services/missionService')
 const {
   createAuthTokens,
   loginUser,
@@ -32,7 +33,6 @@ const authenticate = async (req, res) => {
 
     let user = null
     let tokens = null
-
     if (googleToken !== null) {
       const userData = await loginUser(googleToken, accessToken)
 
@@ -40,6 +40,7 @@ const authenticate = async (req, res) => {
         userData.email = email
       }
       user = await findUserByEmail(userData.email)
+
       if (registerUser === true) {
         // Obtener cuentas de Metamask disponibles
         const availableMetamaskAccounts = await getAvailableMetamaskAccounts()
@@ -97,6 +98,8 @@ const authenticate = async (req, res) => {
           transaction,
         })
 
+        await createMissionsForUser(user.id) // Crear misiones para el usuario
+
         // Crear el payload para SNS
         const payload = {
           operationType: 'CreateUser',
@@ -116,7 +119,6 @@ const authenticate = async (req, res) => {
         await sendMessageToSNS(payload)
       }
     } else if (accessToken !== null) {
-      console.log('accessToken', accessToken)
       const decode = verify(accessToken, process.env.CODE, (err, decoded) => {
         if (err) {
           console.error('ERROR', err)

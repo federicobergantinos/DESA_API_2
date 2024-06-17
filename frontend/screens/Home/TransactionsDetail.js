@@ -84,12 +84,12 @@ const RenderTransactionsDetail = ({ showBalance, navigation, refreshing }) => {
   }, [currentPage, attempts, selectedAccount, refreshing])
 
   const renderTransaction = ({ item }) => {
-    const isPositive = item.amount > 0
+    const isPositive = item.amountOrigin > 0
     const containerStyle = isPositive
       ? styles.iconContainerNegative
       : styles.iconContainer
     const iconColor = isPositive ? '#00C853' : '#C70039'
-    const formattedAmount = parseFloat(item.amount).toFixed(2)
+    const formattedAmount = parseFloat(item.amountOrigin).toFixed(2)
     const amountDisplay = showBalance
       ? `${formattedAmount} ${item.currencyOrigin}`
       : '***'

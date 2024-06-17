@@ -21,7 +21,8 @@ const create = async (req, res) => {
     // Crear la transacción para el remitente (negativa)
     const transactionOrigin = {
       ...transactionData,
-      amount: -Math.abs(transactionData.amount), // Asegurar que el monto es negativo
+      amountOrigin: -Math.abs(transactionData.amountOrigin), // Asegurar que el monto es negativo
+      amountDestination: -Math.abs(transactionData.amountDestination), // Asegurar que el monto es negativo
     };
     await createTransaction(transactionOrigin);
 
@@ -30,12 +31,15 @@ const create = async (req, res) => {
       ...transactionData,
       accountNumberOrigin: transactionData.accountNumberDestination,
       accountNumberDestination: transactionData.accountNumberOrigin,
-      amount: Math.abs(transactionData.amount), // Asegurar que el monto es positivo
+      currencyOrigin: transactionData.currencyDestination,
+      currencyDestination: transactionData.currencyOrigin,
+      amountOrigin: Math.abs(transactionData.amountDestination), // Asegurar que el monto es positivo
+      amountDestination: Math.abs(transactionData.amountOrigin), // Asegurar que el monto es positivo
     };
     await createTransaction(transactionDestination);
 
     // Crear el payload para SNS solo para la transacción original
-    if (transactionData.currencyOrigin === "XCoin") {
+    if (transactionData.currencyOrigin === "XCoin" || transactionData.currencyDestination === "XCoin") {
       const payload = {
         operationType: "CreateTransferXCN",
         data: {
@@ -44,7 +48,8 @@ const create = async (req, res) => {
           transactionId: transactionData.transactionId,
           name: transactionData.name,
           description: transactionData.description,
-          amount: transactionData.amount,
+          amountOrigin: transactionData.amountOrigin,
+          amountDestination: transactionData.amountDestination,
           currencyOrigin: transactionData.currencyOrigin,
           currencyDestination: transactionData.currencyDestination,
           status: transactionData.status,
@@ -121,7 +126,7 @@ const calculateAccountBalance = async (req, res) => {
 
     let balance = 0
     transactions.forEach((transaction) => {
-      balance += transaction.amount
+      balance += transaction.amountOrigin
     })
 
     return sendResponse(res, 200, balance)

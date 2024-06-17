@@ -71,7 +71,7 @@ const deactivateUserService = async (userId) => {
     throw new NotFound('User not found')
   }
 
-  user.userStatus = false
+  user.userStatus = 'desactivated'
   user.email = `${uuidv4()}@deleted.com`
   await user.save()
 

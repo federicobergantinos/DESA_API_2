@@ -19,7 +19,11 @@ const Transaction = sequelize.define('transactions', {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  amount: {
+  amountOrigin: {
+    type: DataTypes.FLOAT,
+    allowNull: false,
+  },
+  amountDestination: {
     type: DataTypes.FLOAT,
     allowNull: false,
   },

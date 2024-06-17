@@ -98,67 +98,76 @@ const Login = () => {
           navigation: navigation,
           updateUserAndAccount: updateUserAndAccount,
         })
-        setIsLoading(false)
       } else if (statusCode === 301) {
-        navigation.replace('Signup', { idToken, email })
+        navigation.navigate('Signup', { idToken, email })
       }
-      setIsLoading(false)
     } catch (error) {
       await logOut()
+      logger.error('Error during authentication:', error)
+    } finally {
       setIsLoading(false)
     }
   }
 
   const reAuthenticate = async () => {
-    setIsLoading(true)
-    const userInfo = await GoogleSignin.signInSilently()
-    const { user } = userInfo
+    try {
+      setIsLoading(true)
+      const userInfo = await GoogleSignin.signInSilently()
+      const { user } = userInfo
 
-    const email = getTestEmail(user, isTesting, emailPrefix)
-    const authPayload = {
-      token: null,
-      email: email,
-    }
-
-    const { response, statusCode } =
-      await backendApi.authUser.authenticate(authPayload)
-
-    if (statusCode === 200) {
-      authService.saveCredentials({
-        accessToken: response.accessToken,
-        refreshToken: response.refreshToken,
-        userId: response.id,
-        navigation: navigation,
-        updateUserAndAccount: updateUserAndAccount,
-      })
-      setIsLoading(false)
-    } else {
-      try {
-        if ((await asyncStorage.getItem('token')) !== null) {
-          await refreshToken()
-        } else await logOut()
-      } catch (e) {
-        await logOut()
+      const email = getTestEmail(user, isTesting, emailPrefix)
+      const authPayload = {
+        token: null,
+        email: email,
       }
+
+      const { response, statusCode } =
+        await backendApi.authUser.authenticate(authPayload)
+
+      if (statusCode === 200) {
+        await authService.saveCredentials({
+          accessToken: response.accessToken,
+          refreshToken: response.refreshToken,
+          userId: response.id,
+          navigation: navigation,
+          updateUserAndAccount: updateUserAndAccount,
+        })
+      } else {
+        if ((await AsyncStorage.getItem('token')) !== null) {
+          await refreshToken()
+        } else {
+          await logOut()
+        }
+      }
+    } catch (error) {
+      await logOut()
+      logger.error('Error during re-authentication:', error)
+    } finally {
+      setIsLoading(false)
     }
   }
 
   const refreshToken = async () => {
-    const { response, statusCode } = await backendApi.authUser.refresh(
-      await AsyncStorage.getItem('refresh')
-    )
-    if (statusCode === 200) {
-      const userId = await AsyncStorage.getItem('userId')
-      await authService.saveCredentials({
-        accessToken: response.accessToken,
-        refreshToken: response.refreshToken,
-        userId: response.id,
-        navigation: navigation,
-        updateUserAndAccount: updateUserAndAccount,
-      })
-      setIsLoading(false)
-    } else {
+    try {
+      const refreshToken = await AsyncStorage.getItem('refresh')
+      const { response, statusCode } =
+        await backendApi.authUser.refresh(refreshToken)
+
+      if (statusCode === 200) {
+        const userId = await AsyncStorage.getItem('userId')
+        await authService.saveCredentials({
+          accessToken: response.accessToken,
+          refreshToken: response.refreshToken,
+          userId: response.id,
+          navigation: navigation,
+          updateUserAndAccount: updateUserAndAccount,
+        })
+      } else {
+        await logOut()
+      }
+    } catch (error) {
       await logOut()
+      logger.error('Error during token refresh:', error)
     }
   }
 
