@@ -29,16 +29,17 @@ const RenderMainInformation = ({
 
         // Fetch USD value if the currency is XCN
         if (selectedAccount.accountCurrency === 'XCN') {
-          const { response: usdResult } =
-            await backendApi.exchangeRatesGateway.getExchangeRate('XCN')
-          const { response: arsResult } =
+          const { response: exchangeResult } =
             await backendApi.exchangeRatesGateway.getExchangeRate('ARS')
+
+          arsResult = exchangeResult.ARS * exchangeResult.XCN
+          usdResult = exchangeResult.XCN
           const usdValue = (
-            parseFloat(formattedBalance) * parseFloat(usdResult.rate)
+            parseFloat(formattedBalance) * parseFloat(usdResult)
           ).toFixed(2)
           setUsdValue(usdValue)
           const arsValue = (
-            parseFloat(formattedBalance) * parseFloat(arsResult.rate)
+            parseFloat(formattedBalance) * parseFloat(arsResult)
           ).toFixed(2)
           setArsValue(arsValue)
         }

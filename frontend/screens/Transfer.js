@@ -112,9 +112,7 @@ const Transfer = () => {
   }
 
   const AmountInputCard = () => {
-    // Manejador para actualizar el estado local mientras el usuario escribe
     const handleAmountChange = (text) => {
-      setShouldFocus(true)
       setLocalAmount(text)
     }
 
@@ -129,7 +127,6 @@ const Transfer = () => {
             keyboardType="numeric"
             placeholderTextColor={walletTheme.COLORS.VIOLET}
           />
-          {/* Otros componentes aquí */}
         </View>
       </Card>
     )
@@ -326,7 +323,7 @@ const Transfer = () => {
             <Input
               right
               color="black"
-              autoFocus={shouldFocus}
+              // autoFocus={shouldFocus}
               style={styles.search}
               value={localSearch}
               placeholder="Buscar contacto"
@@ -456,7 +453,7 @@ const Transfer = () => {
         <View style={{ width: width, ...styles.scrollViewContent }}>
           {
             <>
-              <ContactsCard />
+              {/* <ContactsCard /> */}
               <AmountInputCard />
 
               {/* Botones */}

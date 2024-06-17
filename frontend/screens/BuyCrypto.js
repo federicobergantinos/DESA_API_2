@@ -38,8 +38,15 @@ const BuyCrypto = () => {
         const response =
           await backendApi.exchangeRatesGateway.getExchangeRate(currency)
         if (response.statusCode === 200) {
+          const exchangeRate = response.response
+          let exchangeRateCalculated = 0.0
+          if (currency === 'ARS') {
+            exchangeRateCalculated = exchangeRate.ARS * exchangeRate.XCN
+          } else {
+            exchangeRateCalculated = exchangeRate.XCN
+          }
+          setExchangeRate(exchangeRateCalculated)
           setIsLoading(false)
-          setExchangeRate(response.response.rate)
         } else {
           setIsLoading(false)
           console.error('Error fetching exchange rate:', response)
