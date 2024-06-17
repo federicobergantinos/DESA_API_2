@@ -35,7 +35,6 @@ const Transfer = () => {
   const [localSearch, setLocalSearch] = useState('')
   const { user, selectedAccount } = useWallet()
   const [editingContact, setEditingContact] = useState(null)
-  const [shouldFocus, setShouldFocus] = useState(false)
   const [selectedContact, setSelectedContact] = useState(null)
   const [localAmount, setLocalAmount] = useState('')
   const [allContacts, setAllContacts] = useState([])
