@@ -2,7 +2,8 @@ export interface TransactionDTO {
   id: number
   name: string
   description: string
-  amount: number
+  amountOrigin: number
+  amountDestination: number
   currencyOrigin: string
   currencyDestination: string
   accountNumberOrigin: string
