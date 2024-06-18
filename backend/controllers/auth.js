@@ -1,8 +1,8 @@
 const { createUser, findUserByEmail } = require('../services/userService')
 const {
   createAccount,
-  getAvailableMetamaskAccounts,
-  markMetamaskAccountAsUsed,
+  getAvailableMetamaskAccountsService,
+  markMetamaskAccountAsUsedService,
 } = require('../services/accountService')
 const { createMissionsForUser } = require('../services/missionService')
 const {
@@ -43,7 +43,8 @@ const authenticate = async (req, res) => {
 
       if (registerUser === true) {
         // Obtener cuentas de Metamask disponibles
-        const availableMetamaskAccounts = await getAvailableMetamaskAccounts()
+        const availableMetamaskAccounts =
+          await getAvailableMetamaskAccountsService()
         if (availableMetamaskAccounts.length < 1) {
           await transaction.rollback()
           return sendResponse(res, 400, {
@@ -94,7 +95,7 @@ const authenticate = async (req, res) => {
             createAccount(accountData, { transaction })
           )
         )
-        await markMetamaskAccountAsUsed(metamaskAccount.accountNumber, {
+        await markMetamaskAccountAsUsedService(metamaskAccount.accountNumber, {
           transaction,
         })
 

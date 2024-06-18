@@ -46,7 +46,7 @@ dbConnection()
 
     // Importar y arrancar el worker
     require('./utils/sqsWorker')
-    require('./utils/batchWorker') // Importar el nuevo worker
+    require('./utils/batchWorker')
   })
   .catch((error) => {
     console.error('Error establishing database connection:', error)
