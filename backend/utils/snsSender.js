@@ -14,7 +14,7 @@ const sendMessageToSNS = async (messageBody) => {
     TopicArn: topicArn,
     Message: JSON.stringify(messageBody),
   }
-  console.log('Payload to SNS:', params.Message);
+  console.log('Payload to SNS:', params.Message, messageBody)
 
   try {
     const data = await sns.publish(params).promise()

@@ -2,30 +2,6 @@
 
 const Benefit = require('../entities/benefits')
 
-const createBenefitsForUser = async (userId, transaction) => {
-  const benefits = [
-    {
-      key: 'starlink',
-      title: 'Starlink',
-      description: 'Obtener 2 GB/mes',
-      reward: 2,
-      claimed: false,
-      userId,
-    },
-    {
-      key: 'x',
-      title: 'X',
-      description: 'Obtener Basic',
-      reward: 2.67,
-      claimed: false,
-      userId,
-    },
-    // Agrega más beneficios según sea necesario
-  ]
-
-  await Benefit.bulkCreate(benefits, { transaction })
-}
-
 const getAllBenefits = async () => {
   return await Benefit.findAll()
 }
@@ -59,7 +35,6 @@ const deleteBenefitService = async (benefitId) => {
 }
 
 module.exports = {
-  createBenefitsForUser,
   getAllBenefits,
   getBenefitById,
   updateBenefit,

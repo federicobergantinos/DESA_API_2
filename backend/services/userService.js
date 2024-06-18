@@ -1,4 +1,5 @@
 const User = require('../entities/user')
+const Account = require('../entities/account')
 const InternalError = require('../Errors/InternalError')
 const jwt = require('jsonwebtoken')
 const { v4: uuidv4 } = require('uuid')
@@ -78,11 +79,38 @@ const deactivateUserService = async (userId) => {
   return user
 }
 
+const updateUserAccountStatusByEmail = async (email, status) => {
+  try {
+    // Buscar al usuario por su correo electrónico
+    const user = await User.findOne({ where: { email } })
+    if (!user) {
+      throw new Error(`User with email ${email} not found`)
+    }
+
+    // Actualizar el estado de las cuentas del usuario
+    await Account.update(
+      { accountStatus: status },
+      { where: { userId: user.id, accountStatus: 'pending' } }
+    )
+
+    // Actualizar el estado del usuario
+    await user.update({
+      userStatus: status,
+    })
+
+    logger.info(`User and accounts for email ${email} updated to ${status}`)
+  } catch (error) {
+    console.error(`Error updating account status: ${error.message}`)
+    throw error
+  }
+}
+
 module.exports = {
   createUser,
   isValidUser,
   findUserById,
   findUserByEmail,
+  updateUserAccountStatusByEmail,
   updateUserProfile,
   deactivateUserService,
 }

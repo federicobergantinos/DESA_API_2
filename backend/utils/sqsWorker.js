@@ -1,4 +1,8 @@
 require('dotenv').config()
+const {
+  updateUserAccountStatusByEmail,
+  findUserByEmail,
+} = require('../services/userService')
 const AWS = require('aws-sdk')
 const { dbConnection } = require('../configurations/database/config')
 const createLogger = require('../configurations/Logger')
@@ -71,25 +75,27 @@ async function processMessage(queueUrl) {
 async function handleMessage(message) {
   try {
     const messageBody = JSON.parse(message.Body)
+    const operationMessage = JSON.parse(messageBody.Message)
 
     // Validar la estructura del mensaje
-    if (!messageBody.operationType || !messageBody.data) {
+    if (!operationMessage.operationType || !operationMessage.data) {
+      console.error(operationMessage.data)
       throw new Error('Invalid message structure')
     }
 
     // Despachar el mensaje al manejador correspondiente
-    switch (messageBody.operationType) {
+    switch (operationMessage.operationType) {
       case 'CreateUserClientConfirmation':
-        await handleCreateUserClientConfirmation(messageBody.data)
+        await handleCreateUserClientConfirmation(operationMessage.data)
         break
       case 'CreateTransferXCNConfirmation':
-        await handleCreateTransferXCNConfirmation(messageBody.data)
+        await handleCreateTransferXCNConfirmation(operationMessage.data)
         break
       case 'CreateBuyXCNConfirmation':
-        await handleCreateBuyXCNConfirmation(messageBody.data)
+        await handleCreateBuyXCNConfirmation(operationMessage.data)
         break
       case 'GetBalance':
-        await handleGetBalance(messageBody.data)
+        await handleGetBalance(operationMessage.data)
         break
       default:
         break
@@ -104,13 +110,29 @@ async function handleMessage(message) {
 async function handleCreateUserClientConfirmation(data) {
   try {
     if (!data.email || !data.status) {
-      throw new Error('Invalid data structure for CreateUserClientConfirmation')
+      console.log(data)
+      logger.error('Invalid data structure for CreateUserClientConfirmation')
+      return
     }
 
     const { email, status } = data
-    await updateUserAccountStatusByEmail(email, status)
+    const formattedStatus = status.trim().toLowerCase()
+    const updatedStatus =
+      formattedStatus === 'approved' ? 'validated' : 'rejected'
+
+    // Verificar si el usuario existe
+    const user = await findUserByEmail(email)
+    if (!user) {
+      logger.error(`User with email ${email} not found`)
+      return
+    }
+
+    // Actualizar el estado de la cuenta del usuario
+    await updateUserAccountStatusByEmail(email, updatedStatus)
   } catch (error) {
-    logger.error(`Error in handleCreateUserClientConfirmation: ${error.message}`)
+    logger.error(
+      `Error in handleCreateUserClientConfirmation: ${error.message}`
+    )
     throw error
   }
 }
@@ -120,7 +142,9 @@ async function handleCreateTransferXCNConfirmation(data) {
   try {
     // Implementar lógica específica para 'CreateTransferXCNConfirmation'
   } catch (error) {
-    logger.error(`Error in handleCreateTransferXCNConfirmation: ${error.message}`)
+    logger.error(
+      `Error in handleCreateTransferXCNConfirmation: ${error.message}`
+    )
     throw error
   }
 }

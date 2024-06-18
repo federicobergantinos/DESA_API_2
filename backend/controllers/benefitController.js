@@ -1,25 +1,12 @@
 // controllers/benefitController.js
 
 const {
-  populateBenefits,
   getAllBenefits,
   getBenefitById,
   updateBenefit,
   deleteBenefitService,
 } = require('../services/benefitService')
 const { sendResponse } = require('../configurations/utils.js')
-
-const populate = async (req, res) => {
-  try {
-    await populateBenefits()
-    return sendResponse(res, 201, { msg: 'Benefits populated successfully' })
-  } catch (error) {
-    console.error(` ${error}`)
-    return sendResponse(res, error.code || 500, {
-      msg: error.message || 'An exception has occurred',
-    })
-  }
-}
 
 const getAll = async (req, res) => {
   try {
@@ -70,7 +57,6 @@ const deleteBenefit = async (req, res) => {
 }
 
 module.exports = {
-  populate,
   getAll,
   getById,
   update,
