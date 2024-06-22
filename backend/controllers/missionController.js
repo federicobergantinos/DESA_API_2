@@ -2,7 +2,7 @@ const {
   createMissionsForUser,
   getAllMissions,
   getMissionById,
-  updateMission,
+  getUserMissionsService,
   deleteMissionService,
   updateMissionByKey,
 } = require('../services/missionService')
@@ -84,11 +84,25 @@ const deleteMission = async (req, res) => {
   }
 }
 
+const getUserMissions = async (req, res) => {
+  try {
+    const { userId } = req.params
+    const missions = await getUserMissionsService(userId)
+    return sendResponse(res, 200, missions)
+  } catch (error) {
+    console.error(` ${error}`)
+    return sendResponse(res, error.code || 500, {
+      msg: error.message || 'An exception has occurred',
+    })
+  }
+}
+
 module.exports = {
   create,
   getAll,
   getById,
   update,
   deleteMission,
+  getUserMissions,
   updateByKey,
 }

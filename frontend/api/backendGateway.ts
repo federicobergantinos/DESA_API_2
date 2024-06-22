@@ -16,6 +16,7 @@ const accountBaseUrl = '/v1/accounts';
 const exchangeRateBaseUrl = '/v1/rates';
 const missionsBaseUrl = '/v1/missions';
 const benefitsBaseUrl = '/v1/benefits';
+const userTokensBaseUrl = '/v1/userTokens'
 
 // Interceptores de solicitud y respuesta
 api.interceptors.request.use(
@@ -274,7 +275,10 @@ const missionsGateway = {
       console.error('Error al actualizar la misión:', error);
       throw error;
     }
-  },
+  }, 
+  getMissionsForUser: (userId) => requests.get(`${missionsBaseUrl}/user/${userId}`),
+  updateMission: (missionId, updates) => requests.put(`${missionsBaseUrl}/${missionId}`, updates),
+  
 };
 
 const benefitsGateway = {
@@ -323,6 +327,15 @@ const benefitsGateway = {
   },
 };
 
+const userTokensGateway = {
+  createUserTokens: (userId) => requests.post(`${userTokensBaseUrl}/create`, { userId }),
+  getUserTokens: (userId) => requests.get(`${userTokensBaseUrl}/${userId}`),
+  updateUserTokens: (userId, tokens) => requests.put(`${userTokensBaseUrl}/update`, { userId, tokens }),
+  getUserTokenBalance: (userId) => requests.get(`${userTokensBaseUrl}/balance/${userId}`)
+  
+}
+
+
 // Función para obtener el token de autenticación del almacenamiento local
 const getToken = async (): Promise<string> => {
   try {
@@ -342,5 +355,6 @@ export default {
   accountGateway,
   exchangeRatesGateway,
   missionsGateway,
-  benefitsGateway
+  benefitsGateway,
+  userTokensGateway
 };

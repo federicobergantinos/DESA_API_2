@@ -16,15 +16,19 @@ import {
 } from './Home/index.js'
 import Icon from '../components/Icon'
 import WalletContext from '../navigation/WalletContext'
+import backendApi from '../api/backendGateway'
 
 const Home = ({ navigation }) => {
   const [showBalance, setShowBalance] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
-  const { selectedAccount } = useContext(WalletContext)
+  const { selectedAccount, user } = useContext(WalletContext)
+  const [userTokens, setUserTokens] = useState(0)
+
   const toggleBalanceVisibility = () => setShowBalance(!showBalance)
 
   const onRefresh = () => {
     setRefreshing(true)
+    fetchUserTokenBalance()
     setTimeout(() => {
       setRefreshing(false)
     }, 500)
@@ -33,6 +37,21 @@ const Home = ({ navigation }) => {
   useEffect(() => {
     onRefresh()
   }, [selectedAccount])
+
+  useEffect(() => {
+    fetchUserTokenBalance()
+  }, [user.id])
+
+  const fetchUserTokenBalance = async () => {
+    try {
+      const response = await backendApi.userTokensGateway.getUserTokenBalance(
+        user.id
+      )
+      setUserTokens(response.response.balance)
+    } catch (error) {
+      console.error('Error fetching user token balance:', error)
+    }
+  }
 
   const ActionButton = ({ icon, family, title, onPress }) => {
     return (
@@ -61,90 +80,81 @@ const Home = ({ navigation }) => {
     }
   }
 
-  const renderButtons = () => {
-    const isXCN = selectedAccount.accountCurrency === 'XCN'
-    return (
-      <View style={styles.buttonsRow}>
-        <ActionButton
-          icon="arrow-down"
-          family="Feather"
-          title="Recibir"
-          onPress={() => {
-            navigation.navigate('AccountDetails')
-          }}
-        />
-        <ActionButton
-          icon="arrow-up"
-          family="Feather"
-          title="Transferir"
-          onPress={() => {
-            navigation.navigate('Transfer')
-          }}
-        />
-        <ActionButton
-          icon={isXCN ? 'attach-money' : 'attach-money'}
-          family="MaterialIcons"
-          title={isXCN ? 'Vender' : 'Comprar'}
-          onPress={() => {
-            navigation.navigate(isXCN ? 'SellCrypto' : 'BuyCrypto')
-          }}
-        />
-        <ActionButton
-          icon="x-twitter"
-          family="WalletExtra"
-          title="Ingresa"
-          onPress={() => {
-            handleOpenURL()
-          }}
-        />
-      </View>
-    )
-  }
+  const renderButtons = () => (
+    <View style={styles.buttonsRow}>
+      <ActionButton
+        icon="arrow-down"
+        family="Feather"
+        title="Recibir"
+        onPress={() => {
+          navigation.navigate('AccountDetails')
+        }}
+      />
+      <ActionButton
+        icon="arrow-up"
+        family="Feather"
+        title="Transferir"
+        onPress={() => {
+          navigation.navigate('Transfer')
+        }}
+      />
+      <ActionButton
+        icon="attach-money"
+        family="MaterialIcons"
+        title="Comprar"
+        onPress={() => {
+          navigation.navigate('BuyCrypto')
+        }}
+      />
+      <ActionButton
+        icon="x-twitter"
+        family="WalletExtra"
+        title="Ingresa"
+        onPress={handleOpenURL}
+      />
+    </View>
+  )
 
-  const AccessBenefits = () => {
-    return (
-      <View style={styles.benefitsContainer}>
-        <Text style={styles.benefitsTitle}>Accede a más beneficios</Text>
+  const AccessBenefits = () => (
+    <View style={styles.benefitsContainer}>
+      <Text style={styles.benefitsTitle}>Accede a más beneficios</Text>
+      <TouchableOpacity
+        style={styles.benefitsButton}
+        onPress={() => {
+          navigation.navigate('Benefits')
+        }}
+      >
+        <Text style={styles.benefitsButtonText}>Utilizar XCoin</Text>
+      </TouchableOpacity>
+    </View>
+  )
+
+  const TotalXWC = () => (
+    <View style={styles.totalXWCContainer}>
+      <View style={styles.totalXWCRow}>
+        <Text style={styles.totalXWCTitle}>Tienes un total:</Text>
+        <Text style={styles.totalXWCAmount}>{userTokens} XWC</Text>
+      </View>
+      <View style={styles.totalXWCButtons}>
         <TouchableOpacity
-          style={styles.benefitsButton}
+          style={styles.totalXWCButton}
           onPress={() => {
-            navigation.navigate('Benefits')
+            navigation.navigate('Missions')
           }}
         >
-          <Text style={styles.benefitsButtonText}>Utilizar XCoin</Text>
+          <Text style={styles.totalXWCButtonText}>Obtener más XWC</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.totalXWCButton}
+          onPress={() => {
+            navigation.navigate('MissionsStore')
+          }}
+        >
+          <Text style={styles.totalXWCButtonText}>Canjear XWC</Text>
         </TouchableOpacity>
       </View>
-    )
-  }
-
-  const TotalXWC = () => {
-    return (
-      <View style={styles.totalXWCContainer}>
-        <View style={styles.totalXWCRow}>
-          <Text style={styles.totalXWCTitle}>Tienes un total:</Text>
-          <Text style={styles.totalXWCAmount}>400 XWC</Text>
-        </View>
-        <View style={styles.totalXWCButtons}>
-          <TouchableOpacity
-            style={styles.totalXWCButton}
-            onPress={() => {
-              navigation.navigate('Missions')
-            }}
-          >
-            <Text style={styles.totalXWCButtonText}>Obtener más XWC</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.totalXWCButton}
-            onPress={() => {
-              navigation.navigate('MissionsStore')
-            }}
-          >
-            <Text style={styles.totalXWCButtonText}>Canjear XWC</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    )
-  }
+    </View>
+  )
 
   const sections = [
     {
@@ -158,12 +168,8 @@ const Home = ({ navigation }) => {
       ),
     },
     { key: 'buttons', render: renderButtons },
-    ...(selectedAccount.accountCurrency === 'XCN'
-      ? [
-          { key: 'accessBenefits', render: AccessBenefits },
-          { key: 'totalXWC', render: TotalXWC },
-        ]
-      : []),
+    { key: 'accessBenefits', render: AccessBenefits },
+    { key: 'totalXWC', render: TotalXWC },
     {
       key: 'transactionsDetail',
       render: () => (
