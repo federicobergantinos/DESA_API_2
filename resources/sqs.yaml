@@ -19,32 +19,18 @@ Resources:
             Principal: "*"
             Action: "SNS:Publish"
             Resource: !Ref MySNSTopic
-
-  TestServiceQueue:
-    Type: AWS::SQS::Queue
-    Properties:
-      QueueName: test_service_queue
-      VisibilityTimeout: 0
+          - Sid: "AllowEveryoneToSuscribe"
+            Effect: Allow
+            Principal:
+              AWS: "*"
+            Action: "SNS:Subscribe"
+            Resource: "arn:aws:sns:us-east-1:877306037129:wallet_topic"
 
   WalletServiceQueue:
     Type: AWS::SQS::Queue
     Properties:
       QueueName: wallet_service_queue
       VisibilityTimeout: 0
-
-  TestServiceQueuePolicy:
-    Type: AWS::SQS::QueuePolicy
-    Properties:
-      Queues:
-        - !Ref TestServiceQueue
-      PolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal: "*"
-            Action:
-              - "SQS:SendMessage"
-            Resource: !GetAtt TestServiceQueue.Arn
 
   WalletServiceQueuePolicy:
     Type: AWS::SQS::QueuePolicy
@@ -63,12 +49,35 @@ Resources:
               - "SQS:GetQueueUrl"
               - "SQS:GetQueueAttributes"
             Resource: !GetAtt WalletServiceQueue.Arn
+          - Sid: "topic-subscription-arn:aws:sns:us-east-1:232171128702:CoreSNSTopic"
+            Effect: Allow
+            Principal:
+              AWS: "*"
+            Action: "SQS:SendMessage"
+            Resource: !GetAtt WalletServiceQueue.Arn
+            Condition:
+              ArnLike:
+                aws:SourceArn: "arn:aws:sns:us-east-1:232171128702:CoreSNSTopic"
+          - Sid: "topic-subscription-arn:aws:sns:us-east-1:696571260279:uade-inhouse"
+            Effect: Allow
+            Principal:
+              AWS: "*"
+            Action: "SQS:SendMessage"
+            Resource: !GetAtt WalletServiceQueue.Arn
+            Condition:
+              ArnLike:
+                aws:SourceArn: "arn:aws:sns:us-east-1:696571260279:uade-inhouse"
+          - Sid: "topic-subscription-arn:aws:sns:us-east-1:268120344536:criptosnstopic"
+            Effect: Allow
+            Principal:
+              AWS: "*"
+            Action: "SQS:SendMessage"
+            Resource: !GetAtt WalletServiceQueue.Arn
+            Condition:
+              ArnLike:
+                aws:SourceArn: "arn:aws:sns:us-east-1:268120344536:criptosnstopic"
 
 Outputs:
   WalletServiceQueueUrl:
     Description: URL de la cola Wallet Service
     Value: !Ref WalletServiceQueue
-
-  TestServiceQueueUrl:
-    Description: URL de la cola Test Service
-    Value: !Ref TestServiceQueue
