@@ -2,6 +2,7 @@ const {
   createMissionsForUser,
   getAllMissions,
   getMissionById,
+  updateMission,
   getUserMissionsService,
   deleteMissionService,
   updateMissionByKey,

@@ -80,40 +80,46 @@ const Home = ({ navigation }) => {
     }
   }
 
-  const renderButtons = () => (
-    <View style={styles.buttonsRow}>
-      <ActionButton
-        icon="arrow-down"
-        family="Feather"
-        title="Recibir"
-        onPress={() => {
-          navigation.navigate('AccountDetails')
-        }}
-      />
-      <ActionButton
-        icon="arrow-up"
-        family="Feather"
-        title="Transferir"
-        onPress={() => {
-          navigation.navigate('Transfer')
-        }}
-      />
-      <ActionButton
-        icon="attach-money"
-        family="MaterialIcons"
-        title="Comprar"
-        onPress={() => {
-          navigation.navigate('BuyCrypto')
-        }}
-      />
-      <ActionButton
-        icon="x-twitter"
-        family="WalletExtra"
-        title="Ingresa"
-        onPress={handleOpenURL}
-      />
-    </View>
-  )
+  const renderButtons = () => {
+    const isARSorUSD = ['ARS', 'USD'].includes(selectedAccount.accountCurrency)
+    const buttonText = isARSorUSD ? 'Comprar' : 'Vender'
+    const navigateTo = isARSorUSD ? 'BuyCrypto' : 'SellCrypto'
+
+    return (
+      <View style={styles.buttonsRow}>
+        <ActionButton
+          icon="arrow-down"
+          family="Feather"
+          title="Recibir"
+          onPress={() => {
+            navigation.navigate('AccountDetails')
+          }}
+        />
+        <ActionButton
+          icon="arrow-up"
+          family="Feather"
+          title="Transferir"
+          onPress={() => {
+            navigation.navigate('Transfer')
+          }}
+        />
+        <ActionButton
+          icon="attach-money"
+          family="MaterialIcons"
+          title={buttonText}
+          onPress={() => {
+            navigation.navigate(navigateTo)
+          }}
+        />
+        <ActionButton
+          icon="x-twitter"
+          family="WalletExtra"
+          title="Ingresa"
+          onPress={handleOpenURL}
+        />
+      </View>
+    )
+  }
 
   const AccessBenefits = () => (
     <View style={styles.benefitsContainer}>

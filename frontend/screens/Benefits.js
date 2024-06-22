@@ -87,7 +87,10 @@ const Benefits = () => {
           status: 'pending',
           date: new Date().toISOString(),
         }
-        await backendApi.transactionsGateway.createTransaction(transactionData)
+        await backendApi.transactionsGateway.createTransaction(
+          transactionData,
+          'Transfer'
+        )
         setBalance(balance - benefit.price)
         alert(`Has comprado ${benefit.title}`)
 

@@ -91,10 +91,10 @@ const authUser = {
 
 // Objeto para funciones relacionadas con transacciones
 const transactionsGateway = {
-  createTransaction: async (transactionData) => {
+  createTransaction: async (transactionData, typeTransaction) => {
     try {
       const url = `${transactionBaseUrl}/create`;
-      const response = await requests.post(url, transactionData);
+      const response = await requests.post(url, { ...transactionData, typeTransaction });
       return response;
     } catch (error) {
       console.error('Error al crear la transacción:', error);

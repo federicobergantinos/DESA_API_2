@@ -144,8 +144,10 @@ const BuyCrypto = () => {
       }
 
       // Enviar la solicitud para registrar la transacción
-      const response =
-        await backendApi.transactionsGateway.createTransaction(transactionData)
+      const response = await backendApi.transactionsGateway.createTransaction(
+        transactionData,
+        'BuyXCN'
+      )
 
       if (response.statusCode === 200 || response.statusCode === 201) {
         setIsLoading(false)
