@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   View,
   ImageBackground,
@@ -11,21 +11,111 @@ import {
 } from 'react-native'
 import { theme, Block } from 'galio-framework'
 import { Images, walletTheme } from '../constants'
+import backendApi from '../api/backendGateway'
+import { useWallet } from '../navigation/WalletContext'
 
 const { width, height } = Dimensions.get('screen')
 
 const MissionsStore = () => {
-  // Creating separate cards for each detail
+  const { user } = useWallet()
+  const [userTokens, setUserTokens] = useState(0)
+  const [xCoinAccount, setXCoinAccount] = useState(null)
+
+  useEffect(() => {
+    const fetchUserTokenBalance = async () => {
+      try {
+        console.log(user.id)
+        const response = await backendApi.userTokensGateway.getUserTokenBalance(
+          user.id
+        )
+        console.log(response)
+        setUserTokens(response.response.balance)
+      } catch (error) {
+        console.error('Error fetching user token balance:', error)
+      }
+    }
+    fetchUserTokenBalance()
+  }, [user.id])
+
+  useEffect(() => {
+    const fetchXCNAccount = async () => {
+      try {
+        const userId = user.id
+        const accountsResponse =
+          await backendApi.accountGateway.getAccountByUserId(userId)
+
+        const xCoinAccount = accountsResponse.response.find(
+          (account) => account.accountCurrency === 'XCN'
+        )
+        setXCoinAccount(xCoinAccount)
+      } catch (error) {
+        console.error('Error fetching xcoin account:', error)
+      }
+    }
+    fetchXCNAccount()
+  }, [])
+
+  const handleExchange = async (xwc, xcoin) => {
+    if (userTokens < xwc) {
+      Alert.alert(
+        'Saldo insuficiente',
+        'No tienes suficientes XWC para realizar esta transacción.'
+      )
+      return
+    }
+
+    Alert.alert(
+      'Confirmar Transacción',
+      `¿Estás seguro de que deseas intercambiar ${xwc} XWC por ${xcoin} XCN?`,
+      [
+        {
+          text: 'Cancelar',
+          style: 'cancel',
+        },
+        {
+          text: 'Aceptar',
+          onPress: async () => {
+            try {
+              const newTokens = userTokens - parseInt(xwc)
+              await backendApi.userTokensGateway.updateUserTokens(
+                user.id,
+                newTokens
+              )
+              setUserTokens(newTokens)
+
+              const transactionData = {
+                accountNumberOrigin:
+                  '0xbCF5801F122E7645F39bDd38Ce9253e208b7f0a8',
+                accountNumberDestination: xCoinAccount.accountNumber,
+                name: `Intercambiando ${xwc} XWC por ${xcoin} XCN`,
+                description: `Intercambiando ${xwc} XWC por ${xcoin} XCN`,
+                amountOrigin: xcoin,
+                amountDestination: xcoin,
+                currencyOrigin: 'XCoin',
+                currencyDestination: 'XCoin',
+                status: 'pending',
+                date: new Date().toISOString(),
+              }
+              await backendApi.transactionsGateway.createTransaction(
+                transactionData
+              )
+              console.log(`Intercambiando ${xwc} XWC por ${xcoin} XCN`)
+            } catch (error) {
+              console.error('Error realizando el intercambio:', error)
+            }
+          },
+        },
+      ],
+      { cancelable: false }
+    )
+  }
+
   const Card = ({ title, children }) => (
     <View style={styles.detailCard}>
       <Text style={styles.cardTitle}>{title}</Text>
       {children}
     </View>
   )
-
-  const NewCardButton = ({ title, children }) => {
-    return <View style={styles.newCardCentered}>{children}</View>
-  }
 
   const MiddleText = ({ children }) => (
     <View style={styles.descriptionWrapper}>
@@ -44,27 +134,6 @@ const MissionsStore = () => {
     </TouchableOpacity>
   )
 
-  const handleExchange = (xwc, xcoin) => {
-    Alert.alert(
-      'Confirmar Transacción',
-      `¿Estás seguro de que deseas intercambiar ${xwc} XWC por ${xcoin} XCN?`,
-      [
-        {
-          text: 'Cancelar',
-          style: 'cancel',
-        },
-        {
-          text: 'Aceptar',
-          onPress: () => {
-            // Aquí puedes manejar la lógica de intercambio
-            console.log(`Intercambiando ${xwc} XWC por ${xcoin} XCN`)
-          },
-        },
-      ],
-      { cancelable: false }
-    )
-  }
-
   return (
     <Block flex style={styles.home}>
       <ImageBackground source={Images.Background} style={styles.background}>
@@ -73,31 +142,26 @@ const MissionsStore = () => {
           style={{ width }}
           contentContainerStyle={styles.scrollViewContent}
         >
-          {
-            <>
-              {/* MissionsStore1 */}
-              <Card title="XWC Totales" style={styles.cardBackgroundColor}>
-                <Text style={styles.title}>400 XWC</Text>
-              </Card>
+          <Card title="XWC Totales" style={styles.cardBackgroundColor}>
+            <Text style={styles.title}>{userTokens} XWC</Text>
+          </Card>
 
-              <MiddleText>
-                Canjea tus XWC por XCN para tener en tu cuenta y acceder a
-                beneficios increibles
-              </MiddleText>
+          <MiddleText>
+            Canjea tus XWC por XCN para tener en tu cuenta y acceder a
+            beneficios increíbles
+          </MiddleText>
 
-              <Card title="Opciones">
-                <View>
-                  <ExchangeCard xwc="20000" xcoin="2" />
-                  <ExchangeCard xwc="40000" xcoin="4" />
-                  <ExchangeCard xwc="60000" xcoin="6" />
-                  <ExchangeCard xwc="80000" xcoin="8" />
-                  <ExchangeCard xwc="100000" xcoin="10" />
-                  <ExchangeCard xwc="120000" xcoin="12" />
-                  <ExchangeCard xwc="140000" xcoin="14" />
-                </View>
-              </Card>
-            </>
-          }
+          <Card title="Opciones">
+            <View>
+              <ExchangeCard xwc="200" xcoin="2" />
+              <ExchangeCard xwc="400" xcoin="4" />
+              <ExchangeCard xwc="600" xcoin="6" />
+              <ExchangeCard xwc="800" xcoin="8" />
+              <ExchangeCard xwc="1000" xcoin="10" />
+              <ExchangeCard xwc="1200" xcoin="12" />
+              <ExchangeCard xwc="1400" xcoin="14" />
+            </View>
+          </Card>
         </ScrollView>
       </ImageBackground>
     </Block>
@@ -143,7 +207,7 @@ const styles = StyleSheet.create({
   },
   scrollViewContent: {
     paddingTop: 100,
-    paddingBottom: 150, // Añadido para asegurar que haya suficiente contenido para desplazarse
+    paddingBottom: 150,
   },
   cardBackgroundColor: {
     backgroundColor: '#000000',

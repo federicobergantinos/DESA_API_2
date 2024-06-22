@@ -7,6 +7,7 @@ const {
   Benefit,
   MetamaskAccount,
   ExchangeRate,
+  UserTokens,
 } = require('../../entities/associateModels')
 const {
   populateTransactions,

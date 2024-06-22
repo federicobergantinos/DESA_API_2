@@ -6,16 +6,89 @@ import {
   StyleSheet,
   Dimensions,
   ScrollView,
+  TouchableOpacity,
+  Alert,
 } from 'react-native'
 import { theme, Block } from 'galio-framework'
 import { Images, walletTheme } from '../constants'
-import { TouchableOpacity } from 'react-native-gesture-handler'
+import backendApi from '../api/backendGateway'
+import { useWallet } from '../navigation/WalletContext'
+import LoadingScreen from '../components/LoadingScreen'
+
 const { width, height } = Dimensions.get('screen')
 
 const Missions = () => {
-  const [totalXWC, setTotalXWC] = useState(400)
+  const { user } = useWallet()
+  const [totalXWC, setTotalXWC] = useState(0)
+  const [missions, setMissions] = useState([])
+  const [isLoading, setIsLoading] = useState(false)
 
-  // Creating separate cards for each detail
+  useEffect(() => {
+    const fetchUserTokenBalance = async () => {
+      try {
+        const response = await backendApi.userTokensGateway.getUserTokenBalance(
+          user.id
+        )
+        setTotalXWC(response.response.balance)
+      } catch (error) {
+        console.error('Error fetching user token balance:', error)
+      }
+    }
+
+    const fetchUserMissions = async () => {
+      try {
+        const response = await backendApi.missionsGateway.getMissionsForUser(
+          user.id
+        )
+        setMissions(response.response)
+      } catch (error) {
+        console.error('Error fetching user missions:', error)
+        setMissions([])
+      }
+    }
+
+    fetchUserTokenBalance()
+    fetchUserMissions()
+  }, [user.id])
+
+  const handleClaim = async (missionId, reward, index) => {
+    Alert.alert(
+      'Confirmar Reclamo',
+      `¿Estás seguro de que deseas reclamar ${reward} XWC?`,
+      [
+        {
+          text: 'Cancelar',
+          style: 'cancel',
+        },
+        {
+          text: 'Aceptar',
+          onPress: async () => {
+            try {
+              setIsLoading(true)
+              await backendApi.missionsGateway.updateMission(missionId, {
+                claimed: true,
+              })
+              await backendApi.userTokensGateway.updateUserTokens(
+                user.id,
+                totalXWC + reward
+              )
+              setTotalXWC(totalXWC + reward)
+              const updatedMissions = [...missions]
+              updatedMissions[index].claimed = true
+              setMissions(updatedMissions)
+              setIsLoading(false)
+              console.log(`Reclamando ${reward} XWC`)
+            } catch (error) {
+              setIsLoading(false)
+              console.error('Error reclamando la misión:', error)
+            }
+          },
+        },
+      ],
+      { cancelable: false }
+    )
+  }
+
   const Card = ({ title, children }) => (
     <View style={styles.detailCard}>
       <Text style={styles.cardTitle}>{title}</Text>
@@ -23,116 +96,15 @@ const Missions = () => {
     </View>
   )
 
-  const NewCardButton = ({ title, children }) => {
-    return <View style={styles.newCardCentered}>{children}</View>
-  }
-
   const MiddleText = ({ children }) => (
     <View style={styles.descriptionWrapper}>
       <Text style={styles.description}>{children}</Text>
     </View>
   )
 
-  const ExchangeCard = ({ xwc, xcoin }) => (
-    <View style={styles.exchangeCardWrapper}>
-      <Text style={styles.exchangeCardText}>{xwc + ' XWC'}</Text>
-      <Text style={styles.exchangeCardText}>{'='}</Text>
-      <Text style={styles.exchangeCardText}>{xcoin + ' XCN'}</Text>
-    </View>
-  )
-
-  const missionSchema = [
-    {
-      key: 0,
-      title: 'Completar Registro',
-      description: 'Regístrate en la app',
-      reward: 50,
-      claimed: false,
-    },
-    {
-      key: 1,
-      title: 'Verificar Identidad',
-      description: 'Verifica tu identidad',
-      reward: 100,
-      claimed: false,
-    },
-    {
-      key: 2,
-      title: 'Hacer Primer Depósito',
-      description: 'Realiza tu primer depósito',
-      reward: 200,
-      claimed: true,
-    },
-    {
-      key: 3,
-      title: 'Comprar Criptomoneda',
-      description: 'Compra tu primera cripto',
-      reward: 150,
-      claimed: false,
-    },
-    {
-      key: 4,
-      title: 'Configurar 2FA',
-      description: 'Configura autenticación dos factores',
-      reward: 100,
-      claimed: false,
-    },
-    {
-      key: 5,
-      title: 'Transferir Criptomonedas',
-      description: 'Envía criptomonedas a otros',
-      reward: 200,
-      claimed: false,
-    },
-    {
-      key: 6,
-      title: 'Programa de Referidos',
-      description: 'Refiere a un amigo',
-      reward: 300,
-      claimed: false,
-    },
-    {
-      key: 7,
-      title: 'Intercambiar Criptos',
-      description: 'Intercambia dos criptomonedas',
-      reward: 150,
-      claimed: true,
-    },
-    {
-      key: 8,
-      title: 'Asistir a Webinar',
-      description: 'Asiste a un webinar',
-      reward: 100,
-      claimed: false,
-    },
-    {
-      key: 9,
-      title: 'Mantener Saldo Mínimo',
-      description: 'Mantén saldo de $1000',
-      reward: 250,
-      claimed: false,
-    },
-  ]
-
-  const [stateMissionSchema, setStateMissionSchema] = useState(missionSchema)
-
-  const handleClaim = (index) => {
-    const updatedMissionSchema = [...stateMissionSchema]
-    updatedMissionSchema[index].claimed = true
-    setTotalXWC(totalXWC + updatedMissionSchema[index].reward)
-    setStateMissionSchema(updatedMissionSchema)
-    /*
-    missionSchema[index].claimed = true;
-    setTotalXWC(totalXWC + missionSchema[index].reward);
-    
-    setStateMissionSchema(missionSchema);
-    */
-  }
-
-  const CompletedMissions = ({ data }) => (
+  const MissionsList = ({ data }) => (
     <View style={styles.missionsWrapper}>
       <Text style={styles.missionsTitle}>Misiones</Text>
-
       {data.map((mission, index) => (
         <View style={styles.missionRowWrapper} key={index}>
           <View style={styles.missionsRowColumn}>
@@ -143,10 +115,15 @@ const Missions = () => {
           </View>
           {!mission.claimed ? (
             <TouchableOpacity
-              style={styles.claimButton}
-              onPress={() => {
-                handleClaim(mission.key)
-              }}
+              style={[
+                styles.claimButton,
+                !mission.fulfilled && styles.disabledButton,
+              ]}
+              onPress={() =>
+                mission.fulfilled &&
+                handleClaim(mission.id, mission.reward, index)
+              }
+              disabled={!mission.fulfilled}
             >
               <Text style={styles.claimButtonText}>Claim</Text>
             </TouchableOpacity>
@@ -162,22 +139,6 @@ const Missions = () => {
     </View>
   )
 
-  const MissionsToComplete = ({ data }) => (
-    <View style={styles.missionsWrapper}>
-      <Text style={styles.missionsTitle}>Pendientes</Text>
-      {data.map((mission, index) => (
-        <View style={styles.missionRowWrapper} key={index}>
-          <View style={styles.misisonsRowColumn}>
-            <Text style={styles.missionsRowColumnTitle}>{mission.title}</Text>
-            <Text style={styles.missionsRowColumnDescription}>
-              {mission.description}
-            </Text>
-          </View>
-        </View>
-      ))}
-    </View>
-  )
-
   return (
     <Block flex style={styles.home}>
       <ImageBackground source={Images.Background} style={styles.background}>
@@ -186,24 +147,18 @@ const Missions = () => {
           style={{ width }}
           contentContainerStyle={styles.scrollViewContent}
         >
-          {
-            <>
-              <Card title="XWC Totales" style={styles.cardBackgroundColor}>
-                <Text style={styles.title}>{totalXWC + ' XWC'}</Text>
-              </Card>
+          <Card title="XWC Totales" style={styles.cardBackgroundColor}>
+            <Text style={styles.title}>{totalXWC + ' XWC'}</Text>
+          </Card>
 
-              <MiddleText>
-                ¡Obtené más XWC completando las diferentes misiones y desafios!
-              </MiddleText>
+          <MiddleText>
+            ¡Obtené más XWC completando las diferentes misiones y desafíos!
+          </MiddleText>
 
-              <CompletedMissions data={stateMissionSchema} />
-              <View style={styles.bottomMargin}>
-                <MissionsToComplete data={missionSchema} />
-              </View>
-            </>
-          }
+          <MissionsList data={missions} />
         </ScrollView>
       </ImageBackground>
+      {isLoading && <LoadingScreen />}
     </Block>
   )
 }
@@ -250,74 +205,6 @@ const styles = StyleSheet.create({
   cardBackgroundColor: {
     backgroundColor: '#000000',
   },
-  centerCard: {
-    display: 'flex',
-    width: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  newCardCentered: {
-    backgroundColor: walletTheme.COLORS.VIOLET,
-    padding: theme.SIZES.BASE,
-    marginHorizontal: theme.SIZES.BASE,
-    marginTop: theme.SIZES.BASE,
-    borderRadius: theme.SIZES.BASE / 2,
-    shadowColor: 'black',
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 6,
-    shadowOpacity: 0.1,
-    elevation: 2,
-    display: 'flex',
-    alignItems: 'center',
-    color: '#FFFFFF',
-  },
-  newCardText: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-  },
-  descriptionWrapper: {
-    width: '100%',
-    display: 'flex',
-    alignItems: 'center',
-    paddingTop: 20,
-    paddingLeft: 50,
-    paddingRight: 50,
-  },
-  description: {
-    fontSize: 18,
-    color: '#FFFFFF',
-    textAlign: 'center',
-  },
-  exchangeCardWrapper: {
-    backgroundColor: theme.COLORS.WHITE,
-    padding: theme.SIZES.BASE,
-    marginHorizontal: theme.SIZES.BASE,
-    marginTop: theme.SIZES.BASE,
-    borderRadius: theme.SIZES.BASE / 2,
-    shadowColor: 'black',
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 6,
-    shadowOpacity: 0.1,
-    elevation: 2,
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 10,
-    color: '#5144A6',
-  },
-  exchangeCardsColumn: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 10,
-    paddingTop: 30,
-  },
-  exchangeCardText: {
-    fontSize: 30,
-    color: '#5144A6',
-    fontWeight: 'bold',
-  },
   missionsWrapper: {
     backgroundColor: theme.COLORS.WHITE,
     padding: theme.SIZES.BASE,
@@ -350,15 +237,16 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
   },
   missionsRowColumnTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     color: '#545F71',
   },
   missionsRowColumnDescription: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#545F71',
     maxWidth: width * 0.5,
-    textWrap: 'wrap',
+    flexWrap: 'wrap',
+    textAlign: 'justify',
   },
   claimButton: {
     display: 'flex',
@@ -376,6 +264,9 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 15,
   },
+  disabledButton: {
+    backgroundColor: '#CCC',
+  },
   alreadyClaimedIcon: {
     display: 'flex',
     alignItems: 'center',
@@ -392,8 +283,18 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 15,
   },
-  bottomMargin: {
-    marginBottom: 200,
+  descriptionWrapper: {
+    width: '100%',
+    display: 'flex',
+    alignItems: 'center',
+    paddingTop: 20,
+    paddingLeft: 50,
+    paddingRight: 50,
+  },
+  description: {
+    fontSize: 18,
+    color: '#FFFFFF',
+    textAlign: 'center',
   },
 })
 

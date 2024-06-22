@@ -51,14 +51,6 @@ const getMissionById = async (missionId) => {
   return await Mission.findByPk(missionId)
 }
 
-const updateMission = async (missionId, updates) => {
-  const mission = await Mission.findByPk(missionId)
-  if (!mission) {
-    throw new Error('Mission not found')
-  }
-  return mission.update(updates)
-}
-
 const updateMissionByKey = async (userId, key, updates) => {
   const mission = await Mission.findOne({ where: { userId, key } })
   if (!mission) {
@@ -75,11 +67,17 @@ const deleteMissionService = async (missionId) => {
   await mission.destroy()
 }
 
+const getUserMissionsService = async (userId) => {
+  const missions = await Mission.findAll({ where: { userId } })
+  console.log(missions)
+  return missions || []
+}
+
 module.exports = {
   createMissionsForUser,
   getAllMissions,
   getMissionById,
-  updateMission,
+  getUserMissionsService,
   updateMissionByKey,
   deleteMissionService,
 }

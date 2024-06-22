@@ -77,7 +77,7 @@ const Benefits = () => {
         const transactionData = {
           accountNumberOrigin: xCoinAccount.accountNumber,
           accountNumberDestination:
-            '0x098200FF39aaCDcB62e35c705E562bbB207652A7',
+            '0xbCF5801F122E7645F39bDd38Ce9253e208b7f0a8',
           name: `Compra de ${benefit.title}`,
           description: `Compra de ${benefit.title}`,
           amountOrigin: benefit.price,
