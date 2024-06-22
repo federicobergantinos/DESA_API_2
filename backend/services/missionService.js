@@ -59,6 +59,14 @@ const updateMissionByKey = async (userId, key, updates) => {
   return mission.update(updates)
 }
 
+const updateMission = async (missionId, updates) => {
+  const mission = await Mission.findByPk(missionId)
+  if (!mission) {
+    throw new Error('Mission not found')
+  }
+  return mission.update(updates)
+}
+
 const deleteMissionService = async (missionId) => {
   const mission = await Mission.findByPk(missionId)
   if (!mission) {
@@ -79,5 +87,6 @@ module.exports = {
   getMissionById,
   getUserMissionsService,
   updateMissionByKey,
+  updateMission,
   deleteMissionService,
 }

@@ -85,8 +85,25 @@ const getTransaction = async (transactionId) => {
 
   return transaction
 }
+
+const updateTransactionStatus = async (transactionId, status) => {
+  try {
+    const transaction = await Transaction.findOne({ where: { transactionId } })
+
+    if (!transaction) {
+      throw new Error('Transaction not found')
+    }
+
+    transaction.status = status
+    await transaction.save()
+  } catch (error) {
+    throw error
+  }
+}
+
 module.exports = {
   createTransaction,
   getTransactions,
   getTransaction,
+  updateTransactionStatus,
 }

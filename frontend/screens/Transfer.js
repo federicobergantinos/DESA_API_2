@@ -448,8 +448,10 @@ const Transfer = () => {
     }
 
     try {
-      const response =
-        await backendApi.transactionsGateway.createTransaction(transactionData)
+      const response = await backendApi.transactionsGateway.createTransaction(
+        transactionData,
+        'Transfer'
+      )
 
       setIsLoading(false)
       if (response.statusCode === 200 || response.statusCode === 201) {

@@ -97,7 +97,8 @@ const MissionsStore = () => {
                 date: new Date().toISOString(),
               }
               await backendApi.transactionsGateway.createTransaction(
-                transactionData
+                transactionData,
+                'BuyXCN'
               )
               console.log(`Intercambiando ${xwc} XWC por ${xcoin} XCN`)
             } catch (error) {
@@ -108,6 +109,21 @@ const MissionsStore = () => {
       ],
       { cancelable: false }
     )
+  }
+
+  const claimMission = async (missionId) => {
+    try {
+      await backendApi.missionsGateway.updateMission(missionId, {
+        claimed: true,
+      })
+      Alert.alert('Misión reclamada', 'Has reclamado la misión exitosamente.')
+    } catch (error) {
+      console.error('Error al reclamar la misión:', error)
+      Alert.alert(
+        'Error',
+        'No se pudo reclamar la misión. Por favor, intenta nuevamente.'
+      )
+    }
   }
 
   const Card = ({ title, children }) => (

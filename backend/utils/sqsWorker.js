@@ -3,6 +3,7 @@ const {
   updateUserAccountStatusByEmail,
   findUserByEmail,
 } = require('../services/userService')
+const { updateTransactionStatus } = require('../services/transactionService')
 const AWS = require('aws-sdk')
 const { dbConnection } = require('../configurations/database/config')
 const createLogger = require('../configurations/Logger')
@@ -93,21 +94,31 @@ async function handleMessage(message) {
     const operationMessage = JSON.parse(messageBody.Message)
     logger.info(`Processing message: ${operationMessage}`)
 
-    // Validar la estructura del mensaje
     if (!operationMessage.operationType || !operationMessage.data) {
       throw new Error('Invalid message structure')
     }
 
-    // Despachar el mensaje al manejador correspondiente
     switch (operationMessage.operationType) {
       case 'CreateUserClientConfirmation':
         await handleCreateUserClientConfirmation(operationMessage.data)
         break
       case 'CreateTransferXCNConfirmation':
-        await handleCreateTransferXCNConfirmation(operationMessage.data)
+        await handleTransactionConfirmation(
+          operationMessage.data,
+          'CreateTransferXCNConfirmation'
+        )
         break
       case 'CreateBuyXCNConfirmation':
-        await handleCreateBuyXCNConfirmation(operationMessage.data)
+        await handleTransactionConfirmation(
+          operationMessage.data,
+          'CreateBuyXCNConfirmation'
+        )
+        break
+      case 'CreateSellXCNConfirmation':
+        await handleTransactionConfirmation(
+          operationMessage.data,
+          'CreateSellXCNConfirmation'
+        )
         break
       case 'GetBalance':
         await handleGetBalance(operationMessage.data)
@@ -125,11 +136,28 @@ async function handleMessage(message) {
   }
 }
 
+async function handleTransactionConfirmation(data, operationType) {
+  try {
+    if (!data.transactionId || !data.status) {
+      logger.error(`Invalid data structure for ${operationType}`)
+      return
+    }
+
+    const { transactionId, status } = data
+
+    // Actualizar el estado de la transacción en la base de datos
+    await updateTransactionStatus(transactionId, status)
+    logger.info(`Transaction status for ${transactionId} updated to ${status}`)
+  } catch (error) {
+    logger.error(`Error in ${operationType}: ${error.message}`)
+    throw error
+  }
+}
+
 // Función para manejar el caso 'CreateUserClientConfirmation'
 async function handleCreateUserClientConfirmation(data) {
   try {
     if (!data.email || !data.status) {
-      console.log(data)
       logger.error('Invalid data structure for CreateUserClientConfirmation')
       return
     }
@@ -148,6 +176,7 @@ async function handleCreateUserClientConfirmation(data) {
 
     // Actualizar el estado de la cuenta del usuario
     await updateUserAccountStatusByEmail(email, updatedStatus)
+    logger.info(`User status for ${email} updated to ${updatedStatus}`)
   } catch (error) {
     logger.error(
       `Error in handleCreateUserClientConfirmation: ${error.message}`
@@ -156,26 +185,6 @@ async function handleCreateUserClientConfirmation(data) {
   }
 }
 
-// Función para manejar otro caso de uso
-async function handleCreateTransferXCNConfirmation(data) {
-  try {
-    // Implementar lógica específica para 'CreateTransferXCNConfirmation'
-  } catch (error) {
-    logger.error(
-      `Error in handleCreateTransferXCNConfirmation: ${error.message}`
-    )
-    throw error
-  }
-}
-// Función para manejar otro caso de uso
-async function handleCreateBuyXCNConfirmation(data) {
-  try {
-    // Implementar lógica específica para 'CreateTransferXCNConfirmation'
-  } catch (error) {
-    logger.error(`Error in handleCreateBuyXCNConfirmation: ${error.message}`)
-    throw error
-  }
-}
 // Función para manejar otro caso de uso
 async function handleGetBalance(data) {
   try {
