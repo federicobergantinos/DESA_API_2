@@ -42,9 +42,9 @@ Resources:
             - Name: AWS_REGION
               Value: us-east-1
             - Name: SNS_TOPIC_ARN
-              Value: arn:aws:sns:us-east-1:137318283310:wallet_topic
+              Value: arn:aws:sns:us-east-1:877306037129:wallet_topic
             - Name: WALLET_QUEUE_URL
-              Value: https://sqs.us-east-1.amazonaws.com/137318283310/wallet_service_queue
+              Value: https://sqs.us-east-1.amazonaws.com/877306037129/wallet_service_queue
           LogConfiguration:
             LogDriver: awslogs
             Options:

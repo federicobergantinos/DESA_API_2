@@ -35,9 +35,9 @@ async function processMessage(queueUrl) {
 
   const params = {
     QueueUrl: queueUrl,
-    MaxNumberOfMessages: 10,
+    MaxNumberOfMessages: 1,
     VisibilityTimeout: 0,
-    WaitTimeSeconds: 20,
+    WaitTimeSeconds: 3,
   }
 
   try {
@@ -48,7 +48,7 @@ async function processMessage(queueUrl) {
           try {
             await handleMessage(message)
 
-            // Eliminar el mensaje después de procesarlo
+            // Eliminar el mensaje después de procesarlo exitosamente
             await sqs
               .deleteMessage({
                 QueueUrl: queueUrl,
@@ -56,11 +56,26 @@ async function processMessage(queueUrl) {
               })
               .promise()
 
-            logger.info(
-              `Mensaje procesado y eliminado de ${queueUrl}: ${message.Body}`
-            )
+            logger.info(`Mensaje procesado y eliminado de ${queueUrl}`)
           } catch (error) {
             logger.error(`Error procesando el mensaje: ${error.message}`)
+            logger.debug(`Contenido del mensaje: ${message.Body}`)
+
+            // Eliminar el mensaje si el error es debido a un JSON inválido
+            if (
+              error.message.includes('Unexpected token') ||
+              error.message.includes('Unexpected end of JSON input')
+            ) {
+              await sqs
+                .deleteMessage({
+                  QueueUrl: queueUrl,
+                  ReceiptHandle: message.ReceiptHandle,
+                })
+                .promise()
+              logger.info(
+                `Mensaje con JSON inválido eliminado de ${queueUrl}: ${message.Body}`
+              )
+            }
           }
         })
       )
@@ -68,7 +83,7 @@ async function processMessage(queueUrl) {
       logger.debug(`No messages received from ${queueUrl}`)
     }
   } catch (error) {
-    logger.error(`Error procesando mensaje de ${queueUrl}: ${error.message}`)
+    logger.debug(`Error procesando mensaje de ${queueUrl}: ${error.message}`)
   }
 }
 
@@ -76,10 +91,10 @@ async function handleMessage(message) {
   try {
     const messageBody = JSON.parse(message.Body)
     const operationMessage = JSON.parse(messageBody.Message)
+    logger.info(`Processing message: ${operationMessage}`)
 
     // Validar la estructura del mensaje
     if (!operationMessage.operationType || !operationMessage.data) {
-      console.error(operationMessage.data)
       throw new Error('Invalid message structure')
     }
 
@@ -98,10 +113,14 @@ async function handleMessage(message) {
         await handleGetBalance(operationMessage.data)
         break
       default:
+        logger.error(
+          `Unsupported operation type: ${operationMessage.operationType}`
+        )
         break
     }
   } catch (error) {
     logger.error(`Error processing message: ${error.message}`)
+    logger.debug(`Message content: ${message.Body}`)
     throw error
   }
 }
