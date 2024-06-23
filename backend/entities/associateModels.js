@@ -9,6 +9,7 @@ const MetamaskAccount = require('./metamaskAccount')
 const ExchangeRate = require('./exchangeRate')
 const Benefit = require('./benefits')
 const UserTokens = require('./userTokens')
+const Whitelist = require('./whitelist')
 
 // Relaciones
 Authorization.belongsTo(User, { as: 'user', foreignKey: 'userId' })
@@ -43,5 +44,6 @@ module.exports = {
   MetamaskAccount,
   ExchangeRate,
   Benefit,
+  Whitelist,
   UserTokens,
 }

@@ -52,41 +52,25 @@ const Missions = () => {
   }, [user.id])
 
   const handleClaim = async (missionId, reward, index) => {
-    Alert.alert(
-      'Confirmar Reclamo',
-      `¿Estás seguro de que deseas reclamar ${reward} XWC?`,
-      [
-        {
-          text: 'Cancelar',
-          style: 'cancel',
-        },
-        {
-          text: 'Aceptar',
-          onPress: async () => {
-            try {
-              setIsLoading(true)
-              await backendApi.missionsGateway.updateMission(missionId, {
-                claimed: true,
-              })
-              await backendApi.userTokensGateway.updateUserTokens(
-                user.id,
-                totalXWC + reward
-              )
-              setTotalXWC(totalXWC + reward)
-              const updatedMissions = [...missions]
-              updatedMissions[index].claimed = true
-              setMissions(updatedMissions)
-              setIsLoading(false)
-              console.log(`Reclamando ${reward} XWC`)
-            } catch (error) {
-              setIsLoading(false)
-              console.error('Error reclamando la misión:', error)
-            }
-          },
-        },
-      ],
-      { cancelable: false }
-    )
+    try {
+      setIsLoading(true)
+      await backendApi.missionsGateway.updateMission(missionId, {
+        claimed: true,
+      })
+      await backendApi.userTokensGateway.updateUserTokens(
+        user.id,
+        totalXWC + reward
+      )
+      setTotalXWC(totalXWC + reward)
+      const updatedMissions = [...missions]
+      updatedMissions[index].claimed = true
+      setMissions(updatedMissions)
+      setIsLoading(false)
+      console.log(`Reclamando ${reward} XWC`)
+    } catch (error) {
+      setIsLoading(false)
+      console.error('Error reclamando la misión:', error)
+    }
   }
 
   const Card = ({ title, children }) => (

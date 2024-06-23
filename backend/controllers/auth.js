@@ -16,6 +16,7 @@ const { verify } = require('jsonwebtoken')
 const Unauthorized = require('../Errors/Unauthorized')
 const { sendResponse } = require('../configurations/utils.js')
 const createLogger = require('../configurations/Logger')
+const { isEmailInWhitelist } = require('../services/whitelistService') // Importar la función
 const logger = createLogger(__filename)
 const sequelize = require('../configurations/database/sequelizeConnection')
 const { v4: uuidv4 } = require('uuid')
@@ -23,16 +24,22 @@ const { v4: uuidv4 } = require('uuid')
 const authenticate = async (req, res) => {
   const transaction = await sequelize.transaction()
   try {
-    logger.info('Starting processing request.')
     const googleToken = req.body.token
     const registerUser = req.body.registerUser
     const accountInfo = req.body.accountInfo
     const email = req.body.email
     const accessToken = req.headers['authorization']
-    const additionalData = req.body.additionalData
+    let additionalData = req.body.additionalData || {}
 
     let user = null
     let tokens = null
+    let bypass = false
+
+    // Check if the email is in the whitelist
+    if (await isEmailInWhitelist(email)) {
+      bypass = true
+    }
+
     if (googleToken !== null) {
       const userData = await loginUser(googleToken, accessToken)
 
@@ -41,7 +48,7 @@ const authenticate = async (req, res) => {
       }
       user = await findUserByEmail(userData.email)
 
-      if (registerUser === true) {
+      if (registerUser === true || (bypass === true && user === null)) {
         // Obtener cuentas de Metamask disponibles
         const availableMetamaskAccounts =
           await getAvailableMetamaskAccountsService()
@@ -100,6 +107,17 @@ const authenticate = async (req, res) => {
         })
 
         await createMissionsForUser(user.id) // Crear misiones para el usuario
+
+        if (bypass === true) {
+          additionalData.immovables = '>2'
+          additionalData.hasTesla = 'yes'
+          additionalData.employmentSituation = 'employee'
+          additionalData.monthlyIncome = '>1000'
+          additionalData.pictureSelfie =
+            'https://wallet-desa-api-2.s3.amazonaws.com/rekognition/1718672575975_selfie.jpeg'
+          additionalData.pictureIdPassport =
+            'https://wallet-desa-api-2.s3.amazonaws.com/rekognition/1718672577434_id_passport.jpeg'
+        }
 
         // Crear el payload para SNS
         const payload = {

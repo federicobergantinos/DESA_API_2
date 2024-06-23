@@ -4,6 +4,7 @@ const populateMissions = require('./populateMission')
 const populateMetamaskAccounts = require('./populateMetamaskAccounts')
 const populateExchangeRates = require('./populateExchangeRates')
 const populateBenefits = require('./populateBenefits')
+const populateWhitelist = require('./populateWhitelist')
 
 module.exports = {
   populateTransactions,
@@ -12,4 +13,5 @@ module.exports = {
   populateMetamaskAccounts,
   populateExchangeRates,
   populateBenefits,
+  populateWhitelist,
 }
