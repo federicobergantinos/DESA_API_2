@@ -6,7 +6,7 @@ import { ContactDTO, ContactsDTO } from './ContactDTO';
 import { AccountDTO, AccountSummaryDTO } from './AccountDTO';
 
 // const api = axios.create({ baseURL: "https://www.wallet-elb.federicobergantinos.com/" });
-const api = axios.create({ baseURL: 'http://192.168.1.110:8080' });
+const api = axios.create({ baseURL: 'http://192.168.1.112:8080' });
 // const api = axios.create({baseURL: 'https://277c-170-150-153-225.ngrok-free.app:8080'});
 
 const transactionBaseUrl = '/v1/transactions';
@@ -16,6 +16,7 @@ const accountBaseUrl = '/v1/accounts';
 const exchangeRateBaseUrl = '/v1/rates';
 const missionsBaseUrl = '/v1/missions';
 const benefitsBaseUrl = '/v1/benefits';
+const userTokensBaseUrl = '/v1/userTokens'
 
 // Interceptores de solicitud y respuesta
 api.interceptors.request.use(
@@ -90,10 +91,10 @@ const authUser = {
 
 // Objeto para funciones relacionadas con transacciones
 const transactionsGateway = {
-  createTransaction: async (transactionData) => {
+  createTransaction: async (transactionData, typeTransaction) => {
     try {
       const url = `${transactionBaseUrl}/create`;
-      const response = await requests.post(url, transactionData);
+      const response = await requests.post(url, { ...transactionData, typeTransaction });
       return response;
     } catch (error) {
       console.error('Error al crear la transacción:', error);
@@ -274,7 +275,10 @@ const missionsGateway = {
       console.error('Error al actualizar la misión:', error);
       throw error;
     }
-  },
+  }, 
+  getMissionsForUser: (userId) => requests.get(`${missionsBaseUrl}/user/${userId}`),
+  updateMission: (missionId, updates) => requests.put(`${missionsBaseUrl}/${missionId}`, updates),
+  
 };
 
 const benefitsGateway = {
@@ -323,6 +327,15 @@ const benefitsGateway = {
   },
 };
 
+const userTokensGateway = {
+  createUserTokens: (userId) => requests.post(`${userTokensBaseUrl}/create`, { userId }),
+  getUserTokens: (userId) => requests.get(`${userTokensBaseUrl}/${userId}`),
+  updateUserTokens: (userId, tokens) => requests.put(`${userTokensBaseUrl}/update`, { userId, tokens }),
+  getUserTokenBalance: (userId) => requests.get(`${userTokensBaseUrl}/balance/${userId}`)
+  
+}
+
+
 // Función para obtener el token de autenticación del almacenamiento local
 const getToken = async (): Promise<string> => {
   try {
@@ -342,5 +355,6 @@ export default {
   accountGateway,
   exchangeRatesGateway,
   missionsGateway,
-  benefitsGateway
+  benefitsGateway,
+  userTokensGateway
 };

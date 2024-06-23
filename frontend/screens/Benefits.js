@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   View,
   Dimensions,
@@ -9,34 +9,122 @@ import {
   ImageBackground,
 } from 'react-native'
 import Icon from 'react-native-vector-icons/Ionicons'
-
 import { theme, Block } from 'galio-framework'
 import { Images, walletTheme } from '../constants'
+import backendApi from '../api/backendGateway'
+import { useWallet } from '../navigation/WalletContext'
+import LoadingScreen from '../components/LoadingScreen'
+
 const { width, height } = Dimensions.get('screen')
 
 const Benefits = () => {
+  const [balance, setBalance] = useState(0)
+  const [benefits, setBenefits] = useState({})
+  const [isLoading, setIsLoading] = useState(false)
+  const [xCoinAccount, setXCoinAccount] = useState(null)
+  const { user } = useWallet()
+  const [openSections, setOpenSections] = useState({})
+
+  useEffect(() => {
+    const fetchBalanceAndBenefits = async () => {
+      try {
+        const userId = user.id
+        const accountsResponse =
+          await backendApi.accountGateway.getAccountByUserId(userId)
+
+        const xCoinAccount = accountsResponse.response.find(
+          (account) => account.accountCurrency === 'XCN'
+        )
+
+        if (xCoinAccount) {
+          setXCoinAccount(xCoinAccount)
+          const balanceResponse = await backendApi.transactionsGateway.balance(
+            xCoinAccount.accountNumber
+          )
+          setBalance(balanceResponse.response)
+        }
+
+        const benefitsResponse =
+          await backendApi.benefitsGateway.getAllBenefits()
+        const benefitsByCategory = benefitsResponse.response.reduce(
+          (acc, benefit) => {
+            acc[benefit.title] = acc[benefit.title] || []
+            acc[benefit.title].push(benefit)
+            return acc
+          },
+          {}
+        )
+        setBenefits(benefitsByCategory)
+      } catch (error) {
+        console.error('Error fetching balance and benefits:', error)
+      }
+    }
+
+    fetchBalanceAndBenefits()
+  }, [user.id])
+
+  const toggleSection = (title) => {
+    setOpenSections((prevState) => ({
+      ...prevState,
+      [title]: !prevState[title],
+    }))
+  }
+
+  const handlePurchase = async (benefit) => {
+    setIsLoading(true)
+    if (xCoinAccount && balance >= benefit.price) {
+      try {
+        const transactionData = {
+          accountNumberOrigin: xCoinAccount.accountNumber,
+          accountNumberDestination:
+            '0xbCF5801F122E7645F39bDd38Ce9253e208b7f0a8',
+          name: `Compra de ${benefit.title}`,
+          description: `Compra de ${benefit.title}`,
+          amountOrigin: benefit.price,
+          amountDestination: benefit.price,
+          currencyOrigin: 'XCoin',
+          currencyDestination: 'XCoin',
+          status: 'pending',
+          date: new Date().toISOString(),
+        }
+        await backendApi.transactionsGateway.createTransaction(
+          transactionData,
+          'Transfer'
+        )
+        setBalance(balance - benefit.price)
+        alert(`Has comprado ${benefit.title}`)
+
+        setIsLoading(false)
+      } catch (error) {
+        setIsLoading(false)
+        console.error('Error al realizar la compra:', error)
+        alert('Error al realizar la compra')
+      }
+    } else {
+      setIsLoading(false)
+      alert('Saldo insuficiente')
+    }
+  }
+
   const BalanceCard = ({ title, children }) => (
     <View style={styles.detailCardBalance}>
       <Text style={styles.cardTitle}>{title}</Text>
       {children}
     </View>
   )
+
   const Card = ({ title, children }) => (
     <View style={styles.detailCard}>
       <Text style={styles.cardTitle}>{title}</Text>
       {children}
     </View>
   )
+
   const MiddleText = ({ children }) => (
     <View style={styles.descriptionWrapper}>
       <Text style={styles.description}>{children}</Text>
     </View>
   )
-
-  const [StarlinkOpen, setStarlinkOpen] = useState(false)
-  const [XOpen, setXOpen] = useState(false)
-  const [TeslaOpen, setTeslaOpen] = useState(false)
-  const [SpaceXOpen, setSpaceXOpen] = useState(false)
 
   return (
     <Block flex style={styles.home}>
@@ -46,133 +134,50 @@ const Benefits = () => {
           style={{ width }}
           contentContainerStyle={styles.scrollViewContent}
         >
-          {
-            <>
-              <Card>
-                <Text style={styles.balanceText}>XCoin totales</Text>
-                <Text style={styles.balanceAmount}>0.00 XCoin</Text>
-              </Card>
-              <MiddleText>
-                <Text style={styles.subtitle}>
-                  ¡Utiliza tu XCoin para obtener beneficios increíbles!
-                </Text>
-              </MiddleText>
-              <BalanceCard title="Servicios">
+          <Card>
+            <Text style={styles.balanceText}>XCoin totales</Text>
+            <Text style={styles.balanceAmount}>{balance.toFixed(2)} XCoin</Text>
+          </Card>
+          <MiddleText>
+            <Text style={styles.subtitle}>
+              ¡Utiliza tu XCoin para obtener beneficios increíbles!
+            </Text>
+          </MiddleText>
+          <BalanceCard title="Servicios">
+            {Object.keys(benefits).map((title) => (
+              <View key={title}>
                 <TouchableOpacity
                   style={styles.dropdownButton}
-                  onPress={() => setStarlinkOpen(!StarlinkOpen)}
+                  onPress={() => toggleSection(title)}
                 >
-                  <Text style={styles.dropdownText}>Starlink</Text>
+                  <Text style={styles.dropdownText}>{title}</Text>
                   <Icon
-                    name={StarlinkOpen ? 'chevron-up' : 'chevron-down'}
+                    name={openSections[title] ? 'chevron-up' : 'chevron-down'}
                     size={24}
                     color="#FFFFFF"
                   />
                 </TouchableOpacity>
-                {StarlinkOpen && (
+                {openSections[title] && (
                   <View style={styles.dropdownContent}>
-                    <TouchableOpacity style={styles.optionButton}>
-                      <Text style={styles.optionText}>2 XCoin → 2 GB/mes</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.optionButton}>
-                      <Text style={styles.optionText}>4 XCoin → 4 GB/mes</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.optionButton}>
-                      <Text style={styles.optionText}>6 XCoin → 6 GB/mes</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.optionButton}>
-                      <Text style={styles.optionText}>8 XCoin → 8 GB/mes</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.optionButton}>
-                      <Text style={styles.optionText}>
-                        10 XCoin → 10 GB/mes
-                      </Text>
-                    </TouchableOpacity>
+                    {benefits[title].map((benefit) => (
+                      <TouchableOpacity
+                        key={benefit.id}
+                        style={styles.optionButton}
+                        onPress={() => handlePurchase(benefit)}
+                      >
+                        <Text style={styles.optionText}>
+                          {benefit.price} XCoin → {benefit.title}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
                   </View>
                 )}
-                <TouchableOpacity
-                  style={styles.dropdownButton}
-                  onPress={() => setXOpen(!XOpen)}
-                >
-                  <Text style={styles.dropdownText}>X</Text>
-                  <Icon
-                    name={XOpen ? 'chevron-up' : 'chevron-down'}
-                    size={24}
-                    color="#FFFFFF"
-                  />
-                </TouchableOpacity>
-                {XOpen && (
-                  <View style={styles.dropdownContent}>
-                    <TouchableOpacity style={styles.optionButton}>
-                      <Text style={styles.optionText}>2.67 XCoin → Basic</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.optionButton}>
-                      <Text style={styles.optionText}>7 XCoin → Premium</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.optionButton}>
-                      <Text style={styles.optionText}>
-                        14 XCoin → Premium +
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-                )}
-                <TouchableOpacity
-                  style={styles.dropdownButton}
-                  onPress={() => setTeslaOpen(!TeslaOpen)}
-                >
-                  <Text style={styles.dropdownText}>Tesla</Text>
-                  <Icon
-                    name={TeslaOpen ? 'chevron-up' : 'chevron-down'}
-                    size={24}
-                    color="#FFFFFF"
-                  />
-                </TouchableOpacity>
-                {TeslaOpen && (
-                  <View style={styles.dropdownContent}>
-                    <TouchableOpacity style={styles.optionButton}>
-                      <Text style={styles.optionText}>Opción 1</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.optionButton}>
-                      <Text style={styles.optionText}>Opción 2</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.optionButton}>
-                      <Text style={styles.optionText}>Opción 3</Text>
-                    </TouchableOpacity>
-                  </View>
-                )}
-                <TouchableOpacity
-                  style={styles.dropdownButton}
-                  onPress={() => setSpaceXOpen(!SpaceXOpen)}
-                >
-                  <Text style={styles.dropdownText}>SpaceX</Text>
-                  <Icon
-                    name={SpaceXOpen ? 'chevron-up' : 'chevron-down'}
-                    size={24}
-                    color="#FFFFFF"
-                  />
-                </TouchableOpacity>
-                {SpaceXOpen && (
-                  <View style={styles.dropdownContent}>
-                    <TouchableOpacity style={styles.optionButton}>
-                      <Text style={styles.optionText}>
-                        STARSHIP FLIGHT 4 MISSION PATCH
-                      </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.optionButton}>
-                      <Text style={styles.optionText}>
-                        UNISEX STARSHIP FLIGHT 4 T-SHIRT
-                      </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.optionButton}>
-                      <Text style={styles.optionText}>Opción 3</Text>
-                    </TouchableOpacity>
-                  </View>
-                )}
-              </BalanceCard>
-            </>
-          }
+              </View>
+            ))}
+          </BalanceCard>
         </ScrollView>
       </ImageBackground>
+      <LoadingScreen visible={isLoading} />
     </Block>
   )
 }
@@ -224,7 +229,7 @@ const styles = StyleSheet.create({
   },
   scrollViewContent: {
     paddingTop: 100,
-    paddingBottom: 200, // Añadir padding al final para asegurarse de que el contenido sea desplazable
+    paddingBottom: 200,
   },
   balanceText: {
     color: '#F2F2F2',

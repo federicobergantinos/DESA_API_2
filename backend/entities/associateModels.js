@@ -8,6 +8,8 @@ const Mission = require('./mission')
 const MetamaskAccount = require('./metamaskAccount')
 const ExchangeRate = require('./exchangeRate')
 const Benefit = require('./benefits')
+const UserTokens = require('./userTokens')
+const Whitelist = require('./whitelist')
 
 // Relaciones
 Authorization.belongsTo(User, { as: 'user', foreignKey: 'userId' })
@@ -18,6 +20,9 @@ Contact.belongsTo(User, { as: 'user', foreignKey: 'userId' }) // Un contacto per
 
 User.hasMany(Mission, { as: 'missions', foreignKey: 'userId' }) // Un usuario puede tener varias misiones
 Mission.belongsTo(User, { as: 'user', foreignKey: 'userId' }) // Una misión pertenece a un usuario
+
+UserTokens.belongsTo(User, { as: 'user', foreignKey: 'userId' })
+User.hasMany(UserTokens, { as: 'tokens', foreignKey: 'userId' })
 
 // Opcional, dependiendo de cómo quieras acceder a los datos relacionados
 Transaction.belongsTo(Account, {
@@ -39,4 +44,6 @@ module.exports = {
   MetamaskAccount,
   ExchangeRate,
   Benefit,
+  Whitelist,
+  UserTokens,
 }

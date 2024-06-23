@@ -16,7 +16,9 @@ import { Images, walletTheme } from '../constants'
 import backendApi from '../api/backendGateway'
 import WalletContext from '../navigation/WalletContext'
 import LoadingScreen from '../components/LoadingScreen'
+import createLogger from '../components/Logger'
 
+const logger = createLogger('BuyCrypto.js')
 const { width, height } = Dimensions.get('screen')
 
 const BuyCrypto = () => {
@@ -41,9 +43,11 @@ const BuyCrypto = () => {
           const exchangeRate = response.response
           let exchangeRateCalculated = 0.0
           if (currency === 'ARS') {
-            exchangeRateCalculated = exchangeRate.ARS * exchangeRate.XCN
+            exchangeRateCalculated = exchangeRate.ARS / exchangeRate.XCN
+            logger.info(`Exchange rate: ${exchangeRateCalculated}`)
           } else {
             exchangeRateCalculated = exchangeRate.XCN
+            logger.info(`Exchange rate: ${exchangeRateCalculated}`)
           }
           setExchangeRate(exchangeRateCalculated)
           setIsLoading(false)
@@ -61,7 +65,7 @@ const BuyCrypto = () => {
   }, [currency])
 
   useEffect(() => {
-    const receivedAmount = (amountSend * exchangeRate).toFixed(4)
+    const receivedAmount = (amountSend / exchangeRate).toFixed(4)
     setAmountReceived(receivedAmount)
   }, [exchangeRate])
 
@@ -70,7 +74,7 @@ const BuyCrypto = () => {
     setAmountSend(text)
     setTypingTimeout(
       setTimeout(() => {
-        const receivedAmount = (parseFloat(text) * exchangeRate).toFixed(4)
+        const receivedAmount = (parseFloat(text) / exchangeRate).toFixed(4)
         setAmountReceived(receivedAmount)
       }, 500)
     )
@@ -140,8 +144,10 @@ const BuyCrypto = () => {
       }
 
       // Enviar la solicitud para registrar la transacción
-      const response =
-        await backendApi.transactionsGateway.createTransaction(transactionData)
+      const response = await backendApi.transactionsGateway.createTransaction(
+        transactionData,
+        'BuyXCN'
+      )
 
       if (response.statusCode === 200 || response.statusCode === 201) {
         setIsLoading(false)

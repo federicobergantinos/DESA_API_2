@@ -6,25 +6,26 @@ const {
 const { sendResponse } = require('../configurations/utils.js')
 const createLogger = require('../configurations/Logger')
 const { sendMessageToSNS } = require('../utils/snsSender')
-const { v4: uuidv4 } = require('uuid');
+const { v4: uuidv4 } = require('uuid')
 const logger = createLogger(__filename)
 
 const create = async (req, res) => {
   try {
-    const transactionId = uuidv4(); // Generar un UUID para ambas transacciones
+    const transactionId = uuidv4() // Generar un UUID para ambas transacciones
 
     const transactionData = {
       ...req.body,
       transactionId,
-    };
+    }
 
     // Crear la transacción para el remitente (negativa)
     const transactionOrigin = {
       ...transactionData,
       amountOrigin: -Math.abs(transactionData.amountOrigin), // Asegurar que el monto es negativo
       amountDestination: -Math.abs(transactionData.amountDestination), // Asegurar que el monto es negativo
-    };
-    await createTransaction(transactionOrigin);
+      typeTransaction: req.body.typeTransaction,
+    }
+    await createTransaction(transactionOrigin)
 
     // Crear la transacción para el receptor (positiva)
     const transactionDestination = {
@@ -35,13 +36,32 @@ const create = async (req, res) => {
       currencyDestination: transactionData.currencyOrigin,
       amountOrigin: Math.abs(transactionData.amountDestination), // Asegurar que el monto es positivo
       amountDestination: Math.abs(transactionData.amountOrigin), // Asegurar que el monto es positivo
-    };
-    await createTransaction(transactionDestination);
+      typeTransaction: req.body.typeTransaction,
+    }
+    await createTransaction(transactionDestination)
+
+    // Determinar el operationType según el typeTransaction
+    let operationType
+    switch (transactionData.typeTransaction) {
+      case 'BuyXCN':
+        operationType = 'CreateBuyXCN'
+        break
+      case 'SellXCN':
+        operationType = 'CreateSellXCN'
+        break
+      case 'Transfer':
+      default:
+        operationType = 'CreateTransferXCN'
+        break
+    }
 
     // Crear el payload para SNS solo para la transacción original
-    if (transactionData.currencyOrigin === "XCoin" || transactionData.currencyDestination === "XCoin") {
+    if (
+      transactionData.currencyOrigin === 'XCoin' ||
+      transactionData.currencyDestination === 'XCoin'
+    ) {
       const payload = {
-        operationType: "CreateTransferXCN",
+        operationType: operationType,
         data: {
           accountNumberOrigin: transactionData.accountNumberOrigin,
           accountNumberDestination: transactionData.accountNumberDestination,
@@ -55,22 +75,22 @@ const create = async (req, res) => {
           status: transactionData.status,
           date: transactionData.date,
         },
-      };
+      }
       // Enviar mensaje a SNS
-      await sendMessageToSNS(payload);
+      await sendMessageToSNS(payload)
     }
 
     return sendResponse(res, 201, {
       id: transactionId,
-      message: "Transacción creada con éxito",
-    });
+      message: 'Transacción creada con éxito',
+    })
   } catch (error) {
-    console.error(`Error en la creación de la transacción: ${error}`);
+    console.error(`Error en la creación de la transacción: ${error}`)
     return sendResponse(res, error.code || 500, {
-      msg: error.message || "Ha ocurrido una excepción",
-    });
+      msg: error.message || 'Ha ocurrido una excepción',
+    })
   }
-};
+}
 
 const getAll = async (req, res) => {
   const page = parseInt(req.query.page) || 0 // Asegúrate de proporcionar un valor por defecto

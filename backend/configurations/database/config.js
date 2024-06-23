@@ -7,6 +7,8 @@ const {
   Benefit,
   MetamaskAccount,
   ExchangeRate,
+  UserTokens,
+  Whitelist,
 } = require('../../entities/associateModels')
 const {
   populateTransactions,
@@ -15,6 +17,7 @@ const {
   populateBenefits,
   populateMetamaskAccounts,
   populateExchangeRates,
+  populateWhitelist,
 } = require('./initialData')
 const createLogger = require('../Logger')
 const logger = createLogger(__filename)
@@ -31,6 +34,7 @@ const dbConnection = async () => {
     const metamaskAccountsCount = await MetamaskAccount.count()
     const exchangeRatesCount = await ExchangeRate.count()
     const benefitCount = await Benefit.count()
+    const whitelistCount = await Whitelist.count()
 
     if (usersCount === 0) {
       await populateUser()
@@ -54,6 +58,10 @@ const dbConnection = async () => {
 
     if (benefitCount === 0) {
       await populateBenefits()
+    }
+
+    if (whitelistCount === 0) {
+      await populateWhitelist()
     }
 
     logger.info('Database online')
