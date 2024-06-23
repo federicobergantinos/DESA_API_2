@@ -92,7 +92,6 @@ async function handleMessage(message) {
   try {
     const messageBody = JSON.parse(message.Body)
     const operationMessage = JSON.parse(messageBody.Message)
-    logger.info(`Processing message: ${operationMessage}`)
 
     if (!operationMessage.operationType || !operationMessage.data) {
       throw new Error('Invalid message structure')

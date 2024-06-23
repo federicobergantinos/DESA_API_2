@@ -77,7 +77,6 @@ const deleteMissionService = async (missionId) => {
 
 const getUserMissionsService = async (userId) => {
   const missions = await Mission.findAll({ where: { userId } })
-  console.log(missions)
   return missions || []
 }
 

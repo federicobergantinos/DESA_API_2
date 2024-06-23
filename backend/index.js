@@ -4,6 +4,7 @@ const bodyParser = require('body-parser')
 const { dbConnection } = require('./configurations/database/config')
 const createLogger = require('./configurations/Logger')
 const logger = createLogger(__filename)
+const requestLogger = require('./middleware/logger')
 
 const app = express()
 
@@ -12,6 +13,9 @@ app.use(bodyParser.json({ limit: '50mb' }))
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }))
 
 app.use(express.json())
+
+// Agregar el middleware de registro de solicitudes y respuestas
+app.use(requestLogger)
 
 dbConnection()
   .then(() => {

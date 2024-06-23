@@ -6,6 +6,7 @@ import {
   StyleSheet,
   Text,
   Image,
+  TouchableOpacity, // Importar TouchableOpacity
 } from 'react-native'
 import { Block } from 'galio-framework'
 import { useNavigation } from '@react-navigation/native'
@@ -22,6 +23,7 @@ const UserValidationScreen = () => {
   const [message, setMessage] = useState('Estamos validando tu identidad')
   const navigation = useNavigation()
   const statusInterval = useRef(null) // Use useRef to store the interval
+  const [showCancel, setShowCancel] = useState(true)
 
   const checkUserStatus = async () => {
     try {
@@ -33,6 +35,7 @@ const UserValidationScreen = () => {
         if (userStatus === 'validated') {
           setIsValidating(false)
           setMessage('¡Identidad validada con éxito!')
+          setShowCancel(false) // Ocultar el botón de cancelar
 
           // Actualizar las misiones del usuario
           await updateMissions(userId)
@@ -92,6 +95,14 @@ const UserValidationScreen = () => {
     return null
   }
 
+  const handleCancel = () => {
+    setShowCancel(false) // Ocultar el botón de cancelar
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'Login' }],
+    })
+  }
+
   return (
     <View style={styles.container}>
       <ImageBackground source={Images.Background} style={styles.image}>
@@ -107,6 +118,14 @@ const UserValidationScreen = () => {
               />
             )}
           </View>
+          {showCancel && (
+            <TouchableOpacity
+              onPress={handleCancel}
+              style={styles.cancelButton}
+            >
+              <Text style={styles.cancelButtonText}>Cancelar</Text>
+            </TouchableOpacity>
+          )}
         </Block>
       </ImageBackground>
     </View>
@@ -161,6 +180,16 @@ const styles = StyleSheet.create({
     marginTop: 20,
     width: '30%',
     height: 4,
+  },
+  cancelButton: {
+    marginTop: 60,
+    padding: 10,
+    backgroundColor: walletTheme.COLORS.DEFAULT,
+    borderRadius: 5,
+  },
+  cancelButtonText: {
+    color: walletTheme.COLORS.WHITE,
+    fontSize: 16,
   },
 })
 

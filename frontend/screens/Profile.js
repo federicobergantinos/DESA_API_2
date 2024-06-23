@@ -32,7 +32,10 @@ const ConfiguracionGeneral = ({ navigation }) => {
   const logOut = async () => {
     await AsyncStorage.clear()
     await GoogleSignin.signOut()
-    navigation.navigate('Login')
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'Login' }],
+    })
   }
 
   const deleteAccount = async () => {
@@ -72,13 +75,13 @@ const ConfiguracionGeneral = ({ navigation }) => {
             onPress={() => navigation.navigate('FAQs')}
           />
           <Card
-            title="Sign Out"
+            title="Salir"
             iconName="sign-out"
             iconColor={theme.COLORS.WARNING}
             onPress={() => logOut()}
           />
           <Card
-            title="Desactivate Account"
+            title="Eliminar cuenta"
             iconName="trash"
             iconColor={theme.COLORS.PRIMARY}
             onPress={() => deleteAccount()}
