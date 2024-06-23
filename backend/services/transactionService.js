@@ -7,10 +7,9 @@ const createLogger = require('../configurations/Logger')
 const logger = createLogger(__filename)
 
 const createTransaction = async (transactionData) => {
-  const { accountNumber, name, description, amount, currency, status, date } =
-    transactionData
-
-  const account = await findAccountByAccountNumber(accountNumber)
+  const account = await findAccountByAccountNumber(
+    transactionData.accountNumberDestination
+  )
 
   if (account === null) {
     throw new Error('Invalid Account')
@@ -27,14 +26,17 @@ const createTransaction = async (transactionData) => {
       // Crear la transacción
       const newTransaction = await Transaction.create(
         {
-          accountNumber,
-          name,
           name: transactionName,
-          description,
-          amount,
-          currency,
-          status,
-          date,
+          description: transactionData.description,
+          amountOrigin: transactionData.amountOrigin,
+          amountDestination: transactionData.amountDestination,
+          accountNumberOrigin: transactionData.accountNumberOrigin,
+          currencyOrigin: transactionData.currencyOrigin,
+          currencyDestination: transactionData.currencyDestination,
+          accountNumberDestination: transactionData.accountNumberDestination,
+          status: transactionData.status,
+          date: transactionData.date,
+          transactionId: transactionData.transactionId,
         },
         { transaction: t }
       )
@@ -49,19 +51,22 @@ const createTransaction = async (transactionData) => {
 }
 
 const getTransactions = async (queryData) => {
-  const accountNumber = queryData.accountNumber.toString()
+  const accountNumberOrigin = queryData.accountNumberOrigin
   const limit = queryData.limit || 20 // Establecer un límite predeterminado si no se proporciona en la consulta
   const offset = queryData.offset || 0 // Establecer un offset predeterminado si no se proporciona en la consulta
 
   const transactions = await Transaction.findAll({
-    where: { accountNumber: accountNumber },
+    where: { accountNumberOrigin: accountNumberOrigin },
     attributes: [
       'id',
       'name',
       'description',
-      'amount',
-      'currency',
-      'accountNumber',
+      'amountOrigin',
+      'amountDestination',
+      'currencyOrigin',
+      'currencyDestination',
+      'accountNumberOrigin',
+      'accountNumberDestination',
       'date',
     ],
     limit,
@@ -80,8 +85,25 @@ const getTransaction = async (transactionId) => {
 
   return transaction
 }
+
+const updateTransactionStatus = async (transactionId, status) => {
+  try {
+    const transaction = await Transaction.findOne({ where: { transactionId } })
+
+    if (!transaction) {
+      throw new Error('Transaction not found')
+    }
+
+    transaction.status = status
+    await transaction.save()
+  } catch (error) {
+    throw error
+  }
+}
+
 module.exports = {
   createTransaction,
   getTransactions,
   getTransaction,
+  updateTransactionStatus,
 }

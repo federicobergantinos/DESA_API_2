@@ -1,17 +1,24 @@
+// backend/configurations/database/config.js
 const sequelize = require('../database/sequelizeConnection')
 const {
   User,
   Transaction,
-  Media,
-  Account,
-  Contact,
-  Mission, // Asegúrate de importar el modelo Mission
+  Mission,
+  Benefit,
+  MetamaskAccount,
+  ExchangeRate,
+  UserTokens,
+  Whitelist,
 } = require('../../entities/associateModels')
 const {
   populateTransactions,
   populateUser,
   populateMissions,
-} = require('./initialData') // Agrega populateMissions
+  populateBenefits,
+  populateMetamaskAccounts,
+  populateExchangeRates,
+  populateWhitelist,
+} = require('./initialData')
 const createLogger = require('../Logger')
 const logger = createLogger(__filename)
 
@@ -19,11 +26,15 @@ const dbConnection = async () => {
   try {
     await sequelize.authenticate()
     // await sequelize.sync()
-    await sequelize.sync({ force: true })
+    // await sequelize.sync({ force: true })
 
     const usersCount = await User.count()
     const transactionsCount = await Transaction.count()
-    const missionsCount = await Mission.count() // Cuenta las misiones
+    const missionsCount = await Mission.count()
+    const metamaskAccountsCount = await MetamaskAccount.count()
+    const exchangeRatesCount = await ExchangeRate.count()
+    const benefitCount = await Benefit.count()
+    const whitelistCount = await Whitelist.count()
 
     if (usersCount === 0) {
       await populateUser()
@@ -37,9 +48,25 @@ const dbConnection = async () => {
       await populateMissions()
     }
 
+    if (metamaskAccountsCount === 0) {
+      await populateMetamaskAccounts()
+    }
+
+    if (exchangeRatesCount === 0) {
+      await populateExchangeRates()
+    }
+
+    if (benefitCount === 0) {
+      await populateBenefits()
+    }
+
+    if (whitelistCount === 0) {
+      await populateWhitelist()
+    }
+
     logger.info('Database online')
   } catch (error) {
-    logger.error('There is an error starting database', {
+    console.error('There is an error starting database', {
       message: error.message,
       stack: error.stack,
       original: error.original,

@@ -5,14 +5,18 @@ import { TransactionDTO } from './TransactionDTO';
 import { ContactDTO, ContactsDTO } from './ContactDTO';
 import { AccountDTO, AccountSummaryDTO } from './AccountDTO';
 
-const api = axios.create({ baseURL: "https://www.wallet-elb.federicobergantinos.com/" });
-// const api = axios.create({ baseURL: 'http://192.168.3.6:8080' });
+// const api = axios.create({ baseURL: "https://www.wallet-elb.federicobergantinos.com/" });
+const api = axios.create({ baseURL: 'http://192.168.1.112:8080' });
 // const api = axios.create({baseURL: 'https://277c-170-150-153-225.ngrok-free.app:8080'});
 
 const transactionBaseUrl = '/v1/transactions';
 const usersBaseUrl = '/v1/users';
 const contactsBaseUrl = '/v1/contacts';
 const accountBaseUrl = '/v1/accounts';
+const exchangeRateBaseUrl = '/v1/rates';
+const missionsBaseUrl = '/v1/missions';
+const benefitsBaseUrl = '/v1/benefits';
+const userTokensBaseUrl = '/v1/userTokens'
 
 // Interceptores de solicitud y respuesta
 api.interceptors.request.use(
@@ -71,21 +75,26 @@ const requests = {
 const authUser = {
   authenticate: (
     auth: CreateAuthDTO
-  ): Promise<{ response: any; statusCode: number }> =>
-    requests.post('/v1/auth', auth),
+  ): Promise<{ response: any; statusCode: number }> => {
+    const requestBody = { ...auth }
+    console.log('Request body:', requestBody)  // Verifica que el cuerpo de la solicitud contenga el email
+    return requests.post('/v1/auth', requestBody)
+  },
   refresh: (
     refreshToken: string
   ): Promise<{ response: Credentials; statusCode: number }> =>
     requests.put('/v1/auth', { refreshToken }),
   deleteCredential: () => requests.delete('/v1/auth'),
-};
+}
+
+
 
 // Objeto para funciones relacionadas con transacciones
 const transactionsGateway = {
-  createTransaction: async (transactionData) => {
+  createTransaction: async (transactionData, typeTransaction) => {
     try {
       const url = `${transactionBaseUrl}/create`;
-      const response = await requests.post(url, transactionData);
+      const response = await requests.post(url, { ...transactionData, typeTransaction });
       return response;
     } catch (error) {
       console.error('Error al crear la transacción:', error);
@@ -183,6 +192,7 @@ const accountGateway = {
     }
   },
 
+  
   getAccountByUserId: async (
     userId: number
   ): Promise<{ response: AccountSummaryDTO[]; statusCode: number }> => {
@@ -203,7 +213,9 @@ const accountGateway = {
     const url = `${accountBaseUrl}/${accountId}`;
     return requests.get(url);
   },
+
 };
+
 
 // Objeto para funciones relacionadas con usuarios
 const usersGateway = {
@@ -214,17 +226,115 @@ const usersGateway = {
     userData: any
   ): Promise<{ response: any; statusCode: number }> =>
     requests.put(`${usersBaseUrl}/${userId}`, userData),
-  uploadImage: async (image) => {
+  uploadImage: async ({
+    image,
+    prefix,
+    filename,
+  }: {
+    image: string,
+    prefix: string,
+    filename: string,
+  }): Promise<{ response: string; statusCode: number }> => {
+    return requests.post(`${usersBaseUrl}/uploadImage`, { image, prefix, filename })
+  },
+  deleteUser: (userId: number): Promise<{ response: any; statusCode: number }> =>
+    requests.delete(`${usersBaseUrl}/${userId}`),
+}
+
+const exchangeRatesGateway = {
+  getExchangeRate: async (currencyCode) => {
     try {
-      const url = `${transactionBaseUrl}/uploadImage`;
-      const response = await requests.post(url, image);
+      const url = `${exchangeRateBaseUrl}/${currencyCode}`;
+      const response = await requests.get(url);
       return response;
     } catch (error) {
-      console.error('Error al subir una imagen:', error);
+      console.error('Error fetching exchange rate:', error);
       throw error;
     }
   },
 };
+
+const missionsGateway = {
+  createMissionsForUser: async (userId, transaction) => {
+    try {
+      const url = `${missionsBaseUrl}/create`;
+      const response = await requests.post(url, { userId, transaction });
+      return response;
+    } catch (error) {
+      console.error('Error al crear las misiones:', error);
+      throw error;
+    }
+  },
+
+  updateMissionByKey: async (userId, key, updates) => {
+    try {
+      const url = `${missionsBaseUrl}/updateByKey/${key}`;
+      const response = await requests.put(url, { userId, ...updates });
+      return response;
+    } catch (error) {
+      console.error('Error al actualizar la misión:', error);
+      throw error;
+    }
+  }, 
+  getMissionsForUser: (userId) => requests.get(`${missionsBaseUrl}/user/${userId}`),
+  updateMission: (missionId, updates) => requests.put(`${missionsBaseUrl}/${missionId}`, updates),
+  
+};
+
+const benefitsGateway = {
+  getAllBenefits: async () => {
+    try {
+      const url = `${benefitsBaseUrl}`;
+      const response = await requests.get(url);
+      return response;
+    } catch (error) {
+      console.error('Error al obtener los beneficios:', error);
+      throw error;
+    }
+  },
+
+  getBenefitById: async (benefitId) => {
+    try {
+      const url = `${benefitsBaseUrl}/${benefitId}`;
+      const response = await requests.get(url);
+      return response;
+    } catch (error) {
+      console.error('Error al obtener el beneficio:', error);
+      throw error;
+    }
+  },
+
+  updateBenefit: async (benefitId, updates) => {
+    try {
+      const url = `${benefitsBaseUrl}/${benefitId}`;
+      const response = await requests.put(url, updates);
+      return response;
+    } catch (error) {
+      console.error('Error al actualizar el beneficio:', error);
+      throw error;
+    }
+  },
+
+  deleteBenefit: async (benefitId) => {
+    try {
+      const url = `${benefitsBaseUrl}/${benefitId}`;
+      const response = await requests.delete(url);
+      return response;
+    } catch (error) {
+      console.error('Error al eliminar el beneficio:', error);
+      throw error;
+    }
+  },
+};
+
+const userTokensGateway = {
+  createUserTokens: (userId) => requests.post(`${userTokensBaseUrl}/create`, { userId }),
+  getUserTokens: (userId) => requests.get(`${userTokensBaseUrl}/${userId}`),
+  updateUserTokens: (userId, tokens) => requests.put(`${userTokensBaseUrl}/update`, { userId, tokens }),
+  getUserTokenBalance: (userId) => requests.get(`${userTokensBaseUrl}/balance/${userId}`)
+  
+}
+
 
 // Función para obtener el token de autenticación del almacenamiento local
 const getToken = async (): Promise<string> => {
@@ -243,4 +353,8 @@ export default {
   contactsGateway,
   usersGateway,
   accountGateway,
+  exchangeRatesGateway,
+  missionsGateway,
+  benefitsGateway,
+  userTokensGateway
 };

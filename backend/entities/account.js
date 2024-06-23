@@ -28,6 +28,11 @@ const Account = sequelize.define('accounts', {
     type: DataTypes.STRING,
     allowNull: false,
   },
+  accountStatus: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    defaultValue: 'pending',
+  },
   userId: {
     type: DataTypes.INTEGER,
     allowNull: false,

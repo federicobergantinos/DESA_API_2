@@ -1,4 +1,4 @@
-import React, { useContext, useRef, useEffect, useState } from 'react'
+import React, { useCallback, useRef, useEffect, useState } from 'react'
 import {
   View,
   ImageBackground,
@@ -8,53 +8,85 @@ import {
   TextInput,
   Modal,
   Alert,
-  Button,
   FlatList,
   TouchableOpacity,
 } from 'react-native'
+import debounce from 'lodash.debounce'
+import { Picker } from '@react-native-picker/picker'
 import { theme, Block } from 'galio-framework'
 import { Images, walletTheme } from '../constants'
+import LoadingScreen from '../components/LoadingScreen'
 import Icon from '../components/Icon'
 import Input from '../components/Input'
-import CheckBox from '@react-native-community/checkbox'
 import { useNavigation } from '@react-navigation/native'
 import backendApi from '../api/backendGateway'
 import { useWallet } from '../navigation/WalletContext'
+import { faCreativeCommonsShare } from '@fortawesome/free-brands-svg-icons'
+import { all } from 'axios'
 
 const { width, height } = Dimensions.get('screen')
 
 const Transfer = () => {
+  const [isLoading, setIsLoading] = useState(false)
   const [isModalVisible, setIsModalVisible] = useState(false)
   const [contactName, setContactName] = useState('')
   const [contactAccountNumber, setContactAccountNumber] = useState('')
-  const [contactAccountType, setContactAccountType] = useState('Checking')
-  const [isCheckingAccount, setIsCheckingAccount] = useState(true)
-  const [contacts, setContacts] = useState([])
+  const [contactAccountType, setContactAccountType] = useState('XCoin')
   const [isLoadingContacts, setIsLoadingContacts] = useState(false)
-  const searchInputRef = useRef(null)
   const [localSearch, setLocalSearch] = useState('')
   const { user, selectedAccount } = useWallet()
   const [editingContact, setEditingContact] = useState(null)
-  const [shouldFocus, setShouldFocus] = useState(false)
   const [selectedContact, setSelectedContact] = useState(null)
   const [localAmount, setLocalAmount] = useState('')
+  const [allContacts, setAllContacts] = useState([])
+  const [contacts, setContacts] = useState([])
+  const filteredContacts = useRef([])
+  const [updateCounter, setUpdateCounter] = useState(0)
+  const inputValuesRef = useRef({
+    amountInput: '',
+  })
 
   const showModal = () => setIsModalVisible(true)
   const hideModal = () => setIsModalVisible(false)
   const navigation = useNavigation()
 
   useEffect(() => {
+    if (editingContact) {
+      setContactName(editingContact.name)
+      setContactAccountNumber(editingContact.accountNumber)
+      setContactAccountType(editingContact.accountType) // Asegúrate de establecer el tipo de cuenta al editar
+    } else {
+      setContactName('')
+      setContactAccountNumber('')
+      setContactAccountType('XCoin') // Valor predeterminado para el tipo de cuenta
+    }
+  }, [editingContact])
+
+  const debouncedSearch = useCallback(
+    debounce((searchTerm) => {
+      const filtered = allContacts.filter((contact) =>
+        contact.name.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+      filteredContacts.current = selectedContact
+        ? [selectedContact]
+        : filtered.slice(0, 4)
+      console.log('filteredContacts', filteredContacts.current)
+      setUpdateCounter((prev) => prev + 1) // Incrementar el contador para forzar la actualización
+    }, 500),
+    [allContacts, selectedContact]
+  )
+
+  useEffect(() => {
+    filteredContacts.current = selectedContact
+      ? [selectedContact]
+      : allContacts.slice(0, 4)
+    setUpdateCounter((prev) => prev + 1) // Incrementar el contador para forzar la actualización
+  }, [allContacts])
+
+  useEffect(() => {
     // Inicializar la búsqueda cuando el componente se monta
     fetchContacts(localSearch)
   }, []) // Dependencias vacías para ejecutar solo en el montaje
-
-  useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      fetchContacts(localSearch) // Llama a tu función de búsqueda aquí
-    }, 500) // Retardo de 500 ms
-
-    return () => clearTimeout(delayDebounceFn)
-  }, [localSearch, fetchContacts]) // Dependencias para re-ejecutar cuando estos valores cambien
 
   useEffect(() => {
     if (editingContact) {
@@ -78,32 +110,40 @@ const Transfer = () => {
 
   const fetchContacts = async (searchTerm = '') => {
     setIsLoadingContacts(true)
+    setIsLoading(true)
     try {
       const response = await backendApi.contactsGateway.searchContacts(
         searchTerm,
         0,
-        10,
+        1000, // Increase the limit to fetch all contacts
         user.id
       )
       if (response.statusCode === 200) {
-        setContacts(response.response.contact)
+        setAllContacts(response.response.contact)
+        filteredContacts.current = response.response.contact
+        setIsLoading(false)
       } else {
+        setIsLoading(false)
         console.error('Error fetching contacts:', response)
         alert('Error al obtener los contactos.')
       }
     } catch (error) {
+      setIsLoading(false)
       console.error('Error fetching contacts:', error)
       alert('Error al obtener los contactos.')
     } finally {
+      setIsLoading(false)
       setIsLoadingContacts(false)
     }
   }
 
   const AmountInputCard = () => {
-    // Manejador para actualizar el estado local mientras el usuario escribe
     const handleAmountChange = (text) => {
-      setShouldFocus(true)
-      setLocalAmount(text)
+      inputValuesRef.current.amountInput = text // Actualiza el valor en el diccionario
+    }
+
+    const handleBlur = () => {
+      setLocalAmount(inputValuesRef.current.amountInput) // Actualiza el estado solo cuando el campo pierde el foco
     }
 
     return (
@@ -111,13 +151,13 @@ const Transfer = () => {
         <View style={styles.amountContainer}>
           <TextInput
             style={styles.amountInput}
-            value={localAmount}
-            onChangeText={handleAmountChange}
             placeholder="0"
+            defaultValue={localAmount} // Usa defaultValue en lugar de value
+            onChangeText={handleAmountChange}
+            onBlur={handleBlur} // Llama a handleBlur cuando el campo pierde el foco
             keyboardType="numeric"
             placeholderTextColor={walletTheme.COLORS.VIOLET}
           />
-          {/* Otros componentes aquí */}
         </View>
       </Card>
     )
@@ -146,7 +186,10 @@ const Transfer = () => {
         await backendApi.contactsGateway.createContact(contactData)
       if (response.statusCode === 200 || response.statusCode === 201) {
         alert('Contacto agregado con éxito.')
-        fetchContacts()
+        setAllContacts((prevContacts) => [
+          ...prevContacts,
+          response.response.contact,
+        ])
         hideModal()
       } else {
         alert('Hubo un problema al agregar el contacto.')
@@ -191,17 +234,14 @@ const Transfer = () => {
   }
 
   const handleDeleteContact = async (contactId) => {
-    // Mostrar un alerta de confirmación antes de proceder a eliminar
     Alert.alert(
       'Eliminar contacto',
       '¿Estás seguro de que deseas eliminar este contacto?',
       [
-        // Botón de cancelar
         {
           text: 'Cancelar',
           style: 'cancel',
         },
-        // Botón de confirmar, que llama a la función de eliminar
         {
           text: 'Eliminar',
           onPress: async () => {
@@ -213,11 +253,11 @@ const Transfer = () => {
                   'Eliminado',
                   'El contacto ha sido eliminado correctamente.'
                 )
-                // Aquí deberías también actualizar tu estado para reflejar que el contacto fue eliminado,
-                // tal vez removiéndolo de la lista de contactos mostrada.
-                fetchContacts() // Recargar la lista de contactos para reflejar la eliminación.
+                setSelectedContact(null)
+                setAllContacts((prevContacts) =>
+                  prevContacts.filter((contact) => contact.id !== contactId)
+                )
               } else {
-                // Manejo de algún código de estado inesperado.
                 Alert.alert('Error', 'No se pudo eliminar el contacto.')
               }
             } catch (error) {
@@ -234,9 +274,8 @@ const Transfer = () => {
   }
 
   const handleEditContact = async (contact) => {
-    showModal() // Muestra el modal para editar
+    showModal()
 
-    // Realiza la solicitud para obtener los detalles del contacto por ID
     try {
       const { response, statusCode } =
         await backendApi.contactsGateway.getContactById(contact.id, user.id)
@@ -264,7 +303,6 @@ const Transfer = () => {
       return
     }
 
-    // Prepara los datos del contacto a actualizar
     const updatedContactData = {
       name: contactName,
       accountNumber: contactAccountNumber,
@@ -279,8 +317,16 @@ const Transfer = () => {
       )
       if (response.statusCode === 200) {
         Alert.alert('Éxito', 'Contacto actualizado correctamente.')
-        fetchContacts() // Recargar la lista de contactos para reflejar los cambios
-        hideModal() // Cierra el modal de edición
+        console.log('response', response)
+        console.log('updatedContactData', updatedContactData)
+        setAllContacts((prevContacts) =>
+          prevContacts.map((contact) =>
+            contact.id === editingContact.id
+              ? { ...contact, ...updatedContactData }
+              : contact
+          )
+        )
+        hideModal()
       } else {
         Alert.alert('Error', 'No se pudo actualizar el contacto.')
       }
@@ -299,13 +345,12 @@ const Transfer = () => {
   }
 
   const ContactsCard = () => {
+    const searchInputRef = useRef(null)
+
     const handleSearchChange = (text) => {
-      setShouldFocus(true)
-      setLocalSearch(text)
+      searchInputRef.current = text
+      debouncedSearch(text)
     }
-    const dataToShow = selectedContact
-      ? [selectedContact] // Solo muestra el contacto seleccionado
-      : contacts.slice(0, 4)
 
     return (
       <Card title="Contactos">
@@ -314,13 +359,10 @@ const Transfer = () => {
             <Input
               right
               color="black"
-              autoFocus={shouldFocus}
               style={styles.search}
-              value={localSearch}
               placeholder="Buscar contacto"
               placeholderTextColor={'#8898AA'}
               onChangeText={handleSearchChange}
-              ref={searchInputRef}
               iconContent={
                 <Icon
                   size={16}
@@ -339,17 +381,22 @@ const Transfer = () => {
           </View>
         )}
 
-        <FlatList
-          data={dataToShow}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => (
-            <ContactCard
-              contact={item}
-              onEdit={handleEditContact}
-              onDelete={handleDeleteContact}
-            />
-          )}
-        />
+        {filteredContacts.current.length === 0 ? (
+          <Text style={styles.noContactsText}>No se encontraron contactos</Text>
+        ) : (
+          <FlatList
+            data={filteredContacts.current}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={({ item }) => (
+              <ContactCard
+                contact={item}
+                onEdit={handleEditContact}
+                onDelete={handleDeleteContact}
+              />
+            )}
+          />
+        )}
+
         {selectedContact && (
           <TouchableOpacity
             onPress={() => setSelectedContact(null)}
@@ -363,8 +410,7 @@ const Transfer = () => {
   }
 
   const handleConfirm = async () => {
-    // Asegurar que un contacto ha sido seleccionado y el monto ha sido ingresado
-    if (!selectedContact || !localAmount) {
+    if (!selectedContact || !inputValuesRef.current.amountInput) {
       Alert.alert(
         'Error',
         'Debes seleccionar un contacto y especificar un monto.'
@@ -372,32 +418,54 @@ const Transfer = () => {
       return
     }
 
-    // Construir el objeto de datos de la transacción
-    console.log(selectedContact)
+    const amount = Math.abs(parseFloat(inputValuesRef.current.amountInput))
+
+    const { response: balanceResult } =
+      await backendApi.transactionsGateway.balance(
+        selectedAccount.accountNumber
+      )
+    const formattedBalance = parseFloat(balanceResult).toFixed(2)
+    const balance = parseFloat(formattedBalance) + 500000
+
+    if (amount > balance) {
+      Alert.alert('Error', 'Saldo insuficiente para realizar la transferencia.')
+      return
+    }
+
+    setIsLoading(true)
+
     const transactionData = {
-      accountNumber: selectedContact.accountNumber,
+      accountNumberOrigin: selectedAccount.accountNumber,
+      accountNumberDestination: selectedContact.accountNumber,
       name: 'Transferencia',
       description: 'Transferencia',
-      amount: -Math.abs(parseFloat(localAmount)),
-      currency: 'USD',
-      status: 'Paid',
+      amountOrigin: amount,
+      amountDestination: amount,
+      currencyOrigin: selectedAccount.accountType,
+      currencyDestination: selectedContact.accountType,
+      status: 'pending',
       date: new Date().toISOString(),
     }
 
     try {
-      const response =
-        await backendApi.transactionsGateway.createTransaction(transactionData)
+      const response = await backendApi.transactionsGateway.createTransaction(
+        transactionData,
+        'Transfer'
+      )
+
+      setIsLoading(false)
       if (response.statusCode === 200 || response.statusCode === 201) {
         Alert.alert('Éxito', 'La transferencia ha sido realizada exitosamente.')
-        // Limpieza o acciones post-transacción
         setLocalAmount('')
         setSelectedContact(null)
         navigation.replace('Home')
+      } else if (response.response.msg === 'Invalid Account') {
+        Alert.alert('Error', 'La cuenta no existe.')
       } else {
-        // Manejo de otros códigos de estado HTTP
         Alert.alert('Error', 'No se pudo realizar la transferencia.')
       }
     } catch (error) {
+      setIsLoading(false)
       console.error('Error al crear la transacción:', error)
       Alert.alert(
         'Error',
@@ -407,7 +475,6 @@ const Transfer = () => {
   }
 
   const handleCancel = () => {
-    // Limpia los estados o navega a otra pantalla
     setSelectedContact(null)
     setLocalAmount('')
     navigation.replace('Home')
@@ -417,22 +484,17 @@ const Transfer = () => {
     <Block flex style={styles.home}>
       <ImageBackground source={Images.Background} style={styles.background}>
         <View style={{ width: width, ...styles.scrollViewContent }}>
-          {
-            <>
-              <ContactsCard />
-              <AmountInputCard />
+          <ContactsCard />
+          <AmountInputCard />
 
-              {/* Botones */}
-              <View style={styles.buttonContainer}>
-                <TouchableOpacity onPress={handleCancel} style={styles.button}>
-                  <Text style={styles.buttonText}>Cancelar</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={handleConfirm} style={styles.button}>
-                  <Text style={styles.buttonText}>Transferir</Text>
-                </TouchableOpacity>
-              </View>
-            </>
-          }
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity onPress={handleCancel} style={styles.button}>
+              <Text style={styles.buttonText}>Cancelar</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={handleConfirm} style={styles.button}>
+              <Text style={styles.buttonText}>Transferir</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </ImageBackground>
       <Modal
@@ -473,9 +535,16 @@ const Transfer = () => {
                 />
               }
             />
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <CheckBox value={isCheckingAccount} onValueChange={() => {}} />
-              <Text style={styles.description}>Checking Account</Text>
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={contactAccountType}
+                onValueChange={(itemValue) => setContactAccountType(itemValue)}
+                style={styles.picker}
+              >
+                <Picker.Item label="XCoin" value="XCoin" />
+                <Picker.Item label="Pesos" value="Pesos" />
+                <Picker.Item label="Dolares" value="Dolares" />
+              </Picker>
             </View>
             <View style={styles.modalButtonContainer}>
               <TouchableOpacity
@@ -488,10 +557,8 @@ const Transfer = () => {
                 style={[styles.modalButton, styles.buttonAdd]}
                 onPress={() => {
                   if (editingContact) {
-                    // Lógica para editar contacto
                     handleEditContactFinal()
                   } else {
-                    // Lógica para agregar nuevo contacto
                     handleAddContact()
                   }
                 }}
@@ -504,6 +571,7 @@ const Transfer = () => {
           </View>
         </View>
       </Modal>
+      <LoadingScreen visible={isLoading} />
     </Block>
   )
 }
@@ -663,15 +731,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   deselectButtonStyle: {
-    backgroundColor: walletTheme.COLORS.VIOLET, // o cualquier color que prefieras
+    backgroundColor: walletTheme.COLORS.VIOLET,
     padding: 10,
     borderRadius: 5,
-    marginTop: 10, // Ajusta el margen según necesites
-    alignItems: 'center', // Centra el texto en el botón
+    marginTop: 10,
+    alignItems: 'center',
   },
   deselectButtonText: {
-    color: 'white', // Color del texto
-    fontWeight: 'bold', // Negrita para el texto
+    color: 'white',
+    fontWeight: 'bold',
   },
   buttonContainer: {
     flexDirection: 'row',
@@ -689,6 +757,23 @@ const styles = StyleSheet.create({
     color: walletTheme.COLORS.BLACK,
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  pickerContainer: {
+    borderWidth: 1,
+    borderColor: walletTheme.COLORS.BORDER,
+    borderRadius: 4,
+    backgroundColor: '#FFFFFF',
+    marginVertical: 10,
+  },
+  picker: {
+    width: '100%',
+    height: 44,
+  },
+  noContactsText: {
+    textAlign: 'center',
+    color: theme.COLORS.MUTED,
+    fontSize: 16,
+    marginVertical: 20,
   },
 })
 

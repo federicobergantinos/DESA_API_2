@@ -1,89 +1,185 @@
 const { createUser, findUserByEmail } = require('../services/userService')
-const { createAccount } = require('../services/accountService')
+const {
+  createAccount,
+  getAvailableMetamaskAccountsService,
+  markMetamaskAccountAsUsedService,
+} = require('../services/accountService')
+const { createMissionsForUser } = require('../services/missionService')
 const {
   createAuthTokens,
   loginUser,
   refreshToken,
   deleteCredentials,
 } = require('../services/authService')
+const { sendMessageToSNS } = require('../utils/snsSender')
 const { verify } = require('jsonwebtoken')
 const Unauthorized = require('../Errors/Unauthorized')
 const { sendResponse } = require('../configurations/utils.js')
 const createLogger = require('../configurations/Logger')
+const { isEmailInWhitelist } = require('../services/whitelistService') // Importar la función
 const logger = createLogger(__filename)
+const sequelize = require('../configurations/database/sequelizeConnection')
 const { v4: uuidv4 } = require('uuid')
 
 const authenticate = async (req, res) => {
+  const transaction = await sequelize.transaction()
   try {
-    logger.info('Starting processing request.')
     const googleToken = req.body.token
     const registerUser = req.body.registerUser
     const accountInfo = req.body.accountInfo
+    const email = req.body.email
     const accessToken = req.headers['authorization']
+    let additionalData = req.body.additionalData || {}
 
     let user = null
     let tokens = null
+    let bypass = false
+
+    // Check if the email is in the whitelist
+    if (await isEmailInWhitelist(email)) {
+      bypass = true
+    }
 
     if (googleToken !== null) {
       const userData = await loginUser(googleToken, accessToken)
-      user = await findUserByEmail(userData.email)
-      if (registerUser === true && accountInfo !== null) {
-        user = await createUser(userData)
 
-        const accountData = {
-          beneficiaryName: userData.name + ' ' + userData.surname,
-          beneficiaryAddress: accountInfo.beneficiaryAddress,
-          accountNumber: uuidv4(),
-          accountType: accountInfo.accountType,
-          userId: user.id,
+      if (email !== null || email !== undefined) {
+        userData.email = email
+      }
+      user = await findUserByEmail(userData.email)
+
+      if (registerUser === true || (bypass === true && user === null)) {
+        // Obtener cuentas de Metamask disponibles
+        const availableMetamaskAccounts =
+          await getAvailableMetamaskAccountsService()
+        if (availableMetamaskAccounts.length < 1) {
+          await transaction.rollback()
+          return sendResponse(res, 400, {
+            msg: 'No hay suficientes cuentas de Metamask disponibles para XCoin',
+          })
         }
-        account = await createAccount(accountData)
+
+        // Tomar la primera cuenta disponible para XCoin
+        const metamaskAccount = availableMetamaskAccounts[0]
+
+        // Primero, crea el usuario
+        user = await createUser(userData, { transaction })
+
+        // Crear las cuentas utilizando UUID para Pesos y Dólares y cuenta de Metamask para XCoin
+        const accountDataList = [
+          {
+            beneficiaryName: userData.name + ' ' + userData.surname,
+            accountNumber: uuidv4(),
+            beneficiaryAddress: '',
+            accountType: 'Pesos',
+            accountCurrency: 'ARS',
+            accountStatus: 'pending',
+            userId: user.id,
+          },
+          {
+            beneficiaryName: userData.name + ' ' + userData.surname,
+            accountNumber: uuidv4(),
+            beneficiaryAddress: '',
+            accountType: 'Dólares',
+            accountCurrency: 'USD',
+            accountStatus: 'pending',
+            userId: user.id,
+          },
+          {
+            beneficiaryName: userData.name + ' ' + userData.surname,
+            accountNumber: metamaskAccount.accountNumber,
+            beneficiaryAddress: '',
+            accountType: 'XCoin',
+            accountCurrency: 'XCN',
+            accountStatus: 'pending',
+            userId: user.id,
+          },
+        ]
+
+        // Crear las cuentas y marcar la cuenta de Metamask como usada
+        await Promise.all(
+          accountDataList.map((accountData) =>
+            createAccount(accountData, { transaction })
+          )
+        )
+        await markMetamaskAccountAsUsedService(metamaskAccount.accountNumber, {
+          transaction,
+        })
+
+        await createMissionsForUser(user.id) // Crear misiones para el usuario
+
+        if (bypass === true) {
+          additionalData.immovables = '>2'
+          additionalData.hasTesla = 'yes'
+          additionalData.employmentSituation = 'employee'
+          additionalData.monthlyIncome = '>1000'
+          additionalData.pictureSelfie =
+            'https://wallet-desa-api-2.s3.amazonaws.com/rekognition/1718672575975_selfie.jpeg'
+          additionalData.pictureIdPassport =
+            'https://wallet-desa-api-2.s3.amazonaws.com/rekognition/1718672577434_id_passport.jpeg'
+        }
+
+        // Crear el payload para SNS
+        const payload = {
+          operationType: 'CreateUser',
+          data: {
+            immovables: additionalData.immovables,
+            hasTesla: additionalData.hasTesla,
+            employmentSituation: additionalData.employmentSituation,
+            monthlyIncome: additionalData.monthlyIncome,
+            pictureSelfie: additionalData.pictureSelfie,
+            pictureIdPassport: additionalData.pictureIdPassport,
+            firstName: userData.name,
+            lastName: userData.surname,
+            email: userData.email,
+          },
+        }
+        // Enviar mensaje a SNS
+        await sendMessageToSNS(payload)
       }
     } else if (accessToken !== null) {
       const decode = verify(accessToken, process.env.CODE, (err, decoded) => {
         if (err) {
-          logger.error('ERROR', err)
+          console.error('ERROR', err)
           throw new Unauthorized('Invalid credentials')
         } else {
           return decoded
         }
       })
+      if (email !== null || email !== undefined) {
+        userData.email = email
+      }
+
       const userData = await findUserByEmail(decode.email)
       if (userData !== null) {
         user = userData.dataValues
       }
     } else {
+      await transaction.rollback()
       return sendResponse(res, 400, { msg: 'invalid credentials' })
     }
 
     if (user === null) {
-      // Si el usuario no existe, devuelve un código de estado 301 (redirección)
+      await transaction.rollback()
       return sendResponse(res, 301, {
         msg: 'User needs to complete registration',
       })
-    } else if (user !== null) {
-      // Si el usuario existe, genera los tokens y devuelve la respuesta con código 200
+    } else {
       tokens = createAuthTokens(user)
-      if (registerUser) {
-        statusCode = 201
-      } else {
-        statusCode = 200
-      }
+      const statusCode = registerUser ? 201 : 200
       logger.info(statusCode)
+      await transaction.commit()
       return sendResponse(res, statusCode, {
         id: user.id,
         accessToken: tokens.accessToken,
         refreshToken: tokens.refreshToken,
       })
-    } else {
-      return sendResponse(res, 500, {
-        msg: 'Internal error',
-      })
     }
   } catch (error) {
-    logger.error(`${error}`)
+    await transaction.rollback()
+    console.error(`${error}`)
     return sendResponse(res, error.code || 500, {
-      msg: error.message || 'An exception has ocurred',
+      msg: error.message || 'An exception has occurred',
     })
   }
 }
@@ -102,9 +198,9 @@ const refresh = async (req, res) => {
       refreshToken: tokens.refreshToken,
     })
   } catch (error) {
-    logger.error(` ${error}`)
+    console.error(` ${error}`)
     return sendResponse(res, error.code || 500, {
-      msg: error.message || 'An exception has ocurred',
+      msg: error.message || 'An exception has occurred',
     })
   }
 }
@@ -115,9 +211,9 @@ const deleteCredential = async (req, res) => {
     deleteCredentials(accessToken)
     return res.status(204).send()
   } catch (error) {
-    logger.error(` ${error}`)
+    console.error(` ${error}`)
     return sendResponse(res, error.code || 500, {
-      msg: error.message || 'An exception has ocurred',
+      msg: 'An exception has occurred',
     })
   }
 }

@@ -41,10 +41,10 @@ Resources:
               Value: us-east-1
             - Name: AWS_REGION
               Value: us-east-1
-            - Name: CORE_BANCARIO_QUEUE_URL
-              Value: https://sqs.us-east-1.amazonaws.com/877306037129/core_bancario_queue
-            - Name: CRYPTO_QUEUE_URL
-              Value: https://sqs.us-east-1.amazonaws.com/877306037129/crypto_queue
+            - Name: SNS_TOPIC_ARN
+              Value: arn:aws:sns:us-east-1:877306037129:wallet_topic
+            - Name: WALLET_QUEUE_URL
+              Value: https://sqs.us-east-1.amazonaws.com/877306037129/wallet_service_queue
           LogConfiguration:
             LogDriver: awslogs
             Options:

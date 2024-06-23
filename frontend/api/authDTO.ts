@@ -5,6 +5,7 @@ export interface AccountInfo {
 
 export interface CreateAuthDTO {
   token: string;
+  email: string;
   registerUser?: boolean;
   accountInfo?: AccountInfo; 
 }

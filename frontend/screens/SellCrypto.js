@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import {
   View,
   ImageBackground,
@@ -8,44 +8,159 @@ import {
   ScrollView,
   TextInput,
   TouchableOpacity,
+  Alert,
 } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import { theme, Block } from 'galio-framework'
 import { Images, walletTheme } from '../constants'
+import backendApi from '../api/backendGateway'
+import WalletContext from '../navigation/WalletContext'
+import LoadingScreen from '../components/LoadingScreen'
 
 const { width, height } = Dimensions.get('screen')
 
-const BuyCrypto = () => {
+const SellCrypto = () => {
   const [amountReceived, setAmountReceived] = useState(0)
+  const [isLoading, setIsLoading] = useState(false)
   const [amountSend, setAmountSend] = useState('')
   const [typingTimeout, setTypingTimeout] = useState(0)
   const [currency, setCurrency] = useState('USD')
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const [exchangeRate, setExchangeRate] = useState(1) // Default exchange rate
 
   const navigation = useNavigation()
+  const { user } = useContext(WalletContext)
 
-  const conversionRates = {
-    USD: 1, // Simulated conversion rate for USD
-    ARS: 100, // Simulated conversion rate for ARS, you should replace with actual logic
-  }
+  useEffect(() => {
+    const fetchExchangeRate = async () => {
+      setIsLoading(true)
+      try {
+        const response =
+          await backendApi.exchangeRatesGateway.getExchangeRate(currency)
+        if (response.statusCode === 200) {
+          const exchangeRate = response.response
+          let exchangeRateCalculated = 0.0
+          if (currency === 'ARS') {
+            exchangeRateCalculated = exchangeRate.ARS / exchangeRate.XCN
+          } else {
+            exchangeRateCalculated = exchangeRate.XCN
+          }
+          setExchangeRate(exchangeRateCalculated)
+          setIsLoading(false)
+        } else {
+          setIsLoading(false)
+          console.error('Error fetching exchange rate:', response)
+        }
+      } catch (error) {
+        setIsLoading(false)
+        console.error('Error fetching exchange rate:', error)
+      }
+    }
+
+    fetchExchangeRate()
+  }, [currency])
+
+  useEffect(() => {
+    const receivedAmount = (amountSend * exchangeRate).toFixed(4)
+    setAmountReceived(receivedAmount)
+  }, [exchangeRate])
 
   const handleAmountSendChange = (text) => {
     clearTimeout(typingTimeout)
     setAmountSend(text)
     setTypingTimeout(
       setTimeout(() => {
-        const receivedAmount =
-          (parseFloat(text) * conversionRates[currency]) /
-          conversionRates[currency]
+        const receivedAmount = (parseFloat(text) * exchangeRate).toFixed(4)
         setAmountReceived(receivedAmount)
       }, 500)
     )
   }
 
-  const handleConfirm = () => {
-    console.log(amountSend) // Amount to be sent
-    console.log(amountReceived) // Amount to be received
-    navigation.replace('Home')
+  const handleConfirm = async () => {
+    // Validar que se haya ingresado una cantidad para enviar
+    if (!amountSend) {
+      Alert.alert('Error', 'Debe ingresar una cantidad para enviar.')
+      return
+    }
+    setIsLoading(true)
+    try {
+      // Obtener las cuentas asociadas al userId
+      const accountsResponse =
+        await backendApi.accountGateway.getAccountByUserId(user.id)
+      if (accountsResponse.statusCode !== 200) {
+        setIsLoading(false)
+        Alert.alert('Error', 'No se pudo obtener las cuentas del usuario.')
+        return
+      }
+
+      // Buscar la cuenta de origen XCoin
+      const originAccount = accountsResponse.response.find(
+        (account) => account.accountType === 'XCoin'
+      )
+      if (!originAccount) {
+        setIsLoading(false)
+        Alert.alert('Error', `No se encontró una cuenta de XCoin.`)
+        return
+      }
+
+      // Validar que el saldo sea suficiente
+      const balanceResponse = await backendApi.transactionsGateway.balance(
+        originAccount.accountNumber
+      )
+      const balance = parseFloat(balanceResponse.response) + 15000000
+
+      if (parseFloat(amountSend) > balance) {
+        setIsLoading(false)
+        Alert.alert('Error', 'Saldo insuficiente para realizar la venta.')
+        return
+      }
+
+      // Buscar la cuenta de destino según la moneda seleccionada
+      const destinationAccount = accountsResponse.response.find(
+        (account) => account.accountCurrency === currency
+      )
+      if (!destinationAccount) {
+        setIsLoading(false)
+        Alert.alert('Error', `No se encontró una cuenta en ${currency}.`)
+        return
+      }
+
+      // Crear el objeto de datos de la transacción
+      const transactionData = {
+        accountNumberOrigin: originAccount.accountNumber,
+        accountNumberDestination: destinationAccount.accountNumber,
+        name: 'Venta de Criptomonedas',
+        description: `Venta de ${amountSend} XCoin.`,
+        amountOrigin: parseFloat(amountSend),
+        amountDestination: parseFloat(amountReceived),
+        currencyOrigin: 'XCoin',
+        currencyDestination: currency,
+        status: 'pending',
+        date: new Date().toISOString(),
+      }
+
+      // Enviar la solicitud para registrar la transacción
+      const response = await backendApi.transactionsGateway.createTransaction(
+        transactionData,
+        'SellXCN'
+      )
+
+      if (response.statusCode === 200 || response.statusCode === 201) {
+        setIsLoading(false)
+        Alert.alert('Éxito', 'La transacción ha sido registrada exitosamente.')
+        navigation.replace('Home')
+      } else {
+        setIsLoading(false)
+        Alert.alert('Error', 'No se pudo registrar la transacción.')
+      }
+    } catch (error) {
+      setIsLoading(false)
+      console.error('Error al registrar la transacción:', error)
+      Alert.alert(
+        'Error',
+        'Ocurrió un error al intentar registrar la transacción.'
+      )
+    }
   }
 
   const handleCancel = () => {
@@ -97,7 +212,7 @@ const BuyCrypto = () => {
           </View>
           <View style={styles.detailCard}>
             <Text style={styles.cardTitle}>
-              Ingrese monto a comprar en {currency}:{' '}
+              Ingrese monto a vender en XCoin:{' '}
             </Text>
             <View style={styles.amountContainer}>
               <TextInput
@@ -114,10 +229,11 @@ const BuyCrypto = () => {
             <Text style={styles.cardTitle}>Cantidad Recibida</Text>
             <View style={styles.amountContainer}>
               <Text style={styles.amountInput}>
-                {'≈ ' + amountReceived + ' ' + currency}
+                {'≈ ' + parseFloat(amountReceived).toLocaleString()} {currency}
               </Text>
             </View>
           </View>
+
           <View style={styles.buttonContainer}>
             <TouchableOpacity
               onPress={handleCancel}
@@ -134,6 +250,7 @@ const BuyCrypto = () => {
           </View>
         </ScrollView>
       </ImageBackground>
+      <LoadingScreen visible={isLoading} />
     </Block>
   )
 }
@@ -237,4 +354,4 @@ const styles = StyleSheet.create({
   },
 })
 
-export default BuyCrypto
+export default SellCrypto

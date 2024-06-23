@@ -17,14 +17,14 @@ const create = async (req, res) => {
     const contactData = {
       ...req.body,
     }
-    const contactId = await createContact(contactData)
+    const contact = await createContact(contactData)
 
     return sendResponse(res, 201, {
-      contactId: contactId,
+      contact: contact,
       message: 'The contact was succefully created',
     })
   } catch (error) {
-    logger.error(`Error to create the contact: ${error}`)
+    console.error(`Error to create the contact: ${error}`)
     return sendResponse(res, error.code || 500, {
       msg: error.message || 'An exception has occurred',
     })
@@ -42,7 +42,7 @@ const getAll = async (req, res) => {
 
     return sendResponse(res, 200, response)
   } catch (error) {
-    logger.error(` ${error}`)
+    console.error(` ${error}`)
     return sendResponse(res, error.code || 500, {
       msg: error.message || 'An exception has occurred',
     })
@@ -65,7 +65,7 @@ const searchAll = async (req, res) => {
     })
     return sendResponse(res, 200, { contact })
   } catch (error) {
-    logger.error(`searchContact: ${error}`)
+    console.error(`searchContact: ${error}`)
     return sendResponse(res, error.code || 500, {
       msg: error.message || 'An exception has occurred',
     })
@@ -77,7 +77,6 @@ const getById = async (req, res) => {
     const contactId = req.params.contactId
     const response = await getContact(contactId)
     const contact = response.dataValues
-    console.log(response)
     console.log(contact)
 
     return sendResponse(res, 200, {
@@ -88,7 +87,7 @@ const getById = async (req, res) => {
       userId: contact.userId,
     })
   } catch (error) {
-    logger.error(` ${error}`)
+    console.error(` ${error}`)
     return sendResponse(res, error.code || 500, {
       msg: error.message || 'An exception has occurred',
     })
@@ -107,7 +106,7 @@ const update = async (req, res) => {
       message: 'The contact was succefully updated',
     })
   } catch (error) {
-    logger.error(`Error to update the contact: ${error}`)
+    console.error(`Error to update the contact: ${error}`)
     return sendResponse(res, error.code || 500, {
       msg: error.message || 'An exception has occurred',
     })
@@ -121,7 +120,7 @@ const deleteContact = async (req, res) => {
 
     return sendResponse(res, 204, {})
   } catch (error) {
-    logger.error(`Error to delete the contact: ${error}`)
+    console.error(`Error to delete the contact: ${error}`)
     return sendResponse(res, error.code || 500, {
       msg: error.message || 'Error to update the contact.',
     })

@@ -27,6 +27,11 @@ const User = sequelize.define('users', {
     allowNull: false,
     unique: false,
   },
+  userStatus: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    defaultValue: 'pending',
+  },
 })
 
 module.exports = User

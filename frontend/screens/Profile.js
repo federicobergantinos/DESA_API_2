@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import {
   View,
   ImageBackground,
@@ -13,11 +13,14 @@ import { Images, walletTheme } from '../constants'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { GoogleSignin } from '@react-native-google-signin/google-signin'
 import backendGateway from '../api/backendGateway'
+import WalletContext from '../navigation/WalletContext'
 import Icon from 'react-native-vector-icons/FontAwesome' // Importa el ícono que necesitas
 
 const { width, height } = Dimensions.get('screen')
 
 const ConfiguracionGeneral = ({ navigation }) => {
+  const { user } = useContext(WalletContext)
+
   // Creating separate cards for each detail
   const Card = ({ title, iconName, iconColor, onPress }) => (
     <TouchableOpacity style={styles.detailCard} onPress={onPress}>
@@ -29,13 +32,26 @@ const ConfiguracionGeneral = ({ navigation }) => {
   const logOut = async () => {
     await AsyncStorage.clear()
     await GoogleSignin.signOut()
-    navigation.navigate('Login')
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'Login' }],
+    })
   }
 
   const deleteAccount = async () => {
-    await AsyncStorage.clear()
-    // await backendGateway.authUser.deleteCredential()
-    navigation.navigate('Login')
+    try {
+      const userId = user.id
+      const response = await backendGateway.usersGateway.deleteUser(userId)
+      if (response.statusCode === 200) {
+        await AsyncStorage.clear()
+        await GoogleSignin.signOut()
+        navigation.navigate('Login')
+      } else {
+        console.error('Failed to delete account:', response.response)
+      }
+    } catch (error) {
+      console.error('Error deleting account:', error)
+    }
   }
 
   return (
@@ -59,16 +75,16 @@ const ConfiguracionGeneral = ({ navigation }) => {
             onPress={() => navigation.navigate('FAQs')}
           />
           <Card
-            title="Sign Out"
+            title="Salir"
             iconName="sign-out"
             iconColor={theme.COLORS.WARNING}
             onPress={() => logOut()}
           />
           <Card
-            title="Desactivate Account"
+            title="Eliminar cuenta"
             iconName="trash"
             iconColor={theme.COLORS.PRIMARY}
-            onPress={() => logOut()}
+            onPress={() => deleteAccount()}
           />
         </ScrollView>
       </ImageBackground>

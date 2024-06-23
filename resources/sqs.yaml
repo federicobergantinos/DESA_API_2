@@ -1,84 +1,36 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: Template para crear colas de SQS en AWS con acceso público
+Description: Template para crear colas de SQS en AWS con acceso controlado y suscripciones a SNS
 
 Resources:
-  CoreBancarioQueue:
-    Type: AWS::SQS::Queue
+  MySNSTopic:
+    Type: AWS::SNS::Topic
     Properties:
-      QueueName: core_bancario_queue
-      VisibilityTimeout: 30
+      TopicName: wallet_topic
 
-  CryptoQueue:
-    Type: AWS::SQS::Queue
+  MySNSTopicPolicy:
+    Type: AWS::SNS::TopicPolicy
     Properties:
-      QueueName: crypto_queue
-      VisibilityTimeout: 30
-
-  InHouseQueue:
-    Type: AWS::SQS::Queue
-    Properties:
-      QueueName: inhouse_queue
-      VisibilityTimeout: 30
+      Topics:
+        - !Ref MySNSTopic
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal: "*"
+            Action: "SNS:Publish"
+            Resource: !Ref MySNSTopic
+          - Sid: "AllowEveryoneToSuscribe"
+            Effect: Allow
+            Principal:
+              AWS: "*"
+            Action: "SNS:Subscribe"
+            Resource: "arn:aws:sns:us-east-1:877306037129:wallet_topic"
 
   WalletServiceQueue:
     Type: AWS::SQS::Queue
     Properties:
       QueueName: wallet_service_queue
-      VisibilityTimeout: 30
-
-  CoreBancarioQueuePolicy:
-    Type: AWS::SQS::QueuePolicy
-    Properties:
-      Queues:
-        - !Ref CoreBancarioQueue
-      PolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal: "*"
-            Action:
-              - "SQS:SendMessage"
-              - "SQS:ReceiveMessage"
-              - "SQS:DeleteMessage"
-              - "SQS:GetQueueUrl"
-              - "SQS:GetQueueAttributes"
-            Resource: !GetAtt CoreBancarioQueue.Arn
-
-  CryptoQueuePolicy:
-    Type: AWS::SQS::QueuePolicy
-    Properties:
-      Queues:
-        - !Ref CryptoQueue
-      PolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal: "*"
-            Action:
-              - "SQS:SendMessage"
-              - "SQS:ReceiveMessage"
-              - "SQS:DeleteMessage"
-              - "SQS:GetQueueUrl"
-              - "SQS:GetQueueAttributes"
-            Resource: !GetAtt CryptoQueue.Arn
-
-  InHouseQueuePolicy:
-    Type: AWS::SQS::QueuePolicy
-    Properties:
-      Queues:
-        - !Ref InHouseQueue
-      PolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal: "*"
-            Action:
-              - "SQS:SendMessage"
-              - "SQS:ReceiveMessage"
-              - "SQS:DeleteMessage"
-              - "SQS:GetQueueUrl"
-              - "SQS:GetQueueAttributes"
-            Resource: !GetAtt InHouseQueue.Arn
+      VisibilityTimeout: 0
 
   WalletServiceQueuePolicy:
     Type: AWS::SQS::QueuePolicy
@@ -97,20 +49,35 @@ Resources:
               - "SQS:GetQueueUrl"
               - "SQS:GetQueueAttributes"
             Resource: !GetAtt WalletServiceQueue.Arn
+          - Sid: "topic-subscription-arn:aws:sns:us-east-1:232171128702:CoreSNSTopic"
+            Effect: Allow
+            Principal:
+              AWS: "*"
+            Action: "SQS:SendMessage"
+            Resource: !GetAtt WalletServiceQueue.Arn
+            Condition:
+              ArnLike:
+                aws:SourceArn: "arn:aws:sns:us-east-1:232171128702:CoreSNSTopic"
+          - Sid: "topic-subscription-arn:aws:sns:us-east-1:696571260279:uade-inhouse"
+            Effect: Allow
+            Principal:
+              AWS: "*"
+            Action: "SQS:SendMessage"
+            Resource: !GetAtt WalletServiceQueue.Arn
+            Condition:
+              ArnLike:
+                aws:SourceArn: "arn:aws:sns:us-east-1:696571260279:uade-inhouse"
+          - Sid: "topic-subscription-arn:aws:sns:us-east-1:268120344536:criptosnstopic"
+            Effect: Allow
+            Principal:
+              AWS: "*"
+            Action: "SQS:SendMessage"
+            Resource: !GetAtt WalletServiceQueue.Arn
+            Condition:
+              ArnLike:
+                aws:SourceArn: "arn:aws:sns:us-east-1:268120344536:criptosnstopic"
 
 Outputs:
-  CoreBancarioQueueUrl:
-    Description: URL de la cola Core Bancario
-    Value: !Ref CoreBancarioQueue
-
-  CryptoQueueUrl:
-    Description: URL de la cola Crypto
-    Value: !Ref CryptoQueue
-
-  InHouseQueueUrl:
-    Description: URL de la cola Inhouse
-    Value: !Ref InHouseQueue
-
   WalletServiceQueueUrl:
     Description: URL de la cola Wallet Service
     Value: !Ref WalletServiceQueue

@@ -7,6 +7,10 @@ const Mission = sequelize.define('missions', {
     primaryKey: true,
     autoIncrement: true,
   },
+  key: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
   title: {
     type: DataTypes.STRING,
     allowNull: false,
@@ -20,6 +24,10 @@ const Mission = sequelize.define('missions', {
     allowNull: false,
   },
   claimed: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+  },
+  fulfilled: {
     type: DataTypes.BOOLEAN,
     allowNull: false,
   },
