@@ -5,7 +5,7 @@ const createLogger = require('../../Logger')
 const logger = createLogger(__filename)
 
 const populateWhitelist = async () => {
-  const whitelistData = [{ email: 'whitelist@gmail.com' }]
+  const whitelistData = [{ email: 'xwallet.company@gmail.com' }]
 
   try {
     for (const entry of whitelistData) {

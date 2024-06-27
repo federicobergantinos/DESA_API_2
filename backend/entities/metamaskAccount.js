@@ -22,7 +22,7 @@ const MetamaskAccount = sequelize.define('metamask_accounts', {
   },
   used: {
     type: DataTypes.BOOLEAN,
-    allowNull: false,
+    allowNull: true,
     defaultValue: false,
   },
 });
