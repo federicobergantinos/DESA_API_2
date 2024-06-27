@@ -88,18 +88,22 @@ const getTransaction = async (transactionId) => {
 
 const updateTransactionStatus = async (transactionId, status) => {
   try {
-    const transaction = await Transaction.findOne({ where: { transactionId } })
+    // Actualizar el estado de todas las transacciones que coincidan con el transactionId
+    const [affectedRows] = await Transaction.update(
+      { status },
+      { where: { transactionId } }
+    );
 
-    if (!transaction) {
-      throw new Error('Transaction not found')
+    if (affectedRows === 0) {
+      throw new Error('No transactions found with the given transactionId');
     }
 
-    transaction.status = status
-    await transaction.save()
+    logger.info(`Updated status of ${affectedRows} transactions to ${status}`);
   } catch (error) {
-    throw error
+    logger.error(`Error updating transaction status: ${error.message}`);
+    throw error;
   }
-}
+};
 
 module.exports = {
   createTransaction,

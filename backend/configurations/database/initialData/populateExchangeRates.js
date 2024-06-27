@@ -7,7 +7,7 @@ const populateExchangeRates = async () => {
   const exchangeRatesData = [
     { currency: 'USD', rate: 1 }, // USD to USD
     { currency: 'ARS', rate: 0.01 }, // Ejemplo: 1 ARS = 0.01 USD
-    { currency: 'XCN', rate: 0.1 }, // Ejemplo: 1 XCN = 0.1 USD
+    { currency: 'XCN', rate: 1 }, // Ejemplo: 1 XCN = 1 USD
   ]
 
   try {

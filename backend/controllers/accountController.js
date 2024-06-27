@@ -2,6 +2,7 @@ const {
   createAccount,
   findAccountByUserId,
   findAccountById,
+  findAccountByEmail,
   deleteAccountById,
   getAvailableMetamaskAccountsService,
   markMetamaskAccountAsUsedService,
@@ -110,6 +111,19 @@ const markMetamaskAccountAsUsed = async (req, res) => {
   }
 }
 
+const getAccountNumberByEmail = async (req, res) => {
+  try {
+    const email = req.params.email;
+    const accountNumber = await findAccountByEmail(email);
+    return sendResponse(res, 200, { accountNumber });
+  } catch (error) {
+    console.error(`Error fetching account number: ${error}`);
+    return sendResponse(res, error.code || 500, {
+      msg: error.message || 'An exception has occurred',
+    });
+  }
+};
+
 module.exports = {
   create,
   getById,
@@ -117,4 +131,5 @@ module.exports = {
   deleteAccount,
   getAvailableMetamaskAccounts,
   markMetamaskAccountAsUsed,
+  getAccountNumberByEmail,
 }
