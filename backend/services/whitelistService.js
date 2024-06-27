@@ -1,3 +1,4 @@
+// services/whitelistService.js
 const Whitelist = require('../entities/whitelist')
 
 const isEmailInWhitelist = async (email) => {
