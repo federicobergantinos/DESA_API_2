@@ -24,11 +24,9 @@ const MissionsStore = () => {
   useEffect(() => {
     const fetchUserTokenBalance = async () => {
       try {
-        console.log(user.id)
         const response = await backendApi.userTokensGateway.getUserTokenBalance(
           user.id
         )
-        console.log(response)
         setUserTokens(response.response.balance)
       } catch (error) {
         console.error('Error fetching user token balance:', error)
@@ -85,7 +83,7 @@ const MissionsStore = () => {
 
               const transactionData = {
                 accountNumberOrigin:
-                  '0xbCF5801F122E7645F39bDd38Ce9253e208b7f0a8',
+                  '0x8A0da10861c24A818B600F971a983432044bBcfd',
                 accountNumberDestination: xCoinAccount.accountNumber,
                 name: `Intercambiando ${xwc} XWC por ${xcoin} XCN`,
                 description: `Intercambiando ${xwc} XWC por ${xcoin} XCN`,
@@ -98,7 +96,7 @@ const MissionsStore = () => {
               }
               await backendApi.transactionsGateway.createTransaction(
                 transactionData,
-                'BuyXCN'
+                'Transfer'
               )
               console.log(`Intercambiando ${xwc} XWC por ${xcoin} XCN`)
             } catch (error) {

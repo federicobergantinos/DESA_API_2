@@ -47,6 +47,7 @@ const create = async (req, res) => {
           currencyDestination: transactionData.currencyOrigin,
           amountOrigin: -Math.abs(transactionData.amountOrigin), // Asegurar que el monto es negativo
           amountDestination: -Math.abs(transactionData.amountOrigin), // Asegurar que el monto es negativo
+          status: "confirmed"
         };
         await createTransaction(transactionBuyXCN);
         transactionBuyXCN = {
@@ -57,6 +58,7 @@ const create = async (req, res) => {
           currencyDestination: transactionData.currencyOrigin,
           amountOrigin: Math.abs(transactionData.amountOrigin), // Asegurar que el monto es positivo
           amountDestination: Math.abs(transactionData.amountOrigin), // Asegurar que el monto es positivo
+          status: "confirmed"
         };
         await createTransaction(transactionBuyXCN);
 
@@ -94,6 +96,7 @@ const create = async (req, res) => {
           currencyDestination: transactionData.currencyDestination,
           amountOrigin: -Math.abs(transactionData.amountOrigin), // Asegurar que el monto es negativo
           amountDestination: -Math.abs(transactionData.amountOrigin), // Asegurar que el monto es negativo
+          status: "confirmed"
         };
         await createTransaction(transactionSellXCN);
         transactionSellXCN = {
@@ -104,6 +107,7 @@ const create = async (req, res) => {
           currencyDestination: transactionData.currencyDestination,
           amountOrigin: Math.abs(transactionData.amountOrigin), // Asegurar que el monto es positivo
           amountDestination: Math.abs(transactionData.amountOrigin), // Asegurar que el monto es positivo
+          status: "confirmed"
         };
         await createTransaction(transactionSellXCN);
 
@@ -141,7 +145,6 @@ const create = async (req, res) => {
           amountOrigin: Math.abs(transactionData.amountDestination), // Asegurar que el monto es positivo
           amountDestination: Math.abs(transactionData.amountOrigin), // Asegurar que el monto es positivo
         };
-        console.log(transactionEmitXCN)
         await createTransaction(transactionEmitXCN);
         payloadData = transactionEmitXCN;
         break;
@@ -152,6 +155,9 @@ const create = async (req, res) => {
           ...transactionData,
           amountOrigin: -Math.abs(transactionData.amountOrigin), // Asegurar que el monto es negativo
           amountDestination: -Math.abs(transactionData.amountDestination), // Asegurar que el monto es negativo
+          status: transactionData.currencyOrigin === "USD" || transactionData.currencyOrigin === "ARS" 
+              ? "confirmed" 
+              : transactionData.status
         };
         await createTransaction(transactionTransfer);
         payloadData = transactionTransfer;
@@ -164,6 +170,9 @@ const create = async (req, res) => {
           currencyDestination: transactionData.currencyOrigin,
           amountOrigin: Math.abs(transactionData.amountDestination), // Asegurar que el monto es positivo
           amountDestination: Math.abs(transactionData.amountOrigin), // Asegurar que el monto es positivo
+          status: transactionData.currencyOrigin === "USD" || transactionData.currencyOrigin === "ARS" 
+              ? "confirmed" 
+              : transactionData.status
         };
         await createTransaction(transactionTransfer);
         break;
@@ -181,14 +190,17 @@ const create = async (req, res) => {
           payloadData.accountNumberOrigin
         );
         // Transferir gas desde la cuenta principal a la cuenta de origen si es necesario
-        const gasAmount = await estimateGasForOperations(5); // Estima el gas para 5 operacion
-        // await transferGasToAccount(payloadData.accountNumberOrigin, gasAmount);
+        const gasAmount = await estimateGasForOperations(3); // Estima el gas para 5 operacion
+        await transferGasToAccount(payloadData.accountNumberOrigin, gasAmount);
       }
       if (payloadData.currencyDestination === 'XCoin') {
         accountNumberDestinationKey = await findMetamaskAccountByAccountNumber(
           payloadData.accountNumberDestination
         );
       }
+      const amountOrigin = shouldApplyAbs ? Math.abs(payloadData.amountOrigin) : payloadData.amountOrigin;
+      const amountDestination = shouldApplyAbs ? Math.abs(payloadData.amountDestination) : payloadData.amountDestination;
+
       const payload = {
         operationType: operationType,
         data: {
@@ -199,17 +211,17 @@ const create = async (req, res) => {
           transactionId: payloadData.transactionId,
           name: payloadData.name,
           description: payloadData.description,
-          amountOrigin: payloadData.amountOrigin,
-          amountDestination: payloadData.amountDestination,
+          amountOrigin: amountOrigin,
+          amountDestination: amountDestination,
           currencyOrigin: payloadData.currencyOrigin,
           currencyDestination: payloadData.currencyDestination,
           status: payloadData.status,
           date: payloadData.date,
         },
       };
-      console.log(payload)
+
       // Enviar mensaje a SNS
-      // await sendMessageToSNS(payload);
+      await sendMessageToSNS(payload);
     }
 
     return sendResponse(res, 201, {

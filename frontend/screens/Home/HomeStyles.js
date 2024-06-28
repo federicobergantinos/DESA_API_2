@@ -208,7 +208,7 @@ export default StyleSheet.create({
   benefitsContainer: {
     padding: theme.SIZES.BASE,
     marginHorizontal: theme.SIZES.BASE,
-    marginTop: 10,
+    marginTop: 20,
     borderRadius: 6,
     backgroundColor: theme.COLORS.WHITE,
     shadowColor: '#000',

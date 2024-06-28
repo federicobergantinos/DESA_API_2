@@ -62,7 +62,7 @@ const Transaction = () => {
 
   const renderStatus = (status) => {
     const icon =
-      status === 'Paid' ? (
+      status === 'confirmed' ? (
         <Icon
           name="checkcircle"
           family="AntDesign"
@@ -75,11 +75,11 @@ const Transaction = () => {
           name="closecircle"
           family="AntDesign"
           size={20}
-          color="red"
+          color="#FFC300"
           style={{ marginRight: 5, marginTop: 7 }}
         />
       )
-    const textStatus = status === 'Paid' ? 'Pagado' : 'Cancelado'
+    const textStatus = status === 'confirmed' ? 'Confirmada' : 'Pendiente'
 
     return (
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
