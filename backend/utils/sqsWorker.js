@@ -2,6 +2,7 @@ require('dotenv').config();
 const {
   updateUserAccountStatusByEmail,
   findUserByEmail,
+<<<<<<< HEAD
 } = require('../services/userService');
 const {
   createTransaction,
@@ -11,6 +12,17 @@ const AWS = require('aws-sdk');
 const { dbConnection } = require('../configurations/database/config');
 const createLogger = require('../configurations/Logger');
 const logger = createLogger(__filename);
+=======
+} = require('../services/userService')
+const {
+  createTransaction,
+} = require('../services/transactionService')
+const { updateTransactionStatus } = require('../services/transactionService')
+const AWS = require('aws-sdk')
+const { dbConnection } = require('../configurations/database/config')
+const createLogger = require('../configurations/Logger')
+const logger = createLogger(__filename)
+>>>>>>> 619e1ef (Unit tests)
 
 // Configurar AWS SDK
 AWS.config.update({ region: 'us-east-1' });
@@ -50,7 +62,12 @@ async function processMessage(queueUrl) {
       await Promise.all(
         data.Messages.map(async (message) => {
           try {
+<<<<<<< HEAD
             await handleMessage(message);
+=======
+            console.log(message)
+            await handleMessage(message)
+>>>>>>> 619e1ef (Unit tests)
 
             // Eliminar el mensaje después de procesarlo exitosamente
             await sqs
@@ -66,13 +83,29 @@ async function processMessage(queueUrl) {
             logger.debug(`Contenido del mensaje: ${message.Body}`);
 
             // Eliminar el mensaje si el error es debido a un JSON inválido
+<<<<<<< HEAD
+=======
+            // if (
+            //   error.message.includes('Unexpected token') ||
+            //   error.message.includes('Unexpected end of JSON input') ||
+            //   error.message.includes('Invalid message structure')
+            // ) {
+>>>>>>> 619e1ef (Unit tests)
             await sqs
               .deleteMessage({
                 QueueUrl: queueUrl,
                 ReceiptHandle: message.ReceiptHandle,
               })
+<<<<<<< HEAD
               .promise();
             logger.info(`Mensaje eliminado de ${queueUrl}: ${message.Body}`);
+=======
+              .promise()
+            logger.info(
+              `Mensaje eliminado de ${queueUrl}: ${message.Body}`
+            )
+            // }
+>>>>>>> 619e1ef (Unit tests)
           }
         })
       );
@@ -86,8 +119,14 @@ async function processMessage(queueUrl) {
 
 async function handleMessage(message) {
   try {
+<<<<<<< HEAD
     const messageBody = JSON.parse(message.Body);
     const operationMessage = JSON.parse(messageBody.Message);
+=======
+    const messageBody = JSON.parse(message.Body)
+    const operationMessage = JSON.parse(messageBody.Message)
+    console.log(operationMessage)
+>>>>>>> 619e1ef (Unit tests)
 
     if (!operationMessage.operationType || !operationMessage.data) {
       throw new Error('Invalid message structure');
@@ -107,17 +146,30 @@ async function handleMessage(message) {
         await handleTransactionConfirmation(
           operationMessage.data,
           'CreateBuyXCNConfirmation'
+<<<<<<< HEAD
         );
         break;
       case 'CreateTransferCoreWallet':
         await handleCreateTransferCoreWallet(operationMessage.data);
         break;
+=======
+        )
+        break
+      case 'CreateTransferCoreWallet':
+        await handleCreateTransferCoreWallet(operationMessage.data)
+        break
+>>>>>>> 619e1ef (Unit tests)
       case 'CreateSellXCNConfirmation':
         await handleTransactionConfirmation(
           operationMessage.data,
           'CreateSellXCNConfirmation'
+<<<<<<< HEAD
         );
         break;
+=======
+        )
+        break
+>>>>>>> 619e1ef (Unit tests)
       default:
         logger.error(
           `Unsupported operation type: ${operationMessage.operationType}`
@@ -164,7 +216,42 @@ async function handleCreateTransferCoreWallet(data) {
   }
 }
 
+
+async function handleCreateTransferCoreWallet(data) {
+  try {
+    if (!data.accountNumber || !data.amount || !data.currency || !data.date) {
+      logger.error('Invalid data structure for CreateTransferCoreWallet')
+      return
+    }
+
+    // Generar UUID si transactionId es nulo
+    const transactionId = data.transactionId ? data.transactionId : uuidv4();
+
+    const transactionData = {
+      name: 'Transferencia de Core Bancario',
+      description: 'Ingreso a la cuenta',
+      amountOrigin: data.amount,
+      amountDestination: data.amount, 
+      currencyOrigin: data.currency,
+      currencyDestination: data.currency, 
+      accountNumberOrigin: data.accountNumber,
+      accountNumberDestination: data.accountNumber,
+      status: 'confirmed',
+      date: data.date,
+      transactionId: transactionId,
+    }
+
+    await createTransaction(transactionData)
+    logger.info(`Transaction for ${data.transactionId} created successfully`)
+  } catch (error) {
+    logger.error(`Error in handleCreateTransferCoreWallet: ${error.message}`)
+    throw error
+  }
+}
+
 async function handleTransactionConfirmation(data, operationType) {
+  console.log(data)
+  console.log(operationType)
   try {
     if (!data.transactionId || !data.status) {
       logger.error(`Invalid data structure for ${operationType}`);
@@ -208,10 +295,18 @@ async function handleCreateUserClientConfirmation(data) {
   } catch (error) {
     logger.error(
       `Error in handleCreateUserClientConfirmation: ${error.message}`
+<<<<<<< HEAD
     );
     throw error;
   }
 }
+=======
+    )
+    throw error
+  }
+}
+
+>>>>>>> 619e1ef (Unit tests)
 
 function startWorkers() {
   Object.values(queueUrls).forEach((queueUrl) => {
