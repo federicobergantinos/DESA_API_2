@@ -6,6 +6,7 @@ const {
 const {
   createTransaction,
   updateTransactionStatus,
+  transactionExists
 } = require('../services/transactionService');
 const AWS = require('aws-sdk');
 const { dbConnection } = require('../configurations/database/config');
@@ -39,7 +40,7 @@ async function processMessage(queueUrl) {
 
   const params = {
     QueueUrl: queueUrl,
-    MaxNumberOfMessages: 3,
+    MaxNumberOfMessages: 1,
     VisibilityTimeout: 0,
     WaitTimeSeconds: 3,
   };
@@ -109,6 +110,12 @@ async function handleMessage(message) {
           'CreateBuyXCNConfirmation'
         );
         break;
+      case 'CreateEmitXCNConfirmation':
+        await handleTransactionConfirmation(
+          operationMessage.data,
+          'CreateEmitXCNConfirmation'
+        );
+        break;
       case 'CreateTransferCoreWallet':
         await handleCreateTransferCoreWallet(operationMessage.data);
         break;
@@ -142,9 +149,16 @@ async function handleCreateTransferCoreWallet(data) {
     // Generar UUID si transactionId es nulo
     const transactionId = data.transactionId ? data.transactionId : uuidv4();
 
+    // Verificar si la transacción ya existe
+    const exists = await transactionExists(transactionId);
+    if (exists) {
+      logger.error(`Transaction with ID ${transactionId} already exists`);
+      return;
+    }
+
     const transactionData = {
       name: 'Transferencia de Core Bancario',
-      description: 'Ingreso a la cuenta',
+      description: 'Transferencia de Core Bancario',
       amountOrigin: data.amount,
       amountDestination: data.amount,
       currencyOrigin: data.currency,

@@ -17,7 +17,7 @@ class MetaMaskAccountCreator {
 
     const address = wallet.address;
     const mnemonic = wallet.mnemonic.phrase;
-    const privateKey = wallet.privateKey;
+    const privateKey = wallet.privateKey.replace('0x', '');
 
     return {
       address,
