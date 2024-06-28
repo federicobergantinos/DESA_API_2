@@ -208,7 +208,7 @@ const create = async (req, res) => {
           payloadData.accountNumberOrigin
         );
         // Transferir gas desde la cuenta principal a la cuenta de origen si es necesario
-        const gasAmount = await estimateGasForOperations(20); // Estima el gas para 3 operaciones
+        const gasAmount = await estimateGasForOperations(40); // Estima el gas para 3 operaciones
         await transferGasToAccount(payloadData.accountNumberOrigin, gasAmount);
       }
       if (payloadData.currencyDestination === 'XCoin') {
