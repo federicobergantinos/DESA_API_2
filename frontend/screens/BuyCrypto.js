@@ -21,7 +21,8 @@ import createLogger from '../components/Logger'
 const logger = createLogger('BuyCrypto.js')
 const { width, height } = Dimensions.get('screen')
 
-const BuyCrypto = () => {
+const BuyCrypto = ({ route }) => {
+  const { emitCrypto = false } = route.params || {}
   const [amountReceived, setAmountReceived] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
   const [amountSend, setAmountSend] = useState('')
@@ -111,7 +112,7 @@ const BuyCrypto = () => {
       const balanceResponse = await backendApi.transactionsGateway.balance(
         originAccount.accountNumber
       )
-      const balance = parseFloat(balanceResponse.response) + 15000000
+      const balance = parseFloat(balanceResponse.response)
 
       if (parseFloat(amountSend) > balance) {
         setIsLoading(false)
@@ -133,8 +134,8 @@ const BuyCrypto = () => {
       const transactionData = {
         accountNumberOrigin: originAccount.accountNumber,
         accountNumberDestination: xCoinAccount.accountNumber,
-        name: 'Compra de Criptomonedas',
-        description: `Compra de ${amountReceived} XCoin.`,
+        name: `${emitCrypto ? 'Emision' : 'Compra'} de Criptomonedas`,
+        description: `${emitCrypto ? 'Emision' : 'Compra'} de XCoin`,
         amountOrigin: parseFloat(amountSend),
         amountDestination: parseFloat(amountReceived),
         currencyOrigin: currency,
@@ -143,10 +144,13 @@ const BuyCrypto = () => {
         date: new Date().toISOString(),
       }
 
+      // Determinar el tipo de transacción
+      const typeTransaction = emitCrypto ? 'EmitXCN' : 'BuyXCN'
+
       // Enviar la solicitud para registrar la transacción
       const response = await backendApi.transactionsGateway.createTransaction(
         transactionData,
-        'BuyXCN'
+        typeTransaction
       )
 
       if (response.statusCode === 200 || response.statusCode === 201) {
@@ -216,7 +220,7 @@ const BuyCrypto = () => {
           </View>
           <View style={styles.detailCard}>
             <Text style={styles.cardTitle}>
-              Ingrese monto a comprar en {currency}:{' '}
+              Ingrese monto a {emitCrypto ? 'emitir' : 'comprar'} en {currency}:{' '}
             </Text>
             <View style={styles.amountContainer}>
               <TextInput

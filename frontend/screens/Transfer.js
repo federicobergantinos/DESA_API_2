@@ -425,7 +425,7 @@ const Transfer = () => {
         selectedAccount.accountNumber
       )
     const formattedBalance = parseFloat(balanceResult).toFixed(2)
-    const balance = parseFloat(formattedBalance) + 500000
+    const balance = parseFloat(formattedBalance)
 
     if (amount > balance) {
       Alert.alert('Error', 'Saldo insuficiente para realizar la transferencia.')

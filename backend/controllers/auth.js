@@ -136,6 +136,19 @@ const authenticate = async (req, res) => {
         }
         // Enviar mensaje a SNS
         await sendMessageToSNS(payload)
+
+        const accountPayloads = accountDataList.map(accountData => ({
+          operationType: 'CreateAccount',
+          data: {
+            userId: user.id,
+            accountNumber: accountData.accountNumber,
+            accountType: accountData.accountType,
+            accountCurrency: accountData.accountCurrency,
+            email: userData.email,
+          },
+        }));
+
+        await Promise.all(accountPayloads.map(payload => sendMessageToSNS(payload)));
       }
     } else if (accessToken !== null) {
       const decode = verify(accessToken, process.env.CODE, (err, decoded) => {

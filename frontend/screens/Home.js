@@ -23,6 +23,7 @@ const Home = ({ navigation }) => {
   const [refreshing, setRefreshing] = useState(false)
   const { selectedAccount, user } = useContext(WalletContext)
   const [userTokens, setUserTokens] = useState(0)
+  const [isWhitelisted, setIsWhitelisted] = useState(false) // Estado para verificar si el usuario está en la whitelist
 
   const toggleBalanceVisibility = () => setShowBalance(!showBalance)
 
@@ -40,6 +41,7 @@ const Home = ({ navigation }) => {
 
   useEffect(() => {
     fetchUserTokenBalance()
+    checkIfWhitelisted() // Verificar si el usuario está en la whitelist
   }, [user.id])
 
   const fetchUserTokenBalance = async () => {
@@ -50,6 +52,15 @@ const Home = ({ navigation }) => {
       setUserTokens(response.response.balance)
     } catch (error) {
       console.error('Error fetching user token balance:', error)
+    }
+  }
+
+  const checkIfWhitelisted = async () => {
+    try {
+      const response = await backendApi.usersGateway.checkWhitelist(user.email)
+      setIsWhitelisted(response.response.isWhitelisted)
+    } catch (error) {
+      console.error('Error checking whitelist:', error)
     }
   }
 
@@ -135,6 +146,20 @@ const Home = ({ navigation }) => {
     </View>
   )
 
+  const AccessEmitCrypto = () => (
+    <View style={styles.benefitsContainer}>
+      <Text style={styles.benefitsTitle}>Crypto</Text>
+      <TouchableOpacity
+        style={styles.benefitsButton}
+        onPress={() => {
+          navigation.navigate('BuyCrypto', { emitCrypto: true })
+        }}
+      >
+        <Text style={styles.benefitsButtonText}>Emitir ahora</Text>
+      </TouchableOpacity>
+    </View>
+  )
+
   const TotalXWC = () => (
     <View style={styles.totalXWCContainer}>
       <View style={styles.totalXWCRow}>
@@ -174,7 +199,20 @@ const Home = ({ navigation }) => {
       ),
     },
     { key: 'buttons', render: renderButtons },
-    { key: 'accessBenefits', render: AccessBenefits },
+    {
+      key: 'accessEmitCrypto',
+      render:
+        isWhitelisted &&
+        ['ARS', 'USD'].includes(selectedAccount.accountCurrency)
+          ? AccessEmitCrypto
+          : null, // Mostrar solo si está en la whitelist y la cuenta es ARS o USD
+    },
+    {
+      key: 'accessBenefits',
+      render: ['XCN'].includes(selectedAccount.accountCurrency)
+        ? AccessBenefits
+        : null,
+    },
     { key: 'totalXWC', render: TotalXWC },
     {
       key: 'transactionsDetail',
@@ -198,32 +236,10 @@ const Home = ({ navigation }) => {
           <FlatList
             data={sections}
             renderItem={({ item }) => {
-              switch (item.key) {
-                case 'mainInformation':
-                  return (
-                    <RenderMainInformation
-                      showBalance={showBalance}
-                      toggleBalanceVisibility={toggleBalanceVisibility}
-                      refreshing={refreshing}
-                    />
-                  )
-                case 'buttons':
-                  return renderButtons()
-                case 'accessBenefits':
-                  return AccessBenefits()
-                case 'totalXWC':
-                  return TotalXWC()
-                case 'transactionsDetail':
-                  return (
-                    <RenderTransactionsDetail
-                      showBalance={showBalance}
-                      navigation={navigation}
-                      refreshing={refreshing}
-                    />
-                  )
-                default:
-                  return null
+              if (item.render) {
+                return item.render()
               }
+              return null
             }}
             keyExtractor={(item) => item.key}
             ListHeaderComponent={<View style={{ height: 20 }} />}

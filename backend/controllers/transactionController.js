@@ -2,11 +2,11 @@ const {
   createTransaction,
   getTransactions,
   getTransaction,
-  updateTransactionStatus
+  updateTransactionStatus,
 } = require('../services/transactionService');
 const {
-  findMetamaskAccountByAccountNumber, 
-  findAccountByEmail
+  findMetamaskAccountByAccountNumber,
+  findAccountByEmail,
 } = require('../services/accountService');
 const { sendResponse } = require('../configurations/utils');
 const createLogger = require('../configurations/Logger');
@@ -16,7 +16,7 @@ const logger = createLogger(__filename);
 const {
   MetaMaskAccountCreator,
   transferGasToAccount,
-  estimateGasForOperations
+  estimateGasForOperations,
 } = require('../utils/MetaMaskAccountCreator');
 
 const create = async (req, res) => {
@@ -33,7 +33,9 @@ const create = async (req, res) => {
     // Determinar el operationType según el typeTransaction
     let operationType;
     let payloadData;
-    const WalletCompanyXCNAccount = await findAccountByEmail('xwallet.company@gmail.com');
+    const WalletCompanyXCNAccount = await findAccountByEmail(
+      'xwallet.company@gmail.com'
+    );
 
     switch (transactionData.typeTransaction) {
       case 'BuyXCN':
@@ -42,21 +44,29 @@ const create = async (req, res) => {
         transactionBuyXCN = {
           ...transactionData,
           accountNumberOrigin: transactionData.accountNumberOrigin,
-          accountNumberDestination: transactionData.currencyOrigin === "USD" ? WalletCompanyXCNAccount.USD : WalletCompanyXCNAccount.ARS,
+          accountNumberDestination:
+            transactionData.currencyOrigin === 'USD'
+              ? WalletCompanyXCNAccount.USD
+              : WalletCompanyXCNAccount.ARS,
           currencyOrigin: transactionData.currencyOrigin,
           currencyDestination: transactionData.currencyOrigin,
           amountOrigin: -Math.abs(transactionData.amountOrigin), // Asegurar que el monto es negativo
           amountDestination: -Math.abs(transactionData.amountOrigin), // Asegurar que el monto es negativo
+          status: 'confirmed',
         };
         await createTransaction(transactionBuyXCN);
         transactionBuyXCN = {
           ...transactionData,
-          accountNumberOrigin: transactionData.currencyOrigin === "USD" ? WalletCompanyXCNAccount.USD : WalletCompanyXCNAccount.ARS,
+          accountNumberOrigin:
+            transactionData.currencyOrigin === 'USD'
+              ? WalletCompanyXCNAccount.USD
+              : WalletCompanyXCNAccount.ARS,
           accountNumberDestination: transactionData.accountNumberOrigin,
           currencyOrigin: transactionData.currencyOrigin,
           currencyDestination: transactionData.currencyOrigin,
           amountOrigin: Math.abs(transactionData.amountOrigin), // Asegurar que el monto es positivo
           amountDestination: Math.abs(transactionData.amountOrigin), // Asegurar que el monto es positivo
+          status: 'confirmed',
         };
         await createTransaction(transactionBuyXCN);
 
@@ -88,22 +98,30 @@ const create = async (req, res) => {
         // Intercambio USD || ARS
         transactionSellXCN = {
           ...transactionData,
-          accountNumberOrigin: transactionData.currencyDestination === "USD" ? WalletCompanyXCNAccount.USD : WalletCompanyXCNAccount.ARS,
+          accountNumberOrigin:
+            transactionData.currencyDestination === 'USD'
+              ? WalletCompanyXCNAccount.USD
+              : WalletCompanyXCNAccount.ARS,
           accountNumberDestination: transactionData.accountNumberDestination,
           currencyOrigin: transactionData.currencyDestination,
           currencyDestination: transactionData.currencyDestination,
           amountOrigin: -Math.abs(transactionData.amountOrigin), // Asegurar que el monto es negativo
           amountDestination: -Math.abs(transactionData.amountOrigin), // Asegurar que el monto es negativo
+          status: 'confirmed',
         };
         await createTransaction(transactionSellXCN);
         transactionSellXCN = {
           ...transactionData,
           accountNumberOrigin: transactionData.accountNumberDestination,
-          accountNumberDestination: transactionData.currencyDestination === "USD" ? WalletCompanyXCNAccount.USD : WalletCompanyXCNAccount.ARS,
+          accountNumberDestination:
+            transactionData.currencyDestination === 'USD'
+              ? WalletCompanyXCNAccount.USD
+              : WalletCompanyXCNAccount.ARS,
           currencyOrigin: transactionData.currencyDestination,
           currencyDestination: transactionData.currencyDestination,
           amountOrigin: Math.abs(transactionData.amountOrigin), // Asegurar que el monto es positivo
           amountDestination: Math.abs(transactionData.amountOrigin), // Asegurar que el monto es positivo
+          status: 'confirmed',
         };
         await createTransaction(transactionSellXCN);
 
@@ -136,12 +154,11 @@ const create = async (req, res) => {
           ...transactionData,
           accountNumberOrigin: WalletCompanyXCNAccount.XCN,
           accountNumberDestination: WalletCompanyXCNAccount.XCN,
-          currencyOrigin: "XCoin",
-          currencyDestination: "XCoin",
+          currencyOrigin: 'XCoin',
+          currencyDestination: 'XCoin',
           amountOrigin: Math.abs(transactionData.amountDestination), // Asegurar que el monto es positivo
           amountDestination: Math.abs(transactionData.amountOrigin), // Asegurar que el monto es positivo
         };
-        console.log(transactionEmitXCN)
         await createTransaction(transactionEmitXCN);
         payloadData = transactionEmitXCN;
         break;
@@ -152,6 +169,11 @@ const create = async (req, res) => {
           ...transactionData,
           amountOrigin: -Math.abs(transactionData.amountOrigin), // Asegurar que el monto es negativo
           amountDestination: -Math.abs(transactionData.amountDestination), // Asegurar que el monto es negativo
+          status:
+            transactionData.currencyOrigin === 'USD' ||
+            transactionData.currencyOrigin === 'ARS'
+              ? 'confirmed'
+              : transactionData.status,
         };
         await createTransaction(transactionTransfer);
         payloadData = transactionTransfer;
@@ -164,6 +186,11 @@ const create = async (req, res) => {
           currencyDestination: transactionData.currencyOrigin,
           amountOrigin: Math.abs(transactionData.amountDestination), // Asegurar que el monto es positivo
           amountDestination: Math.abs(transactionData.amountOrigin), // Asegurar que el monto es positivo
+          status:
+            transactionData.currencyOrigin === 'USD' ||
+            transactionData.currencyOrigin === 'ARS'
+              ? 'confirmed'
+              : transactionData.status,
         };
         await createTransaction(transactionTransfer);
         break;
@@ -181,8 +208,8 @@ const create = async (req, res) => {
           payloadData.accountNumberOrigin
         );
         // Transferir gas desde la cuenta principal a la cuenta de origen si es necesario
-        const gasAmount = await estimateGasForOperations(5); // Estima el gas para 5 operacion
-        // await transferGasToAccount(payloadData.accountNumberOrigin, gasAmount);
+        const gasAmount = await estimateGasForOperations(20); // Estima el gas para 3 operaciones
+        await transferGasToAccount(payloadData.accountNumberOrigin, gasAmount);
       }
       if (payloadData.currencyDestination === 'XCoin') {
         accountNumberDestinationKey = await findMetamaskAccountByAccountNumber(
@@ -199,17 +226,17 @@ const create = async (req, res) => {
           transactionId: payloadData.transactionId,
           name: payloadData.name,
           description: payloadData.description,
-          amountOrigin: payloadData.amountOrigin,
-          amountDestination: payloadData.amountDestination,
+          amountOrigin: Math.abs(payloadData.amountOrigin),
+          amountDestination: Math.abs(payloadData.amountDestination),
           currencyOrigin: payloadData.currencyOrigin,
           currencyDestination: payloadData.currencyDestination,
           status: payloadData.status,
           date: payloadData.date,
         },
       };
-      console.log(payload)
+
       // Enviar mensaje a SNS
-      // await sendMessageToSNS(payload);
+      await sendMessageToSNS(payload);
     }
 
     return sendResponse(res, 201, {
@@ -288,9 +315,47 @@ const calculateAccountBalance = async (req, res) => {
   }
 };
 
+
+const createMoneyDeposit = async (req, res) => {
+  try {
+    const transactionId = uuidv4(); // Generar un UUID para la transacción
+
+    const transactionData = {
+      ...req.body,
+      transactionId,
+      amountOrigin: Math.abs(req.body.amount), // Asegurar que el monto es positivo
+      amountDestination: Math.abs(req.body.amount), // Asegurar que el monto es positivo
+      status: 'confirmed', // Estado por defecto
+      date: new Date(), // Fecha y hora actuales
+    };
+
+    await createTransaction(transactionData);
+
+    // Asegúrate de que la respuesta sea un Buffer
+    const responseBody = Buffer.from(JSON.stringify({
+      id: transactionId,
+      message: 'Depósito de dinero creado con éxito',
+    }));
+
+    res.writeHead(201, { 'Content-Type': 'application/json' });
+    res.end(responseBody);
+  } catch (error) {
+    console.error(`Error en la creación del depósito de dinero: ${error}`);
+
+    // Asegúrate de que el mensaje de error sea un Buffer
+    const errorResponse = Buffer.from(JSON.stringify({
+      msg: error.message || 'Ha ocurrido una excepción',
+    }));
+
+    res.writeHead(error.code || 500, { 'Content-Type': 'application/json' });
+    res.end(errorResponse);
+  }
+};
+
 module.exports = {
   create,
   getAll,
   getById,
   calculateAccountBalance,
+  createMoneyDeposit,
 };

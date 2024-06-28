@@ -239,7 +239,9 @@ const usersGateway = {
   },
   deleteUser: (userId: number): Promise<{ response: any; statusCode: number }> =>
     requests.delete(`${usersBaseUrl}/${userId}`),
-}
+  checkWhitelist: (email: string): Promise<{ response: any; statusCode: number }> =>
+    requests.get(`${usersBaseUrl}/whitelist/check?email=${email}`),
+};
 
 const exchangeRatesGateway = {
   getExchangeRate: async (currencyCode) => {

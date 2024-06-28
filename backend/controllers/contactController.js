@@ -77,7 +77,6 @@ const getById = async (req, res) => {
     const contactId = req.params.contactId
     const response = await getContact(contactId)
     const contact = response.dataValues
-    console.log(contact)
 
     return sendResponse(res, 200, {
       id: contact.id,

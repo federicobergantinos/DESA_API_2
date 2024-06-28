@@ -105,9 +105,15 @@ const updateTransactionStatus = async (transactionId, status) => {
   }
 };
 
+async function transactionExists(transactionId) {
+  const count = await Transaction.count({ where: { transactionId } });
+  return count > 0;
+}
+
 module.exports = {
   createTransaction,
   getTransactions,
   getTransaction,
   updateTransactionStatus,
+  transactionExists
 }

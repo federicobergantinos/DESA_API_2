@@ -17,7 +17,7 @@ class MetaMaskAccountCreator {
 
     const address = wallet.address;
     const mnemonic = wallet.mnemonic.phrase;
-    const privateKey = wallet.privateKey;
+    const privateKey = wallet.privateKey.replace('0x', '');
 
     return {
       address,
@@ -75,8 +75,46 @@ const estimateGasForOperations = async (numOperations) => {
   }
 };
 
+// ABI y Bytecode del contrato
+const contractABI = [
+  // Reemplaza esto con el ABI de tu contrato
+];
+const contractBytecode = '0x0D2de7494804C13091C318D8fD591d9E2C11EFf2'; // Reemplaza esto con el Bytecode de tu contrato
+
+const deployContract = async (privateKey) => {
+  try {
+    // Crear una wallet usando la clave privada proporcionada
+    const wallet = new ethers.Wallet(privateKey, provider);
+
+    // Crear una instancia de un contrato Factory
+    const contractFactory = new ethers.ContractFactory(contractABI, contractBytecode, wallet);
+
+    // Estimar el gas necesario para desplegar el contrato
+    const estimatedGas = await contractFactory.signer.estimateGas({
+      data: contractBytecode
+    });
+
+    console.log(`Estimated Gas Limit: ${estimatedGas.toString()}`);
+
+    // Desplegar el contrato con el gas limit estimado
+    const contract = await contractFactory.deploy({
+      gasLimit: estimatedGas.mul(ethers.BigNumber.from('2')) // Multiplicando por 2 para ser conservador
+    });
+
+    // Esperar a que el contrato se despliegue
+    await contract.deployed();
+
+    console.log(`Contract deployed at address: ${contract.address}`);
+    return contract.address;
+  } catch (error) {
+    console.error('Error deploying contract:', error.message);
+  }
+};
+
+
 module.exports = {
   MetaMaskAccountCreator,
   transferGasToAccount,
-  estimateGasForOperations
+  estimateGasForOperations,
+  deployContract
 };
