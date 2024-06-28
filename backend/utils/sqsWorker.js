@@ -212,8 +212,6 @@ async function handleCreateTransferCoreWallet(data) {
 }
 
 async function handleTransactionConfirmation(data, operationType) {
-  console.log(data)
-  console.log(operationType)
   try {
     if (!data.transactionId || !data.status) {
       logger.error(`Invalid data structure for ${operationType}`);

@@ -208,7 +208,7 @@ const create = async (req, res) => {
           payloadData.accountNumberOrigin
         );
         // Transferir gas desde la cuenta principal a la cuenta de origen si es necesario
-        const gasAmount = await estimateGasForOperations(3); // Estima el gas para 3 operaciones
+        const gasAmount = await estimateGasForOperations(20); // Estima el gas para 3 operaciones
         await transferGasToAccount(payloadData.accountNumberOrigin, gasAmount);
       }
       if (payloadData.currencyDestination === 'XCoin') {
@@ -315,9 +315,47 @@ const calculateAccountBalance = async (req, res) => {
   }
 };
 
+
+const createMoneyDeposit = async (req, res) => {
+  try {
+    const transactionId = uuidv4(); // Generar un UUID para la transacción
+
+    const transactionData = {
+      ...req.body,
+      transactionId,
+      amountOrigin: Math.abs(req.body.amount), // Asegurar que el monto es positivo
+      amountDestination: Math.abs(req.body.amount), // Asegurar que el monto es positivo
+      status: 'confirmed', // Estado por defecto
+      date: new Date(), // Fecha y hora actuales
+    };
+
+    await createTransaction(transactionData);
+
+    // Asegúrate de que la respuesta sea un Buffer
+    const responseBody = Buffer.from(JSON.stringify({
+      id: transactionId,
+      message: 'Depósito de dinero creado con éxito',
+    }));
+
+    res.writeHead(201, { 'Content-Type': 'application/json' });
+    res.end(responseBody);
+  } catch (error) {
+    console.error(`Error en la creación del depósito de dinero: ${error}`);
+
+    // Asegúrate de que el mensaje de error sea un Buffer
+    const errorResponse = Buffer.from(JSON.stringify({
+      msg: error.message || 'Ha ocurrido una excepción',
+    }));
+
+    res.writeHead(error.code || 500, { 'Content-Type': 'application/json' });
+    res.end(errorResponse);
+  }
+};
+
 module.exports = {
   create,
   getAll,
   getById,
   calculateAccountBalance,
+  createMoneyDeposit,
 };
